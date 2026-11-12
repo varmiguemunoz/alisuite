@@ -18,14 +18,14 @@ S9: App must typecheck, lint, and tests pass; smoke test of remaining screens; n
 
 ## Tasks
 
-T1 | S1,S2,S3 | route: inline | status: pending | commit: -
-T2 | S1 | route: inline | status: pending | commit: -
-T3 | S2 | route: inline | status: pending | commit: -
-T4 | S3,S4 | route: inline | status: pending | commit: -
-T5 | S6 | route: inline | status: pending | commit: -
-T6 | S7 | route: inline | status: pending | commit: -
-T7 | S8 | route: inline | status: pending | commit: -
-T8 | S9 | route: inline | status: pending | commit: -
+T1 | S1,S2,S3 | route: inline | status: done | commit: 8b3139d
+T2 | S1 | route: inline | status: done | commit: 8b3139d
+T3 | S2 | route: inline | status: done | commit: 8b3139d
+T4 | S3,S4 | route: inline | status: done | commit: 8b3139d
+T5 | S6 | route: inline | status: done | commit: 8b3139d
+T6 | S7 | route: inline | status: done | commit: 8b3139d
+T7 | S8 | route: inline | status: done | commit: 8b3139d
+T8 | S9 | route: inline | status: done | commit: 8b3139d
 
 ## Log
 
