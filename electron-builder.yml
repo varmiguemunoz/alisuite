@@ -19,7 +19,6 @@ asarUnpack:
   - node_modules/ffmpeg-static/**
   # Teclado global (detectar cuándo se suelta el atajo de nota de voz).
   - node_modules/uiohook-napi/**
-afterPack: build/after-pack.cjs
 protocols:
   - name: Alisuite
     schemes:
