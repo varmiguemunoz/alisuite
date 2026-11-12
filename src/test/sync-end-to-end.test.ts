@@ -138,7 +138,7 @@ describe('sincronización de punta a punta con dos copias', () => {
     expect(store.mutations.length).toBe(first)
   })
 
-  it('un lector no puede enviar cambios y los secretos nunca viajan', async () => {
+  it('un lector no puede enviar cambios y las tablas no sincronizables se rechazan', async () => {
     const viewer: MembershipRepository = {
       find: async (user) => ({
         org: { id: ORG, name: 'Acme', plan: 'trial', maxMembers: 5 },
@@ -162,10 +162,10 @@ describe('sincronización de punta a punta con dos copias', () => {
         mutations: [
           {
             mutationId: 'device-x:1',
-            entity: 'lead_sources',
+            entity: 'resend_outbox',
             id: 's1',
             op: 'upsert',
-            fields: { secret: 'x' },
+            fields: { foo: 'x' },
             rev: '000000000000001:000000:d'
           }
         ]

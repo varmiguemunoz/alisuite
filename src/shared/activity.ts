@@ -21,10 +21,7 @@ export const ACTIVITY_ENTITIES = [
   'clients',
   'projects',
   'meetings',
-  'prospects',
-  'contacts',
   'tasks',
-  'pipelines',
   'file_manifest',
   'members',
   'automations'
@@ -67,13 +64,12 @@ export interface ActivityState {
   unseen: number
 }
 
-export const NOTIFY_KINDS = ['tasks', 'prospects', 'meetings'] as const
+export const NOTIFY_KINDS = ['tasks', 'meetings'] as const
 export type NotifyKind = (typeof NOTIFY_KINDS)[number]
 export type NotifySettings = Record<NotifyKind, boolean>
-export const NOTIFY_DEFAULTS: NotifySettings = { tasks: true, prospects: true, meetings: true }
+export const NOTIFY_DEFAULTS: NotifySettings = { tasks: true, meetings: true }
 export const NOTIFY_LABEL: Record<NotifyKind, string> = {
   tasks: 'Tareas',
-  prospects: 'Prospectos',
   meetings: 'Reuniones'
 }
 
@@ -109,10 +105,7 @@ export const ENTITY_LABEL: Record<ActivityEntity, string> = {
   clients: 'Clientes',
   projects: 'Proyectos',
   meetings: 'Reuniones',
-  prospects: 'Prospectos',
-  contacts: 'Contactos',
   tasks: 'Tareas',
-  pipelines: 'Pipelines',
   file_manifest: 'Archivos',
   members: 'Miembros',
   automations: 'Automatizaciones'
@@ -122,10 +115,7 @@ const NOUN: Record<ActivityEntity, string> = {
   clients: 'el cliente',
   projects: 'el proyecto',
   meetings: 'la reunión',
-  prospects: 'el prospecto',
-  contacts: 'el contacto',
   tasks: 'la tarea',
-  pipelines: 'el pipeline',
   file_manifest: 'el archivo',
   members: '',
   automations: 'la automatización'
@@ -133,7 +123,6 @@ const NOUN: Record<ActivityEntity, string> = {
 
 export const NOTIFY_KIND_OF: Partial<Record<ActivityEntity, NotifyKind>> = {
   tasks: 'tasks',
-  prospects: 'prospects',
   meetings: 'meetings'
 }
 

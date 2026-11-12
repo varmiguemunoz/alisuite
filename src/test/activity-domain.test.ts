@@ -70,15 +70,6 @@ describe('actividad: qué cuenta como acción', () => {
     expect(renamed.verbs).toEqual(['updated'])
   })
 
-  it('mover a una etapa ganada es ganar, a otra es mover', async () => {
-    const p = await run(up('prospects', 'p1', { company: 'Acme', stage_id: 'lead' }), null)
-    const moved = await run(up('prospects', 'p1', { stage_id: 'propuesta' }), p.state)
-    expect(moved.verbs).toEqual(['moved'])
-    expect(moved.drafts[0].detail).toBe('Propuesta')
-    const won = await run(up('prospects', 'p1', { stage_id: 'won' }), moved.state)
-    expect(won.verbs).toEqual(['won'])
-  })
-
   it('completar y asignar una tarea', async () => {
     const t = await run(up('tasks', 't1', { title: 'Propuesta', status: 'todo' }), null)
     const assigned = await run(up('tasks', 't1', { assignee_id: B }), t.state)
@@ -110,9 +101,8 @@ describe('actividad: qué cuenta como acción', () => {
     expect(renamed.drafts[0]).toMatchObject({ title: 'Plan final.md', detail: 'Plan.md' })
   })
 
-  it('las tablas internas no generan actividad', async () => {
-    expect((await run(up('pipeline_stages', 's1', { name: 'Lead' }), null)).verbs).toEqual([])
-    expect((await run(up('contact_events', 'e1', { kind: 'open' }), null)).verbs).toEqual([])
+  it('las tablas no rastreadas no generan actividad', async () => {
+    expect((await run(up('dashboards', 'd1', { name: 'Inicio' }), null)).verbs).toEqual([])
   })
 })
 
@@ -138,9 +128,6 @@ describe('actividad: frases', () => {
     expect(activityPhrase(entry({ verb: 'updated', count: 4 }), name)).toBe(
       'Ana cambió el cliente «Acme», 4 veces'
     )
-    expect(
-      activityPhrase(entry({ verb: 'moved', entity: 'prospects', detail: 'Propuesta' }), name)
-    ).toBe('Ana movió el prospecto «Acme» a Propuesta')
     expect(
       activityPhrase(
         entry({ verb: 'assigned', entity: 'tasks', title: 'Llamar', targetId: 'b' }),

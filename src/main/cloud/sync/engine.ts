@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, rmSync } from 'fs'
 import type { DataSource } from 'typeorm'
-import { SYNC_TABLES } from '@shared/edition'
+import { ACTIVE_SYNC_TABLES } from '@shared/edition'
 import { decodeHlc, encodeHlc, receive, type Hlc } from '@shared/hlc'
 import { stateToMutations, type Mutation } from '@shared/sync-merge'
 import {
@@ -119,8 +119,8 @@ export class SyncEngine {
   }
 
   async restore(entity: string, id: string): Promise<SyncStatus> {
-    if (!(SYNC_TABLES as readonly string[]).includes(entity)) return this.status
-    const where = await this.store.keyWhere(entity as (typeof SYNC_TABLES)[number], id)
+    if (!(ACTIVE_SYNC_TABLES as readonly string[]).includes(entity)) return this.status
+    const where = await this.store.keyWhere(entity as (typeof ACTIVE_SYNC_TABLES)[number], id)
     await transactionGuard(this.deps.db, (m) =>
       m.query(`UPDATE ${q(entity)} SET deleted_at = NULL WHERE ${where.sql}`, where.params)
     )
@@ -229,7 +229,7 @@ export class SyncEngine {
   private async seed(api: CloudApi): Promise<void> {
     const start = await this.store.maxSeq()
     let hlc = await this.hlc()
-    for (const table of SYNC_TABLES) {
+    for (const table of ACTIVE_SYNC_TABLES) {
       for (let offset = 0; ; offset += SEED_PAGE) {
         const page = await snapshotPage(this.store, table, offset, SEED_PAGE, hlc)
         hlc = page.hlc
@@ -320,8 +320,9 @@ export class SyncEngine {
     if (mode === 'join') {
       await transactionGuard(this.deps.db, (m) =>
         withoutChangeLog(async () => {
-          await m.query(`DELETE FROM pipeline_stages`)
-          await m.query(`DELETE FROM pipelines`)
+          for (const t of ['pipeline_stages', 'pipelines']) {
+            await m.query(`DELETE FROM ${t}`).catch(() => {})
+          }
           await m.query(`DELETE FROM dashboards`)
         })
       )

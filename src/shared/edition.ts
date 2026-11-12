@@ -39,7 +39,8 @@ export interface EditionApi {
 }
 
 // ---- Qué se sincroniza ----
-
+// SYNC_TABLES y SOFT_DELETE_TABLES mantienen el histórico completo porque migraciones
+// publicadas (p. ej. AddSyncMetadata) los importan; el runtime debe usar ACTIVE_*.
 export const SYNC_TABLES = [
   'clients',
   'projects',
@@ -65,6 +66,22 @@ export const SYNC_TABLES = [
 ] as const
 export type SyncTable = (typeof SYNC_TABLES)[number]
 
+export const ACTIVE_SYNC_TABLES = [
+  'clients',
+  'projects',
+  'meetings',
+  'tags',
+  'tasks',
+  'note_relations',
+  'workspace_items',
+  'workspace_refs',
+  'dashboards',
+  'file_manifest',
+  'automations',
+  'automation_versions'
+] as const satisfies readonly SyncTable[]
+export type ActiveSyncTable = (typeof ACTIVE_SYNC_TABLES)[number]
+
 export const SOFT_DELETE_TABLES: SyncTable[] = [
   'clients',
   'projects',
@@ -75,6 +92,16 @@ export const SOFT_DELETE_TABLES: SyncTable[] = [
   'contacts',
   'tags',
   'lead_sources',
+  'tasks',
+  'file_manifest',
+  'automations'
+]
+
+export const ACTIVE_SOFT_DELETE_TABLES: ActiveSyncTable[] = [
+  'clients',
+  'projects',
+  'meetings',
+  'tags',
   'tasks',
   'file_manifest',
   'automations'
@@ -100,12 +127,11 @@ export const NEVER_SYNC = {
     'automation_trigger_log'
   ],
   columns: {
-    lead_sources: ['secret'],
     clients: ['folder_path'],
     meetings: ['recording_path']
   } as Partial<Record<SyncTable, string[]>>,
 
-  settings: ['openaiApiKey', 'resendApiKey', 'hubAdminToken', 'apolloApiKey'],
+  settings: ['openaiApiKey'],
 
   device: ['voice-queue', 'recordings-in-progress', 'session-tokens']
 } as const
@@ -117,5 +143,5 @@ export const isNeverSynced = (table: string, column?: string): boolean =>
 export const FILE_INDEX_TABLES: SyncTable[] = ['workspace_items', 'workspace_refs']
 
 export const isRecordSynced = (table: string): boolean =>
-  (SYNC_TABLES as readonly string[]).includes(table) &&
+  (ACTIVE_SYNC_TABLES as readonly string[]).includes(table) &&
   !(FILE_INDEX_TABLES as string[]).includes(table)

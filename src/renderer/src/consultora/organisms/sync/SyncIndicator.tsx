@@ -29,12 +29,7 @@ const TABLE_LABEL: Record<string, string> = {
   clients: 'Cliente',
   projects: 'Proyecto',
   meetings: 'Reunión',
-  prospects: 'Prospecto',
-  pipelines: 'Pipeline',
-  pipeline_stages: 'Etapa',
-  contacts: 'Contacto',
   tags: 'Tag',
-  lead_sources: 'Fuente',
   automations: 'Automatización',
   automation_versions: 'Versión de automatización',
   tasks: 'Tarea'

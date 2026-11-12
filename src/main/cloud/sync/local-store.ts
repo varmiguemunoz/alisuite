@@ -1,5 +1,10 @@
 import type { DataSource, EntityManager } from 'typeorm'
-import { NEVER_SYNC, SYNC_TABLES, isRecordSynced, type SyncTable } from '@shared/edition'
+import {
+  ACTIVE_SYNC_TABLES,
+  NEVER_SYNC,
+  isRecordSynced,
+  type ActiveSyncTable
+} from '@shared/edition'
 
 export interface ChangeRow {
   seq: number
@@ -22,8 +27,8 @@ export const ROW_FIELD = '__row'
 
 const q = (name: string): string => `"${name.replace(/"/g, '""')}"`
 
-export const isSyncTable = (name: string): name is SyncTable =>
-  (SYNC_TABLES as readonly string[]).includes(name)
+export const isSyncTable = (name: string): name is ActiveSyncTable =>
+  (ACTIVE_SYNC_TABLES as readonly string[]).includes(name)
 
 export class LocalSyncStore {
   private columnsCache = new Map<string, ColumnInfo[]>()
@@ -71,7 +76,7 @@ export class LocalSyncStore {
     return Number(rows[0]?.n ?? 0)
   }
 
-  async columns(table: SyncTable, runner: Runner = this.db): Promise<ColumnInfo[]> {
+  async columns(table: ActiveSyncTable, runner: Runner = this.db): Promise<ColumnInfo[]> {
     const cached = this.columnsCache.get(table)
     if (cached) return cached
     const list: ColumnInfo[] = await runner.query(`PRAGMA table_info(${q(table)})`)
@@ -79,12 +84,12 @@ export class LocalSyncStore {
     return list
   }
 
-  async syncable(table: SyncTable, runner: Runner = this.db): Promise<string[]> {
+  async syncable(table: ActiveSyncTable, runner: Runner = this.db): Promise<string[]> {
     const hidden = new Set<string>([...(NEVER_SYNC.columns[table] ?? []), ...META])
     return (await this.columns(table, runner)).map((c) => c.name).filter((c) => !hidden.has(c))
   }
 
-  async keys(table: SyncTable, runner: Runner = this.db): Promise<string[]> {
+  async keys(table: ActiveSyncTable, runner: Runner = this.db): Promise<string[]> {
     const pk = (await this.columns(table, runner))
       .filter((c) => c.pk > 0)
       .sort((a, b) => a.pk - b.pk)
@@ -92,7 +97,7 @@ export class LocalSyncStore {
   }
 
   async keyWhere(
-    table: SyncTable,
+    table: ActiveSyncTable,
     id: string,
     runner: Runner = this.db
   ): Promise<{ sql: string; params: string[] }> {
@@ -103,7 +108,7 @@ export class LocalSyncStore {
   }
 
   async row(
-    table: SyncTable,
+    table: ActiveSyncTable,
     id: string,
     runner: Runner = this.db
   ): Promise<Record<string, unknown> | null> {
@@ -115,11 +120,15 @@ export class LocalSyncStore {
     return rows[0] ?? null
   }
 
-  async page(table: SyncTable, offset: number, limit: number): Promise<Record<string, unknown>[]> {
+  async page(
+    table: ActiveSyncTable,
+    offset: number,
+    limit: number
+  ): Promise<Record<string, unknown>[]> {
     return this.db.query(`SELECT * FROM ${q(table)} LIMIT ? OFFSET ?`, [limit, offset])
   }
 
-  async idOf(table: SyncTable, row: Record<string, unknown>): Promise<string> {
+  async idOf(table: ActiveSyncTable, row: Record<string, unknown>): Promise<string> {
     return (await this.keys(table)).map((k) => String(row[k])).join(':')
   }
 
@@ -149,7 +158,7 @@ export class LocalSyncStore {
 
   async counts(): Promise<{ entity: string; rows: number }[]> {
     const out: { entity: string; rows: number }[] = []
-    for (const table of SYNC_TABLES.filter(isRecordSynced)) {
+    for (const table of ACTIVE_SYNC_TABLES.filter(isRecordSynced)) {
       const rows: { n: number }[] = await this.db
         .query(`SELECT count(*) AS n FROM ${q(table)}`)
         .catch(() => [{ n: 0 }])

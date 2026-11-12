@@ -48,8 +48,8 @@ describe('mutaciones', () => {
 
   it('rechaza tablas y columnas que nunca se sincronizan', () => {
     expect(rejectReason({ ...ok, entity: 'resend_outbox' }, now)).toMatch(/no sincronizable/)
-    expect(rejectReason({ ...ok, entity: 'lead_sources', fields: { secret: 'x' } }, now)).toMatch(
-      /secret/
+    expect(rejectReason({ ...ok, fields: { folder_path: '/tmp/x' } }, now)).toMatch(
+      /no se sincroniza/
     )
     expect(rejectReason({ ...ok, fields: { org_id: 'otra' } }, now)).toMatch(/org_id/)
   })

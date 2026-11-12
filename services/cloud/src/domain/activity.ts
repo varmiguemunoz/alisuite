@@ -18,10 +18,7 @@ const TRACKED = new Set<ActivityEntity>([
   'clients',
   'projects',
   'meetings',
-  'prospects',
-  'contacts',
   'tasks',
-  'pipelines',
   'file_manifest',
   'automations'
 ])
@@ -52,13 +49,9 @@ export function titleOf(entity: ActivityEntity, row: Row | null): string {
   const raw =
     entity === 'meetings' || entity === 'tasks'
       ? text(row.title)
-      : entity === 'prospects'
-        ? text(row.company)
-        : entity === 'contacts'
-          ? text(row.name) || text(row.email)
-          : entity === 'file_manifest'
-            ? baseName(row.path)
-            : text(row.name)
+      : entity === 'file_manifest'
+        ? baseName(row.path)
+        : text(row.name)
   return raw.slice(0, 300)
 }
 
@@ -68,8 +61,9 @@ export async function describeChange(
   m: Mutation,
   before: RecordState | null,
   after: RecordState,
-  stage: StageLookup
+  _stage: StageLookup
 ): Promise<ActivityDraft[]> {
+  void _stage
   const entity = m.entity as ActivityEntity
   if (!TRACKED.has(entity)) return []
   const prev = visible(before)
@@ -92,15 +86,6 @@ export async function describeChange(
   else if (changed('deleted_at')) out.push(draft(next.deleted_at ? 'deleted' : 'restored'))
   if (next.deleted_at) return out
   if (prev && alive) {
-    if (entity === 'prospects' && changed('stage_id')) {
-      const target = await stage(text(next.stage_id))
-      const kind = target?.kind
-      out.push(
-        kind === 'won' || kind === 'lost'
-          ? draft(kind)
-          : draft('moved', { detail: target?.name.slice(0, 300) ?? null })
-      )
-    }
     if (entity === 'tasks' && (changed('status') || changed('done'))) {
       const done = next.status === 'done' || next.done === true || next.done === 1
       const was = prev.status === 'done' || prev.done === true || prev.done === 1

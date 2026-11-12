@@ -1,5 +1,5 @@
 import { MAX_DRIFT_MS, decodeHlc } from '@shared/hlc'
-import { SYNC_TABLES, isNeverSynced } from '@shared/edition'
+import { ACTIVE_SYNC_TABLES, isNeverSynced } from '@shared/edition'
 import type { Mutation } from '@shared/sync-merge'
 
 const MAX_ID = 128
@@ -11,7 +11,7 @@ const MAX_FIELDS = 64
  */
 export function rejectReason(m: Mutation, now: number): string | null {
   if (!m || typeof m !== 'object') return 'Mutación vacía.'
-  if (!(SYNC_TABLES as readonly string[]).includes(m.entity)) {
+  if (!(ACTIVE_SYNC_TABLES as readonly string[]).includes(m.entity)) {
     return `Tabla no sincronizable: ${String(m.entity)}.`
   }
   if (typeof m.id !== 'string' || !m.id || m.id.length > MAX_ID) return 'Id inválido.'

@@ -1,12 +1,12 @@
 import { newer } from '@shared/hlc'
-import { SOFT_DELETE_TABLES, isRecordSynced, type SyncTable } from '@shared/edition'
+import { ACTIVE_SOFT_DELETE_TABLES, isRecordSynced, type ActiveSyncTable } from '@shared/edition'
 import type { Mutation } from '@shared/sync-merge'
 import type { RemoteDeletion } from '@shared/sync-protocol'
 import type { EntityManager } from 'typeorm'
 import { ROW_FIELD, isSyncTable, quoteIdent as q, type LocalSyncStore } from './local-store'
 
 export type LocalFill = (
-  table: SyncTable,
+  table: ActiveSyncTable,
   row: Record<string, unknown>
 ) => Promise<Record<string, unknown>>
 
@@ -75,7 +75,12 @@ export async function applyIncoming(
         continue
       }
       const deleted = accepted.find(([k]) => k === 'deleted_at')
-      if (SOFT_DELETE_TABLES.includes(table) && deleted && deleted[1] && !existing.deleted_at) {
+      if (
+        ACTIVE_SOFT_DELETE_TABLES.includes(table) &&
+        deleted &&
+        deleted[1] &&
+        !existing.deleted_at
+      ) {
         result.deletions.push({ entity: table, id: m.id, at: new Date().toISOString() })
       }
     } else {
@@ -100,7 +105,7 @@ export async function applyIncoming(
 async function insertRow(
   manager: EntityManager,
   store: LocalSyncStore,
-  table: SyncTable,
+  table: ActiveSyncTable,
   id: string,
   fields: Record<string, unknown>,
   fill: LocalFill
