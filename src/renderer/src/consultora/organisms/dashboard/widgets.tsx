@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
 import { TASK_STATUSES, TASK_STATUS_LABEL } from '@shared/tasks'
-import type { DealsMetric, MetricsResult } from '@shared/metrics'
+import type { MetricsResult } from '@shared/metrics'
 import { shortDate, type Go } from '../../lib'
 import { StatValue } from '../../atoms/StatValue'
 import { Delta } from '../../atoms/Delta'
 import { BarList } from '../../molecules/BarList'
 import { Sparkline } from '../../molecules/Sparkline'
 import { WidgetFrame, type WidgetState } from './WidgetFrame'
-import { openTasks, percent, rangeLabel, usd } from './lib'
+import { openTasks, rangeLabel } from './lib'
 
 export interface WidgetViewProps {
   result: MetricsResult | null
@@ -18,8 +18,6 @@ export interface WidgetViewProps {
 
 const stateOf = (props: WidgetViewProps, ready: boolean, empty = false): WidgetState =>
   props.error ? 'error' : !props.result || !ready ? 'loading' : empty ? 'empty' : 'ready'
-
-const scopeName = (r: MetricsResult | null): string => (r?.pipeline ? ` · ${r.pipeline.name}` : '')
 
 function LinkRow({
   title,
@@ -119,163 +117,6 @@ export function TasksByStatus(props: WidgetViewProps): React.JSX.Element {
   )
 }
 
-export function PipelineOpen(props: WidgetViewProps): React.JSX.Element {
-  const m = props.result?.openPipeline
-  return (
-    <WidgetFrame
-      title={`Pipeline abierto${scopeName(props.result)}`}
-      state={stateOf(props, !!m)}
-      error={props.error}
-      toolbar={props.toolbar}
-      onOpen={() => undefined}
-      summary={m && `${usd(m.valueUsd, false)} en ${m.count} prospectos abiertos.`}
-    >
-      {m && (
-        <StatValue
-          value={usd(m.valueUsd)}
-          caption={`${m.count} ${m.count === 1 ? 'prospecto abierto' : 'prospectos abiertos'}`}
-        />
-      )}
-    </WidgetFrame>
-  )
-}
-
-function Deals({
-  props,
-  kind,
-  m
-}: {
-  props: WidgetViewProps
-  kind: 'won' | 'lost'
-  m: DealsMetric | undefined
-}): React.JSX.Element {
-  const won = kind === 'won'
-  const noun = (n: number): string => `${n} ${n === 1 ? 'negocio' : 'negocios'}`
-  return (
-    <WidgetFrame
-      title={`${won ? 'Negocios ganados' : 'Negocios perdidos'}${scopeName(props.result)}`}
-      state={stateOf(props, !!m)}
-      error={props.error}
-      toolbar={props.toolbar}
-      onOpen={() => undefined}
-      footnote={
-        m?.estimated
-          ? 'Algunas fechas son aproximadas: se cerraron antes del registro de etapas.'
-          : undefined
-      }
-      summary={
-        m &&
-        `${noun(m.count)} por ${usd(m.valueUsd, false)}. En el periodo anterior, ${noun(m.countPrevious)} por ${usd(m.valueUsdPrevious, false)}.`
-      }
-      table={
-        m && {
-          columns: ['Empresa', 'Valor', 'Fecha'],
-          rows: m.rows.map((r) => [r.company, usd(r.valueUsd, false), shortDate(r.at)])
-        }
-      }
-    >
-      {m && (
-        <>
-          <StatValue
-            value={usd(m.valueUsd)}
-            caption={
-              <span className="flex flex-wrap items-center gap-x-2">
-                {noun(m.count)}
-                <Delta current={m.count} previous={m.countPrevious} inverse={!won} />
-              </span>
-            }
-          />
-          {m.rows.length > 0 && (
-            <ul className="mt-2">
-              {m.rows.slice(0, 3).map((r) => (
-                <LinkRow
-                  key={r.prospectId}
-                  title={r.company}
-                  meta={usd(r.valueUsd)}
-                  onClick={() => props.go({ name: 'clients' })}
-                />
-              ))}
-            </ul>
-          )}
-        </>
-      )}
-    </WidgetFrame>
-  )
-}
-
-export const DealsWon = (props: WidgetViewProps): React.JSX.Element => (
-  <Deals props={props} kind="won" m={props.result?.won} />
-)
-export const DealsLost = (props: WidgetViewProps): React.JSX.Element => (
-  <Deals props={props} kind="lost" m={props.result?.lost} />
-)
-
-export function ValueByStage(props: WidgetViewProps): React.JSX.Element {
-  const m = props.result?.valueByStage
-  const open = (): void => undefined
-  return (
-    <WidgetFrame
-      title={`Valor por etapa${m?.pipeline ? ` · ${m.pipeline.name}` : ' · todos'}`}
-      state={stateOf(props, !!m, !m?.stages.some((s) => s.count))}
-      error={props.error}
-      toolbar={props.toolbar}
-      emptyText="Sin prospectos en etapas abiertas."
-      onOpen={open}
-      summary={m?.stages.map((s) => `${s.name} ${usd(s.valueUsd, false)}`).join(', ')}
-      table={
-        m && {
-          columns: ['Etapa', 'Prospectos', 'Valor'],
-          rows: m.stages.map((s) => [s.name, String(s.count), usd(s.valueUsd, false)])
-        }
-      }
-    >
-      {m && (
-        <BarList
-          onSelect={open}
-          items={m.stages.map((s) => ({
-            id: s.id,
-            label: s.name,
-            value: s.valueUsd,
-            display: usd(s.valueUsd)
-          }))}
-        />
-      )}
-    </WidgetFrame>
-  )
-}
-
-export function WinRate(props: WidgetViewProps): React.JSX.Element {
-  const m = props.result?.winRate
-  return (
-    <WidgetFrame
-      title={`Tasa de cierre${scopeName(props.result)}`}
-      state={stateOf(props, !!m)}
-      error={props.error}
-      toolbar={props.toolbar}
-      onOpen={() => undefined}
-      summary={m && `${percent(m.rate)} con ${m.won} ganados y ${m.lost} perdidos.`}
-    >
-      {m && (
-        <StatValue
-          value={percent(m.rate)}
-          caption={
-            <span className="flex flex-wrap items-center gap-x-2">
-              {m.won} ganados, {m.lost} perdidos
-              {m.rate !== null && m.ratePrevious !== null && (
-                <Delta
-                  current={Math.round(m.rate * 100)}
-                  previous={Math.round(m.ratePrevious * 100)}
-                  format={(n) => `${n} pts`}
-                />
-              )}
-            </span>
-          }
-        />
-      )}
-    </WidgetFrame>
-  )
-}
-
 export function Overdue(props: WidgetViewProps): React.JSX.Element {
   const m = props.result?.overdue
   const today = props.result?.today
@@ -289,47 +130,25 @@ export function Overdue(props: WidgetViewProps): React.JSX.Element {
   return (
     <WidgetFrame
       title="Atrasadas"
-      state={stateOf(props, !!m, !m?.tasks.length && !m?.steps.length)}
+      state={stateOf(props, !!m, !m?.tasks.length)}
       error={props.error}
       toolbar={props.toolbar}
       emptyText="Nada atrasado."
       onOpen={() => openTasks(props.go, 'overdue')}
-      summary={
-        m && `${m.tasks.length} tareas atrasadas y ${m.steps.length} próximos pasos vencidos.`
-      }
+      summary={m && `${m.tasks.length} tareas atrasadas.`}
     >
-      {m && (
-        <div className="flex flex-col gap-3">
-          {m.tasks.length > 0 && (
-            <ul>
-              {m.tasks.map((t) => (
-                <LinkRow
-                  key={t.id}
-                  title={t.title}
-                  meta={ago(t.date)}
-                  late
-                  onClick={() => openTasks(props.go, 'overdue')}
-                />
-              ))}
-            </ul>
-          )}
-          {m.steps.length > 0 && (
-            <div>
-              <p className="mb-1 px-1 text-[11px] font-medium text-ob-faint">Próximos pasos</p>
-              <ul>
-                {m.steps.map((s) => (
-                  <LinkRow
-                    key={s.prospectId}
-                    title={s.nextStep ? `${s.company}, ${s.nextStep}` : s.company}
-                    meta={ago(s.date)}
-                    late
-                    onClick={() => props.go({ name: 'clients' })}
-                  />
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+      {m && m.tasks.length > 0 && (
+        <ul>
+          {m.tasks.map((t) => (
+            <LinkRow
+              key={t.id}
+              title={t.title}
+              meta={ago(t.date)}
+              late
+              onClick={() => openTasks(props.go, 'overdue')}
+            />
+          ))}
+        </ul>
       )}
     </WidgetFrame>
   )
@@ -403,40 +222,4 @@ export function ActionItems(props: WidgetViewProps): React.JSX.Element {
   )
 }
 
-export function Contacts(props: WidgetViewProps): React.JSX.Element {
-  const m = props.result?.contacts
-  return (
-    <WidgetFrame
-      title="Contactos nuevos"
-      state={stateOf(props, !!m)}
-      error={props.error}
-      toolbar={props.toolbar}
-      onOpen={() => props.go({ name: 'clients' })}
-      summary={
-        m &&
-        `${m.created} contactos nuevos, ${m.createdPrevious} en el periodo anterior. ${m.subscribed} suscritos.`
-      }
-      table={
-        m && {
-          columns: ['Desde', 'Nuevos'],
-          rows: m.trend.map((p) => [shortDate(p.from), String(p.value)])
-        }
-      }
-    >
-      {m && (
-        <>
-          <div className="grid grid-cols-2 gap-3">
-            <StatValue
-              value={String(m.created)}
-              caption={<Delta current={m.created} previous={m.createdPrevious} />}
-            />
-            <StatValue value={String(m.subscribed)} caption="Suscritos ahora" />
-          </div>
-          <div className="mt-3">
-            <Sparkline values={m.trend.map((p) => p.value)} />
-          </div>
-        </>
-      )}
-    </WidgetFrame>
-  )
-}
+

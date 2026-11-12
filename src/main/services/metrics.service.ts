@@ -90,8 +90,7 @@ export function overdue(tasks: TaskType[], today: DayKey): OverdueMetric {
       .filter((t) => t.status !== 'done' && t.date < today)
       .sort((a, b) => a.date.localeCompare(b.date) || a.position - b.position)
       .slice(0, LIST_LIMIT)
-      .map((t) => ({ id: t.id, title: t.title, date: t.date })),
-    steps: []
+      .map((t) => ({ id: t.id, title: t.title, date: t.date }))
   }
 }
 
@@ -155,8 +154,7 @@ export class MetricsService {
     const result: MetricsResult = {
       today,
       range,
-      previous,
-      pipeline: null
+      previous
     }
     if (kinds.has('tasks')) result.tasks = taskCounts(tasks, range, previous)
     if (kinds.has('tasksByStatus')) result.tasksByStatus = tasksByStatus(tasks, range)

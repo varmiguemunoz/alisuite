@@ -111,6 +111,5 @@ function parseSettings(input: unknown): WidgetSettings {
     out.from = raw.from
     out.to = raw.to
   }
-  if (typeof raw.pipeline === 'string' && raw.pipeline) out.pipeline = raw.pipeline.slice(0, 64)
   return out
 }

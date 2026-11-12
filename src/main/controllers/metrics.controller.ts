@@ -17,7 +17,6 @@ export class MetricsController {
         period: (text(q.period) ?? 'week') as MetricPeriod,
         from: text(q.from),
         to: text(q.to),
-        pipeline: text(q.pipeline),
         assignee: text(q.assignee),
         kinds: text(q.kinds)?.split(',').filter(Boolean) as MetricKind[] | undefined
       })

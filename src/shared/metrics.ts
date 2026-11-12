@@ -74,7 +74,6 @@ export interface MetricsQuery {
   from?: DayKey
   to?: DayKey
 
-  pipeline?: string | null
   assignee?: string | null
 
   kinds?: MetricKind[]
@@ -95,64 +94,14 @@ export interface TaskCountsMetric {
 
 export type TasksByStatusMetric = Record<TaskStatus, number>
 
-export interface DealRow {
-  prospectId: string
-  company: string
-  valueUsd: number
-  at: string
-  pipelineId: string | null
-}
-
-export interface DealsMetric {
-  count: number
-  valueUsd: number
-  countPrevious: number
-  valueUsdPrevious: number
-  rows: DealRow[]
-
-  estimated: boolean
-}
-
-export interface OpenPipelineMetric {
-  count: number
-  valueUsd: number
-}
-
-export interface StageValue {
-  id: string
-  name: string
-  count: number
-  valueUsd: number
-}
-
-export interface ValueByStageMetric {
-  pipeline: { id: string; name: string } | null
-  stages: StageValue[]
-}
-
-export interface WinRateMetric {
-  rate: number | null
-  ratePrevious: number | null
-  won: number
-  lost: number
-}
-
 export interface OverdueTaskRow {
   id: string
   title: string
   date: DayKey
 }
 
-export interface OverdueStepRow {
-  prospectId: string
-  company: string
-  nextStep: string | null
-  date: DayKey
-}
-
 export interface OverdueMetric {
   tasks: OverdueTaskRow[]
-  steps: OverdueStepRow[]
 }
 
 export interface MeetingsMetric {
@@ -171,33 +120,18 @@ export interface ActionItemsMetric {
   }[]
 }
 
-export interface ContactsMetric {
-  created: number
-  createdPrevious: number
-
-  subscribed: number
-  trend: TrendPoint[]
-}
-
 export interface MetricValues {
   tasks: TaskCountsMetric
   tasksByStatus: TasksByStatusMetric
-  openPipeline: OpenPipelineMetric
-  won: DealsMetric
-  lost: DealsMetric
-  valueByStage: ValueByStageMetric
-  winRate: WinRateMetric
   overdue: OverdueMetric
   meetings: MeetingsMetric
   actionItems: ActionItemsMetric
-  contacts: ContactsMetric
 }
 
 export interface MetricsResult extends Partial<MetricValues> {
   today: DayKey
   range: DayRange
   previous: DayRange
-  pipeline: { id: string; name: string } | null
 }
 
 // ---- Dashboard ----
@@ -220,7 +154,6 @@ export interface WidgetSettings {
   period?: MetricPeriod
   from?: DayKey
   to?: DayKey
-  pipeline?: string
 }
 
 export interface WidgetPlacement {
