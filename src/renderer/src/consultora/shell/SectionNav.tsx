@@ -1,4 +1,4 @@
-import { EMAIL_SECTIONS, SECTIONS, type Section, type SectionLink } from '../sections'
+import { SECTIONS, type Section, type SectionLink } from '../sections'
 import { useAutomationAlerts } from '../hooks/useAutomationAlerts'
 
 export function SectionNav({
@@ -41,8 +41,6 @@ export function SectionNav({
     <nav aria-label="Secciones" className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2">
       <p className="px-2.5 pt-1 pb-1.5 text-[12px] font-semibold text-ob-faint">Consultora</p>
       {SECTIONS.map(row)}
-      <p className="px-2.5 pt-4 pb-1.5 text-[12px] font-semibold text-ob-faint">Email</p>
-      {EMAIL_SECTIONS.map(row)}
     </nav>
   )
 }

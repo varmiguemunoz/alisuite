@@ -7,7 +7,6 @@ import {
   FolderKanban,
   Languages,
   Sparkles,
-  SquareKanban,
   Users,
   X
 } from 'lucide-react'
@@ -26,7 +25,7 @@ import {
   Section,
   Select
 } from '../ui'
-import { ContactChips } from '../MeetingSheet'
+
 import { useGoneRedirect, useScreenTitle } from '../chrome'
 import { Properties, PropertyRow } from '../molecules/Properties'
 import { Authorship } from '../organisms/orgs/Authorship'
@@ -148,17 +147,6 @@ export function Meeting({ id, back }: { id: string; back: () => void }): React.J
             onChange={(project) => void save({ project })}
           />
         </PropertyRow>
-        <PropertyRow icon={SquareKanban} label="Prospecto">
-          <Select
-            label="Prospecto"
-            value={m.prospectId ?? ''}
-            options={[
-              { value: '', label: 'Sin prospecto' },
-              ...(refs?.prospects ?? []).map((p) => ({ value: p.id, label: p.company }))
-            ]}
-            onChange={(prospect) => void save({ prospect })}
-          />
-        </PropertyRow>
         <PropertyRow icon={Users} label="Participantes">
           <span className="block text-[14px]">
             <EditableText
@@ -176,14 +164,7 @@ export function Meeting({ id, back }: { id: string; back: () => void }): React.J
             />
           </span>
         </PropertyRow>
-        <div className="pl-[min(160px,30%)]">
-          <ContactChips
-            clientId={m.clientId}
-            prospectId={m.prospectId}
-            current={m.participants}
-            onAdd={(name) => void save({ participants: [...m.participants, name] })}
-          />
-        </div>
+
         {m.recordingPath && (
           <PropertyRow icon={Languages} label="Idioma">
             <span className="flex items-center gap-2">

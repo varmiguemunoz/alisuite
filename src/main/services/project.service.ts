@@ -10,7 +10,6 @@ import {
 import { ClientModel } from '../models/client.model'
 import { ProjectModel } from '../models/project.model'
 import { MeetingModel } from '../models/meeting.model'
-import { ContactModel } from '../models/contact.model'
 import { transactionGuard } from '../guards/transaction.guard'
 import { findByRef } from './ref'
 import { markdown, now, oneOf, optionalUserId, requiredText } from './fields'
@@ -76,9 +75,6 @@ export class ProjectService {
       )
       await manager
         .getRepository(MeetingModel)
-        .update({ projectId: project.id }, { projectId: null })
-      await manager
-        .getRepository(ContactModel)
         .update({ projectId: project.id }, { projectId: null })
       await unlinkTasks(manager, 'project', project.id)
       await manager.getRepository(ProjectModel).softDelete({ id: project.id })

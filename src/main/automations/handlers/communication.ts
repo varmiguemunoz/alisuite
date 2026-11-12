@@ -1,5 +1,4 @@
 import { markdownToHtml } from '@shared/automations'
-import { withUnsubscribeFooter } from '@shared/marketing'
 import type { DayKey, Effort } from '@shared/tasks'
 import { insertTaskWithRoom } from '../../services/task.service'
 import { NotConfigured, type Handlers, type NodeContext } from '../ports'
@@ -27,7 +26,7 @@ export function communicationHandlers(notes: NoteWriter): Handlers {
         if (!contact.email) throw new Skip('El contacto no tiene email.')
         if (contact.status !== 'subscribed') throw new Skip('El contacto no está suscrito.')
         const subject = ctx.render(param(ctx, 'subject')).trim()
-        const html = withUnsubscribeFooter(markdownToHtml(ctx.render(param(ctx, 'body'))))
+        const html = markdownToHtml(ctx.render(param(ctx, 'body')))
         if (ctx.dryRun) return done({ to: contact.email, subject })
         await emailPort(ctx).send({
           to: contact.email,
@@ -65,15 +64,13 @@ export function communicationHandlers(notes: NoteWriter): Handlers {
       run: guarded(async (ctx) => {
         const effort = param(ctx, 'effort') as Effort
         const tags = Array.isArray(ctx.node.params.tags) ? (ctx.node.params.tags as string[]) : []
-        const prospect = ctx.scope.prospect as { id?: string } | undefined
         const task = await insertTaskWithRoom(manager(ctx), {
           title: ctx.render(param(ctx, 'title')).trim(),
           date: today(ctx, Math.max(0, Math.floor(numberParam(ctx, 'inDays') ?? 0))) as DayKey,
           description: ctx.render(param(ctx, 'description')).trim() || null,
           tags,
           effort: EFFORTS.includes(effort) ? effort : null,
-          clientId: clientIdOf(ctx),
-          prospectId: prospect?.id ?? null
+          clientId: clientIdOf(ctx)
         })
         return done({ taskId: task.id, date: task.date })
       })

@@ -51,7 +51,7 @@ import {
   type VersionBrief
 } from '@shared/automations'
 import { normalizeName } from '@shared/consultora'
-import { contactLabel } from '@shared/marketing'
+
 import { transactionGuard } from '../guards/transaction.guard'
 import {
   AutomationModel,
@@ -62,12 +62,8 @@ import {
   type AutomationRow
 } from '../models/automation.model'
 import { ClientModel } from '../models/client.model'
-import { ContactModel } from '../models/contact.model'
 import { MeetingModel } from '../models/meeting.model'
-import { PipelineModel } from '../models/pipeline.model'
 import { ProjectModel } from '../models/project.model'
-import { ProspectModel } from '../models/prospect.model'
-import { StageModel } from '../models/stage.model'
 import { TaskModel } from '../models/task.model'
 import { TagModel } from '../models/marketing.model'
 import { AppError } from '../services/app.error'
@@ -127,8 +123,6 @@ export class AutomationService implements AutomationsApi {
     const ids = async (model: EntityTarget<ObjectLiteral>): Promise<Set<string>> =>
       new Set(((await manager.getRepository(model).find()) as { id: string }[]).map((r) => r.id))
     return {
-      pipeline: await ids(PipelineModel),
-      stage: await ids(StageModel),
       client: await ids(ClientModel),
       project: await ids(ProjectModel)
     }
@@ -144,8 +138,6 @@ export class AutomationService implements AutomationsApi {
     }
     const tables = {
       tag: await map(TagModel, 'slug'),
-      pipeline: await map(PipelineModel),
-      stage: await map(StageModel),
       client: await map(ClientModel),
       project: await map(ProjectModel)
     }
@@ -408,18 +400,6 @@ export class AutomationService implements AutomationsApi {
         runs.filter((r) => r.subjectType === type && r.subjectId).map((r) => r.subjectId as string)
       )
     ]
-    const contacts = group('contact')
-    if (contacts.length)
-      for (const c of await this.db
-        .getRepository(ContactModel)
-        .find({ where: { id: In(contacts) }, withDeleted: true }))
-        out.set(c.id, contactLabel(c))
-    const prospects = group('prospect')
-    if (prospects.length)
-      for (const p of await this.db
-        .getRepository(ProspectModel)
-        .find({ where: { id: In(prospects) }, withDeleted: true }))
-        out.set(p.id, p.company)
     const clients = group('client')
     if (clients.length)
       for (const c of await this.db
@@ -760,14 +740,10 @@ export class AutomationService implements AutomationsApi {
     const byName = <T extends { name: string }>(rows: T[]): T[] =>
       [...rows].sort((a, b) => a.name.localeCompare(b.name, 'es'))
     const tags = await m.getRepository(TagModel).find()
-    const pipelines = await m.getRepository(PipelineModel).find()
-    const stages = await m.getRepository(StageModel).find({ order: { position: 'ASC' } })
     const clients = await m.getRepository(ClientModel).find()
     const projects = await m.getRepository(ProjectModel).find()
     return {
       tags: byName(tags.map((t) => ({ id: t.slug, name: t.name }))),
-      pipelines: byName(pipelines.map((p) => ({ id: p.id, name: p.name }))),
-      stages: stages.map((s) => ({ id: s.id, name: s.name, pipelineId: s.pipelineId })),
       clients: byName(clients.map((c) => ({ id: c.id, name: c.name }))),
       projects: byName(projects.map((p) => ({ id: p.id, name: p.name, clientId: p.clientId })))
     }
@@ -777,43 +753,27 @@ export class AutomationService implements AutomationsApi {
     const q = normalizeName(typeof query === 'string' ? query : '')
     const m = this.db.manager
     const rows: SubjectOption[] =
-      type === 'contact'
-        ? (
-            await m.getRepository(ContactModel).find({ order: { updatedAt: 'DESC' }, take: 2000 })
-          ).map((c) => ({
+      type === 'client'
+        ? (await m.getRepository(ClientModel).find()).map((c) => ({
             id: c.id,
-            label: contactLabel(c),
-            hint: c.email
+            label: c.name,
+            hint: null
           }))
-        : type === 'prospect'
-          ? (await m.getRepository(ProspectModel).find({ order: { updatedAt: 'DESC' } })).map(
-              (p) => ({
-                id: p.id,
-                label: p.company,
-                hint: null
+        : type === 'task'
+          ? (await m.getRepository(TaskModel).find({ order: { date: 'DESC' }, take: 2000 })).map(
+              (t) => ({
+                id: t.id,
+                label: t.title,
+                hint: t.date
               })
             )
-          : type === 'client'
-            ? (await m.getRepository(ClientModel).find()).map((c) => ({
-                id: c.id,
-                label: c.name,
-                hint: null
-              }))
-            : type === 'task'
-              ? (
-                  await m.getRepository(TaskModel).find({ order: { date: 'DESC' }, take: 2000 })
-                ).map((t) => ({
-                  id: t.id,
-                  label: t.title,
-                  hint: t.date
-                }))
-              : type === 'meeting'
-                ? (
-                    await m
-                      .getRepository(MeetingModel)
-                      .find({ order: { createdAt: 'DESC' }, take: 2000 })
-                  ).map((x) => ({ id: x.id, label: x.title, hint: null }))
-                : []
+          : type === 'meeting'
+            ? (
+                await m
+                  .getRepository(MeetingModel)
+                  .find({ order: { createdAt: 'DESC' }, take: 2000 })
+              ).map((x) => ({ id: x.id, label: x.title, hint: null }))
+            : []
     return rows
       .filter((r) => !q || normalizeName(`${r.label} ${r.hint ?? ''}`).includes(q))
       .slice(0, 20)

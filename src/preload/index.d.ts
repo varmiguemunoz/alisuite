@@ -1,7 +1,7 @@
 import type { TasksApi } from '../shared/tasks'
 import type { Note, NotesApi, VoiceResult } from '../shared/notes'
 import type { ConsultoraApi, Meeting, StopInfo } from '../shared/consultora'
-import type { MarketingApi } from '../shared/marketing'
+
 import type { AutomationsBridge } from '../shared/automations/api'
 import type { WorkspaceApi } from '../shared/workspace'
 import type { UiStateApi } from '../shared/ui-state'
@@ -35,7 +35,6 @@ declare global {
       notes: NotesApi
       workspace: WorkspaceApi
       consultora: ConsultoraApi
-      marketing: MarketingApi
       automations: AutomationsBridge
       recording: {
         start: () => Promise<Meeting>

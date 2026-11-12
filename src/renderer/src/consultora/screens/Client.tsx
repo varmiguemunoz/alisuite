@@ -29,7 +29,7 @@ import {
   Section,
   Select
 } from '../ui'
-import { ContactsSection } from '../ContactsSection'
+
 import { TasksSection } from '../organisms/tasks/TasksSection'
 import { useGoneRedirect, useScreenTitle } from '../chrome'
 import { InlineField } from '../molecules/InlineField'
@@ -276,8 +276,6 @@ export function Client({
       </Section>
 
       <TasksSection kind="client" id={c.id} />
-
-      <ContactsSection contacts={c.contacts} client={c.id} go={go} />
 
       <Section
         title="Notas"

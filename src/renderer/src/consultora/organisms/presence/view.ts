@@ -4,9 +4,7 @@ import type { Screen } from '../../lib'
 const ENTITY: Partial<Record<Screen['name'], string>> = {
   client: 'clients',
   project: 'projects',
-  meeting: 'meetings',
-  prospect: 'prospects',
-  contact: 'contacts'
+  meeting: 'meetings'
 }
 
 export function viewOf(screen: Screen, workspacePath: string | null): PresenceView | null {

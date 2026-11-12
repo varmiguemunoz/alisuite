@@ -6,19 +6,19 @@ Aceptada con verificaciones pendientes. Basada en la referencia pública de docs
 
 ## Confirmado en la documentación
 
-| Uso | Endpoint |
-| --- | --- |
-| Autenticación | cabecera `x-api-key` |
-| Crear contacto | `POST /api/v1/contacts` con `email`, `first_name`, `last_name`, `label_names`, `run_dedupe`. 0 créditos |
-| Buscar contactos | `POST /api/v1/contacts/search` con `q_keywords`. 0 créditos |
-| Buscar secuencias | `POST /api/v1/emailer_campaigns/search`. Devuelve `emailer_campaigns` con `id`, `name`, `active`, `archived`, `created_at`, `num_steps` |
-| Crear secuencia | `POST /api/v1/sequences` con `name`, `active`, `emailer_schedule_id` obligatorio y `emailer_steps` |
-| Editar o pausar | `PUT /api/v1/sequences/{id}` con `name`, `active` y `emailer_steps` como diff declarativo |
-| Desactivar | `POST /api/v1/emailer_campaigns/{id}/abort` |
-| Inscribir | `POST /api/v1/emailer_campaigns/{id}/add_contact_ids` con `emailer_campaign_id`, `contact_ids[]`, `send_email_from_email_account_id`, `status`. Clave maestra. 0 créditos |
-| Sacar o parar | `POST /api/v1/emailer_campaigns/remove_or_stop_contact_ids` con `mode` |
-| Buzones | `GET /api/v1/email_accounts` |
-| Mensajes | `GET /api/v1/emailer_messages/search` con filtros de fecha y clase de respuesta. Devuelve `to_email`, `status`, `replied`, `reply_class`, `completed_at` |
+| Uso               | Endpoint                                                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Autenticación     | cabecera `x-api-key`                                                                                                                                                      |
+| Crear contacto    | `POST /api/v1/contacts` con `email`, `first_name`, `last_name`, `label_names`, `run_dedupe`. 0 créditos                                                                   |
+| Buscar contactos  | `POST /api/v1/contacts/search` con `q_keywords`. 0 créditos                                                                                                               |
+| Buscar secuencias | `POST /api/v1/emailer_campaigns/search`. Devuelve `emailer_campaigns` con `id`, `name`, `active`, `archived`, `created_at`, `num_steps`                                   |
+| Crear secuencia   | `POST /api/v1/sequences` con `name`, `active`, `emailer_schedule_id` obligatorio y `emailer_steps`                                                                        |
+| Editar o pausar   | `PUT /api/v1/sequences/{id}` con `name`, `active` y `emailer_steps` como diff declarativo                                                                                 |
+| Desactivar        | `POST /api/v1/emailer_campaigns/{id}/abort`                                                                                                                               |
+| Inscribir         | `POST /api/v1/emailer_campaigns/{id}/add_contact_ids` con `emailer_campaign_id`, `contact_ids[]`, `send_email_from_email_account_id`, `status`. Clave maestra. 0 créditos |
+| Sacar o parar     | `POST /api/v1/emailer_campaigns/remove_or_stop_contact_ids` con `mode`                                                                                                    |
+| Buzones           | `GET /api/v1/email_accounts`                                                                                                                                              |
+| Mensajes          | `GET /api/v1/emailer_messages/search` con filtros de fecha y clase de respuesta. Devuelve `to_email`, `status`, `replied`, `reply_class`, `completed_at`                  |
 
 ## Por verificar con la clave real
 

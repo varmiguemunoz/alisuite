@@ -2,26 +2,26 @@
 
 ## Hallazgos de la revisión del código
 
-| área | archivo | problema en Windows o con el nombre nuevo |
-|---|---|---|
-| empaquetado | `electron-builder.yml` | sin sección `win`; `appId` genérico `com.electron.app`; `productName: daily-os` |
-| datos | `main/index.ts` | `app.getPath('userData')` cambiaría a `Alisuite` al renombrar y la app arrancaría vacía |
-| MCP | `mcp/client.ts` | ruta fija `~/Library/Application Support/daily-os/connection.json` |
-| permisos | `permissions.ts`, `voice/shortcut.ts`, `voice/voice.ts` | `isTrustedAccessibilityClient` y `askForMediaAccess` solo existen en macOS |
-| protocolo | `main/index.ts` | `open-url` solo existe en macOS; en Windows la URL llega en `second-instance` |
-| ventana | `consultora-window.ts` | `titleBarStyle: 'hiddenInset'` en Windows deja la ventana sin botones |
-| cabecera | `consultora/shell/AppShell.tsx` | `pl-[80px]` reserva el hueco de los semáforos de macOS |
-| bandeja | `window.ts` | `placeUnder` coloca la ventana debajo del icono; en Windows el icono está abajo |
-| bandeja | `window.ts` | icono plantilla de macOS; en Windows necesita color |
-| menú | sin `Menu.setApplicationMenu` para Windows | Electron muestra Archivo, Editar, Ver |
-| atajos | `config.ts` | `Alt+Space` choca con Windows |
-| textos | 16 archivos del renderer | ⌘ y ⌥ fijos |
-| notificaciones | `main/index.ts` | falta `app.setAppUserModelId` |
-| carpeta por defecto | `config.ts` | `~/Desktop/alimunozadvisory` no es el Escritorio con OneDrive |
-| Workspace | `services/vault.ts`, `syncNow` | detecta renombres por inode; en NTFS el número supera 2^53 sin `bigint` |
-| rutas | `documents.ts` | `relative()` devuelve `\` al renderer |
-| binarios | `ffmpeg-static`, `better-sqlite3`, `uiohook-napi` | se instalan para la plataforma donde corre `npm install`; por eso se construye en Windows |
-| instalación | `scripts/install.sh` | solo macOS: launchd y configuración de Claude |
+| área                | archivo                                                 | problema en Windows o con el nombre nuevo                                                 |
+| ------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| empaquetado         | `electron-builder.yml`                                  | sin sección `win`; `appId` genérico `com.electron.app`; `productName: daily-os`           |
+| datos               | `main/index.ts`                                         | `app.getPath('userData')` cambiaría a `Alisuite` al renombrar y la app arrancaría vacía   |
+| MCP                 | `mcp/client.ts`                                         | ruta fija `~/Library/Application Support/daily-os/connection.json`                        |
+| permisos            | `permissions.ts`, `voice/shortcut.ts`, `voice/voice.ts` | `isTrustedAccessibilityClient` y `askForMediaAccess` solo existen en macOS                |
+| protocolo           | `main/index.ts`                                         | `open-url` solo existe en macOS; en Windows la URL llega en `second-instance`             |
+| ventana             | `consultora-window.ts`                                  | `titleBarStyle: 'hiddenInset'` en Windows deja la ventana sin botones                     |
+| cabecera            | `consultora/shell/AppShell.tsx`                         | `pl-[80px]` reserva el hueco de los semáforos de macOS                                    |
+| bandeja             | `window.ts`                                             | `placeUnder` coloca la ventana debajo del icono; en Windows el icono está abajo           |
+| bandeja             | `window.ts`                                             | icono plantilla de macOS; en Windows necesita color                                       |
+| menú                | sin `Menu.setApplicationMenu` para Windows              | Electron muestra Archivo, Editar, Ver                                                     |
+| atajos              | `config.ts`                                             | `Alt+Space` choca con Windows                                                             |
+| textos              | 16 archivos del renderer                                | ⌘ y ⌥ fijos                                                                               |
+| notificaciones      | `main/index.ts`                                         | falta `app.setAppUserModelId`                                                             |
+| carpeta por defecto | `config.ts`                                             | `~/Desktop/alimunozadvisory` no es el Escritorio con OneDrive                             |
+| Workspace           | `services/vault.ts`, `syncNow`                          | detecta renombres por inode; en NTFS el número supera 2^53 sin `bigint`                   |
+| rutas               | `documents.ts`                                          | `relative()` devuelve `\` al renderer                                                     |
+| binarios            | `ffmpeg-static`, `better-sqlite3`, `uiohook-napi`       | se instalan para la plataforma donde corre `npm install`; por eso se construye en Windows |
+| instalación         | `scripts/install.sh`                                    | solo macOS: launchd y configuración de Claude                                             |
 
 ## Cambios
 
@@ -29,7 +29,7 @@
 
 - `electron-builder.yml`: `appId: com.alimunozadvisory.alisuite`, `productName: Alisuite`.
 - `main/index.ts`, antes de `ready`: `app.setPath('userData', join(app.getPath('appData'),
-  DATA_DIR))` con `DATA_DIR = 'daily-os'` en `shared`. Lo usa también `mcp/client.ts`.
+DATA_DIR))` con `DATA_DIR = 'daily-os'` en `shared`. Lo usa también `mcp/client.ts`.
 - `app.setAppUserModelId('com.alimunozadvisory.alisuite')` en Windows.
 - Textos DayliOS visibles pasan a Alisuite: títulos de ventana, bandeja, menú, notificaciones,
   Ajustes. Los nombres internos, el esquema `daylios://` y las claves guardadas no cambian.
@@ -131,20 +131,20 @@ pruebas en cada push en las dos plataformas.
 
 ## Pruebas
 
-| tipo | qué |
-|---|---|
+| tipo   | qué                                                                                           |
+| ------ | --------------------------------------------------------------------------------------------- |
 | unidad | `modLabel`, `handleProtocolUrl` con argv de Windows, ruta de `connection.json` por plataforma |
-| unidad | `claude-config.ts` conserva otras entradas y es idempotente |
-| unidad | colocación de la ventana compacta con bandeja arriba y abajo |
-| CI | toda la suite en Windows: detecta rutas con `\`, inodes y nombres |
-| manual | checklist en Windows real |
+| unidad | `claude-config.ts` conserva otras entradas y es idempotente                                   |
+| unidad | colocación de la ventana compacta con bandeja arriba y abajo                                  |
+| CI     | toda la suite en Windows: detecta rutas con `\`, inodes y nombres                             |
+| manual | checklist en Windows real                                                                     |
 
 ## Riesgos
 
-| riesgo | mitigación |
-|---|---|
-| perder datos al renombrar | `userData` fijo en `daily-os` antes de `ready` |
-| SmartScreen en Windows | documentar Más información, Ejecutar de todas formas; certificado más adelante |
-| Gatekeeper en macOS sin firma | P1; mientras, instrucciones de clic derecho, Abrir |
-| suite de pruebas falla en Windows la primera vez | es el objetivo de correrla en CI; se corrige antes de publicar |
-| módulos nativos | se compilan en cada sistema dentro de CI, nunca en cruzado |
+| riesgo                                           | mitigación                                                                     |
+| ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| perder datos al renombrar                        | `userData` fijo en `daily-os` antes de `ready`                                 |
+| SmartScreen en Windows                           | documentar Más información, Ejecutar de todas formas; certificado más adelante |
+| Gatekeeper en macOS sin firma                    | P1; mientras, instrucciones de clic derecho, Abrir                             |
+| suite de pruebas falla en Windows la primera vez | es el objetivo de correrla en CI; se corrige antes de publicar                 |
+| módulos nativos                                  | se compilan en cada sistema dentro de CI, nunca en cruzado                     |

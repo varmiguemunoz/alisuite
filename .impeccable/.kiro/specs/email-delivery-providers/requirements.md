@@ -7,18 +7,18 @@ a sus prospectos y poder cambiar o sumar proveedores de entrega sin tocar la arq
 
 Inventario del código actual:
 
-| Pieza | Archivo | Qué hace con Resend |
-| --- | --- | --- |
-| Gateway | `src/shared/resend-gateway.ts` | Interfaz de 17 métodos y su implementación con el SDK `resend` |
-| Caché de gateway | `src/main/services/resend.provider.ts` | Una instancia por clave |
-| Sincronización | `src/main/services/marketing-sync.ts` | Contactos, segments y eventos desde la cola `resend_outbox` |
-| Secuencias | `src/main/services/sequence.service.ts` | Automations y templates de Resend |
-| Newsletter | `src/main/services/newsletter.service.ts` | Segments, copia de prueba y broadcast |
-| Automatizaciones | `src/main/automations/adapters.ts` | Puerto `EmailPort` con errores de Resend |
-| Hub | `workers/leads-hub/src/hub.ts` e `index.ts` | Gateway, webhook firmado svix y estados |
-| Servicio cloud | `services/cloud/src/adapters/mail/resend-mailer.ts` | Invitaciones por `fetch`, plantilla incluida |
-| Ajustes | `src/main/config.ts`, `SettingsEmail.tsx` | `resendApiKey`, remitente, responder a |
-| Pruebas | `src/main/test/fake-resend.ts` | Fake usado por cuatro suites |
+| Pieza            | Archivo                                             | Qué hace con Resend                                            |
+| ---------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| Gateway          | `src/shared/resend-gateway.ts`                      | Interfaz de 17 métodos y su implementación con el SDK `resend` |
+| Caché de gateway | `src/main/services/resend.provider.ts`              | Una instancia por clave                                        |
+| Sincronización   | `src/main/services/marketing-sync.ts`               | Contactos, segments y eventos desde la cola `resend_outbox`    |
+| Secuencias       | `src/main/services/sequence.service.ts`             | Automations y templates de Resend                              |
+| Newsletter       | `src/main/services/newsletter.service.ts`           | Segments, copia de prueba y broadcast                          |
+| Automatizaciones | `src/main/automations/adapters.ts`                  | Puerto `EmailPort` con errores de Resend                       |
+| Hub              | `workers/leads-hub/src/hub.ts` e `index.ts`         | Gateway, webhook firmado svix y estados                        |
+| Servicio cloud   | `services/cloud/src/adapters/mail/resend-mailer.ts` | Invitaciones por `fetch`, plantilla incluida                   |
+| Ajustes          | `src/main/config.ts`, `SettingsEmail.tsx`           | `resendApiKey`, remitente, responder a                         |
+| Pruebas          | `src/main/test/fake-resend.ts`                      | Fake usado por cuatro suites                                   |
 
 Decisiones tomadas con el dueño:
 

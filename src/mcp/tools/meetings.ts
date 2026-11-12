@@ -148,8 +148,7 @@ export function register(server: McpServer): void {
         title: z.string().optional(),
         participants: z.array(z.string()).optional(),
         clientId: z.string().optional(),
-        projectId: z.string().optional(),
-        prospectId: z.string().optional()
+        projectId: z.string().optional()
       }
     },
     (args) => tool(() => api('POST', '/consultora/meetings/import', args))

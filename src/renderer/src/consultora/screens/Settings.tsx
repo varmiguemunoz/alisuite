@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { Cog, FolderOpen, Keyboard, Mail, Mic, UsersRound, Waypoints } from 'lucide-react'
+import { Cog, FolderOpen, Keyboard, Mic, UsersRound } from 'lucide-react'
 import type { SettingsInput } from '@shared/consultora'
 import { api, attempt, openPath, useLoad } from '../lib'
 import { Button, ErrorNote, Field, Section, Select } from '../ui'
@@ -7,18 +7,14 @@ import { prefs } from '../workspace/lib'
 import { useScrollMemory } from '../../lib/ui-state'
 import { SettingRow, Toggle } from '../molecules/SettingRow'
 import { AppSettings } from '../organisms/AppSettings'
-import { EmailSettings } from './SettingsEmail'
-import { HubSettings } from './SettingsHub'
 import { AccountSettings } from './SettingsAccount'
 import { fileManager, isMac, isWindows, kbd } from '../../lib/platform'
 
-export type Category = 'general' | 'account' | 'email' | 'hub' | 'voice' | 'shortcuts'
+export type Category = 'general' | 'account' | 'voice' | 'shortcuts'
 
 const CATEGORIES: { id: Category; label: string; Icon: typeof Cog }[] = [
   { id: 'general', label: 'General', Icon: Cog },
   { id: 'account', label: 'Cuenta y equipo', Icon: UsersRound },
-  { id: 'email', label: 'Email', Icon: Mail },
-  { id: 'hub', label: 'Hub de leads', Icon: Waypoints },
   { id: 'voice', label: 'Nota de voz', Icon: Mic },
   { id: 'shortcuts', label: 'Atajos', Icon: Keyboard }
 ]
@@ -87,8 +83,7 @@ export function Settings(): React.JSX.Element {
             </>
           )}
           {tab === 'account' && <AccountSettings />}
-          {tab === 'email' && <EmailSettings />}
-          {tab === 'hub' && <HubSettings />}
+
           {tab === 'voice' && <Voice />}
           {tab === 'shortcuts' && <WorkspaceKey />}
         </div>

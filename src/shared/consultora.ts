@@ -1,11 +1,9 @@
 import type { DeliveryRole, RoleAssignment } from './email-delivery'
-import type { ContactEvent, ContactFields, ContactStatus, TagRef } from './marketing'
+
 import type { ClientNote } from './notes'
 
 export type ClientStatus = 'activo' | 'historico'
 export type ProjectStatus = 'activo' | 'pausa' | 'cerrado'
-export type StageKind = 'open' | 'won' | 'lost'
-
 export type Language = 'es' | 'en'
 export const LANGUAGES: Language[] = ['es', 'en']
 
@@ -13,8 +11,6 @@ export type MeetingStatus = 'recording' | 'transcribing' | 'summarizing' | 'read
 
 export const CLIENT_STATUSES: ClientStatus[] = ['activo', 'historico']
 export const PROJECT_STATUSES: ProjectStatus[] = ['activo', 'pausa', 'cerrado']
-export const STAGE_KINDS: StageKind[] = ['open', 'won', 'lost']
-
 export interface Client {
   id: string
   name: string
@@ -39,60 +35,6 @@ export interface Project {
 
   deliverablesMd: string
   notesMd: string
-  assigneeId: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Stage {
-  id: string
-  name: string
-  position: number
-  kind: StageKind
-
-  pipelineId: string
-}
-
-export interface PipelineRef {
-  id: string
-  name: string
-  position: number
-}
-
-export interface PipelineSummary extends PipelineRef {
-  stages: number
-  prospects: number
-  openValueUsd: number
-}
-
-export type StageInput = Partial<Stage> & { name: string; kind: StageKind }
-
-export interface PipelineInput {
-  id?: string
-  name: string
-
-  stages?: StageInput[]
-
-  moves?: { from: string; to: string }[]
-}
-
-export interface Prospect {
-  id: string
-  company: string
-  contactMd: string
-  valueUsd: number | null
-  source: string | null
-  stageId: string
-
-  position: number
-  notesMd: string
-  nextStep: string | null
-
-  nextStepDate: string | null
-
-  clientId: string | null
-
-  closedAt: string | null
   assigneeId: string | null
   createdAt: string
   updatedAt: string
@@ -131,76 +73,12 @@ export interface Meeting {
   updatedAt: string
 }
 
-export interface Contact {
-  id: string
-
-  name: string | null
-  role: string | null
-
-  email: string | null
-  phone: string | null
-  linkedin: string | null
-  notesMd: string
-  clientId: string | null
-
-  projectId: string | null
-  prospectId: string | null
-
-  status: ContactStatus
-
-  source: string | null
-  fields: ContactFields
-
-  consentAt: string | null
-  syncError: string | null
-  syncedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-// ---- Entradas (lo que se puede crear / cambiar) ----
-
 export type ClientInput = Partial<
   Pick<Client, 'name' | 'sector' | 'status' | 'contactsMd' | 'notesMd' | 'signedAt' | 'folderPath'>
 >
 export type ProjectInput = Partial<
   Pick<Project, 'name' | 'status' | 'objectiveMd' | 'deliverablesMd' | 'notesMd' | 'assigneeId'>
 > & { client?: string }
-export type ProspectInput = Partial<
-  Pick<
-    Prospect,
-    | 'company'
-    | 'contactMd'
-    | 'valueUsd'
-    | 'source'
-    | 'notesMd'
-    | 'nextStep'
-    | 'nextStepDate'
-    | 'assigneeId'
-  >
-> & {
-  stage?: string
-
-  pipeline?: string
-}
-export type ContactInput = Partial<
-  Pick<Contact, 'name' | 'role' | 'email' | 'phone' | 'linkedin' | 'notesMd' | 'fields'>
-> & {
-  client?: string
-
-  project?: string
-  prospect?: string
-}
-
-export interface ConvertInput {
-  pipeline?: string
-
-  stage?: string
-
-  company?: string
-  valueUsd?: number | null
-}
-
 export type MeetingInput = Partial<
   Pick<
     Meeting,
@@ -217,7 +95,6 @@ export type MeetingInput = Partial<
 > & {
   client?: string
   project?: string
-  prospect?: string
 }
 
 // ---- Respuestas compuestas ----
@@ -244,57 +121,9 @@ export interface DocFile {
   modifiedAt: string
 }
 
-export interface ContactBrief extends Contact {
-  organization: string | null
-  tags: TagRef[]
-}
-
-export interface ContactDetail extends ContactBrief {
-  project: { id: string; name: string } | null
-
-  prospect: {
-    id: string
-    company: string
-    stage: string
-    stageKind: StageKind
-    pipeline: string
-  } | null
-
-  meetings: MeetingBrief[]
-
-  events: ContactEvent[]
-}
-
-export interface ContactFilter {
-  client?: string
-  prospect?: string
-
-  tags?: string[]
-
-  inPipeline?: boolean
-
-  query?: string
-
-  tag?: string
-  status?: ContactStatus
-
-  source?: string
-  page?: number
-  pageSize?: number
-}
-
-export interface ContactsPage {
-  contacts: ContactBrief[]
-  page: number
-  totalPages: number
-  total: number
-}
-
 export interface ClientDetail extends Client {
-  contacts: Contact[]
   projects: (Project & { openDeliverables: string[] })[]
   meetings: MeetingBrief[]
-  prospects: Prospect[]
   openActionItems: OpenActionItem[]
   documents: DocFile[]
 
@@ -306,8 +135,6 @@ export interface ClientDetail extends Client {
 export interface ClientImpact {
   projects: number
   meetings: number
-  contacts: number
-  prospects: number
   notes: number
   folderPath: string
 }
@@ -325,24 +152,6 @@ export interface ProjectDetail extends Project {
   meetings: MeetingBrief[]
 }
 
-export interface ProspectDetail extends Prospect {
-  contacts: Contact[]
-  stage: Stage
-  pipeline: PipelineRef
-  meetings: MeetingBrief[]
-}
-
-export interface ProspectCard extends Prospect {
-  contact: { id: string; name: string } | null
-  tags: TagRef[]
-}
-
-export interface Pipeline {
-  pipeline: PipelineRef
-  stages: (Stage & { prospects: ProspectCard[]; valueUsd: number })[]
-  openValueUsd: number
-}
-
 export interface MeetingsPage {
   days: { date: string; meetings: MeetingBrief[] }[]
   page: number
@@ -353,7 +162,6 @@ export interface MeetingsPage {
 export interface MeetingFilter {
   client?: string
   project?: string
-  prospect?: string
 
   from?: string
   to?: string
@@ -369,13 +177,13 @@ export interface Overview {
     lastMeeting: { id: string; date: string; title: string } | null
   }[]
   openActionItems: OpenActionItem[]
-  pipeline: { pipeline: string; stage: string; kind: StageKind; count: number; valueUsd: number }[]
-  nextSteps: { prospectId: string; company: string; nextStep: string; date: string | null }[]
+  pipeline: unknown[]
+  nextSteps: unknown[]
   recentMeetings: MeetingBrief[]
 }
 
 export interface SearchHit {
-  type: 'client' | 'project' | 'meeting' | 'prospect' | 'contact'
+  type: 'client' | 'project' | 'meeting'
   id: string
   title: string
   snippet: string
@@ -384,7 +192,6 @@ export interface SearchHit {
 export interface Refs {
   clients: { id: string; name: string; status: ClientStatus }[]
   projects: { id: string; name: string; clientId: string; status: ProjectStatus }[]
-  prospects: { id: string; company: string; clientId: string | null }[]
 }
 
 export interface Settings {
@@ -461,14 +268,14 @@ export interface SettingsInput {
   outreachFooter?: string
 }
 
-export type NoteEntity = 'client' | 'project' | 'prospect' | 'meeting'
+export type NoteEntity = 'client' | 'project' | 'meeting'
 
 export interface StopInfo {
   title: string
   participants: string[]
   clientId: string | null
   projectId: string | null
-  prospectId: string | null
+  prospectId?: string | null
   durationSec: number
   language: Language
 }
@@ -478,7 +285,6 @@ export interface ImportInfo {
   participants: string[]
   clientId: string | null
   projectId: string | null
-  prospectId: string | null
   language: Language
 }
 
@@ -515,47 +321,6 @@ export interface ConsultoraApi {
   updateProject(ref: string, patch: ProjectInput): Promise<Project>
 
   removeProject(ref: string): Promise<void>
-
-  listPipelines(): Promise<PipelineSummary[]>
-
-  pipeline(ref?: string): Promise<Pipeline>
-
-  savePipeline(input: PipelineInput): Promise<Pipeline>
-
-  removePipeline(ref: string, moveTo?: { pipeline: string; stage?: string }): Promise<void>
-
-  listStages(pipeline?: string): Promise<Stage[]>
-
-  saveStages(stages: StageInput[]): Promise<Stage[]>
-  getProspect(ref: string): Promise<ProspectDetail>
-  createProspect(input: ProspectInput): Promise<Prospect>
-  updateProspect(ref: string, patch: ProspectInput): Promise<Prospect>
-
-  moveProspect(
-    ref: string,
-    stage: string,
-    index?: number,
-    pipeline?: string
-  ): Promise<{ prospect: Prospect; client: Client | null }>
-
-  removeProspect(ref: string): Promise<void>
-
-  listContacts(filter: ContactFilter): Promise<ContactsPage>
-  getContact(id: string): Promise<ContactDetail>
-  createContact(input: ContactInput): Promise<Contact>
-  updateContact(id: string, patch: ContactInput): Promise<Contact>
-  removeContact(id: string): Promise<void>
-
-  subscribeContact(id: string): Promise<Contact>
-  unsubscribeContact(id: string): Promise<Contact>
-
-  tagContact(id: string, change: { add?: string[]; remove?: string[] }): Promise<ContactBrief>
-
-  promoteContact(id: string, stage?: string): Promise<{ contact: Contact; prospect: Prospect }>
-
-  convertContact(id: string, input: ConvertInput): Promise<{ contact: Contact; prospect: Prospect }>
-
-  detachContactProspect(id: string): Promise<Contact>
 
   pickRecording(): Promise<string | null>
 

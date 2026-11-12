@@ -8,10 +8,9 @@ import { TaskMeta } from './TaskCard'
 import { TaskDrawer } from './TaskDrawer'
 import { isDayFull } from './lib'
 
-const LINK_FIELD: Record<TaskRecordKind, 'client' | 'project' | 'prospect'> = {
+const LINK_FIELD: Record<TaskRecordKind, 'client' | 'project'> = {
   client: 'client',
-  project: 'project',
-  prospect: 'prospect'
+  project: 'project'
 }
 
 export function TasksSection({

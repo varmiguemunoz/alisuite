@@ -125,7 +125,7 @@ export function Clients({ go }: { go: Go }): React.JSX.Element {
         {data && data.length === 0 && (
           <Empty
             title={filter === 'historico' ? 'Sin clientes históricos.' : 'Aún no hay clientes.'}
-            hint="Crea uno con «Nuevo cliente» o gana un prospecto en el pipeline."
+            hint="Crea uno con «Nuevo cliente»."
           />
         )}
         {data && data.length > 0 && (

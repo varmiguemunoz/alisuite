@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { uiState } from '../lib/ui-state'
 import type { Go, Screen } from './lib'
-import { EMAIL_SECTIONS, SECTIONS, isWorkspaceScreen, rootOf, type Section } from './sections'
+import { SECTIONS, isWorkspaceScreen, rootOf, type Section } from './sections'
 import { ChromeContext, ScrollKeyContext, type ConsultoraChrome } from './chrome'
 import { isOverlayOpen } from '../ui'
 import { AppShell } from './shell/AppShell'
@@ -24,8 +24,6 @@ import { Client } from './screens/Client'
 import { Project } from './screens/Project'
 import { Meetings } from './screens/Meetings'
 import { Meeting } from './screens/Meeting'
-import { Pipeline } from './screens/Pipeline'
-import { Prospect } from './screens/Prospect'
 import { Settings, rememberSettingsTab } from './screens/Settings'
 import { AccountButton } from './organisms/account/AccountButton'
 import { OrgSwitcher } from './organisms/orgs/OrgSwitcher'
@@ -37,14 +35,8 @@ import { useActivityState } from './organisms/activity/useActivity'
 import { screensFor } from './organisms/activity/open'
 import { RemoteChangesProvider } from './organisms/live/RemoteChanges'
 import { Search } from './screens/Search'
-import { Contacts } from './screens/Contacts'
-import { Contact } from './screens/Contact'
-import { Sources } from './screens/Sources'
 import { Automations } from './screens/Automations'
 import { AutomationEditor } from './screens/AutomationEditor'
-import { Outreach } from './screens/Outreach'
-import { OutreachSequence } from './screens/OutreachSequence'
-import { Newsletters } from './screens/Newsletters'
 import { Tags } from './screens/Tags'
 import { Note } from './screens/Note'
 import { Document } from './screens/Document'
@@ -61,17 +53,9 @@ const LABEL: Record<Screen['name'], string> = {
   project: 'Proyecto',
   meetings: 'Reuniones',
   meeting: 'Reunión',
-  pipeline: 'Pipeline',
-  prospect: 'Prospecto',
   tags: 'Tags',
-  contacts: 'Contactos',
-  contact: 'Contacto',
   automations: 'Automatizaciones',
   automation: 'Automatización',
-  sources: 'Fuentes',
-  outreach: 'Outreach',
-  'outreach-sequence': 'Secuencia',
-  newsletters: 'Newsletters',
   note: 'Nota',
   document: 'Documento',
   settings: 'Ajustes',
@@ -90,17 +74,9 @@ const SECTION_OF: Record<Screen['name'], Section | null> = {
   project: 'clients',
   meetings: 'meetings',
   meeting: 'meetings',
-  pipeline: 'pipeline',
-  prospect: 'pipeline',
   tags: 'tags',
-  contacts: 'contacts',
-  contact: 'contacts',
   automations: 'automations',
   automation: 'automations',
-  sources: 'sources',
-  outreach: 'outreach',
-  'outreach-sequence': 'outreach',
-  newsletters: 'newsletters',
   note: null,
   document: 'clients',
   settings: 'settings',
@@ -108,7 +84,7 @@ const SECTION_OF: Record<Screen['name'], Section | null> = {
 }
 
 const SECTION_LABEL: Record<Section, string> = Object.fromEntries(
-  [...SECTIONS, ...EMAIL_SECTIONS, { id: 'settings', label: 'Ajustes' }].map((s) => [s.id, s.label])
+  [...SECTIONS, { id: 'settings', label: 'Ajustes' }].map((s) => [s.id, s.label])
 ) as Record<Section, string>
 
 // ---- navegación recordada ----
@@ -476,28 +452,12 @@ function ScreenView({
       return <Meetings go={go} />
     case 'meeting':
       return <Meeting id={screen.id} back={back} />
-    case 'pipeline':
-      return <Pipeline go={go} />
-    case 'prospect':
-      return <Prospect id={screen.id} go={go} back={back} />
     case 'tags':
       return <Tags />
-    case 'contacts':
-      return <Contacts go={go} />
-    case 'contact':
-      return <Contact id={screen.id} go={go} back={back} />
     case 'automations':
       return <Automations go={go} />
     case 'automation':
       return <AutomationEditor id={screen.id} back={back} />
-    case 'sources':
-      return <Sources go={go} />
-    case 'outreach':
-      return <Outreach go={go} />
-    case 'outreach-sequence':
-      return <OutreachSequence key={screen.id ?? 'nueva'} id={screen.id} go={go} />
-    case 'newsletters':
-      return <Newsletters />
     case 'note':
       return <Note id={screen.id} go={go} back={back} />
     case 'document':

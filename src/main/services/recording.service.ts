@@ -109,8 +109,7 @@ export class RecordingService {
       title: info.title?.trim() || undefined,
       participants: info.participants ?? [],
       client: info.clientId ?? '',
-      project: info.projectId ?? '',
-      prospect: info.prospectId ?? ''
+      project: info.projectId ?? ''
     })
     await this.patch(meetingId, {
       durationSec: Math.round(info.durationSec) || null,
@@ -165,8 +164,7 @@ export class RecordingService {
     await this.meetings.update(meeting.id, {
       participants: info.participants ?? [],
       client: info.clientId ?? '',
-      project: info.projectId ?? '',
-      prospect: info.prospectId ?? ''
+      project: info.projectId ?? ''
     })
     this.onChange()
     return this.process(meeting.id)

@@ -12,22 +12,22 @@ Pedido del dueño del 20 de octubre de 2026, con Apollo ya funcionando en produc
 
 ## Evidencia reunida
 
-| Tema | Hallazgo | Dónde |
-| --- | --- | --- |
-| Pie legal | `withFooter` lo añade a cada paso y `OutreachService.save` exige que exista | `providers/apollo/sequences.ts`, `outreach.service.ts` |
-| Pie legal | Las plantillas reales de Apollo ya traen la dirección y la baja | detalle de la secuencia «Restaurantes con sitio web» |
-| MCP | El servidor HTTP vive en el proceso principal, no en la ventana. Cerrar la ventana solo la oculta | `server.ts`, `consultora-window.ts` |
-| MCP | En macOS, Cmd+Q con la ventana Consultora al frente cierra toda la app y con ella el servidor | menú por defecto de Electron, `window.ts` |
-| MCP | Sin ventanas visibles, macOS puede aplicar App Nap y frenar la app. No hay `powerSaveBlocker` | `index.ts` |
-| MCP | El cliente MCP no tiene timeout ni intenta abrir la app. Si falla, responde «no está abierto» | `src/mcp/client.ts` |
-| MCP | El servicio de launchd que reabría la app se apagó al instalar la versión oficial | `scripts/install.sh` |
-| Boards | `board_edit` admite 200 operaciones y una sola mala aborta todo el lote | `src/shared/canvas.ts` |
-| Boards | Sin x e y, cada nodo nuevo va a la derecha del anterior: un diagrama queda en una fila | `applyBoardOps` |
-| Boards | Cada edición devuelve el board completo con todos sus textos, y el contexto de Claude se llena rápido | `workspace.controller.ts` |
-| Boards | Si el board está abierto en la app, una edición de Claude dispara el aviso de conflicto y no se recarga sola | `BoardPane.tsx` |
-| Outreach | `GET /emailer_campaigns/{id}` sí devuelve pasos, toques y plantillas con asunto y HTML. El adaptador descarta el contenido | prueba real y `providers/apollo/sequences.ts` |
-| Outreach | Editar hoy manda pasos sin id. Con el diff declarativo de Apollo eso borra y recrea los pasos y pierde su progreso | `apolloSequences.save` |
-| Outreach | Apollo no permite borrar secuencias por API. Permite archivarlas con `POST /emailer_campaigns/{id}/archive`, que las desactiva y termina a los inscritos | docs.apollo.io |
+| Tema      | Hallazgo                                                                                                                                                 | Dónde                                                  |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Pie legal | `withFooter` lo añade a cada paso y `OutreachService.save` exige que exista                                                                              | `providers/apollo/sequences.ts`, `outreach.service.ts` |
+| Pie legal | Las plantillas reales de Apollo ya traen la dirección y la baja                                                                                          | detalle de la secuencia «Restaurantes con sitio web»   |
+| MCP       | El servidor HTTP vive en el proceso principal, no en la ventana. Cerrar la ventana solo la oculta                                                        | `server.ts`, `consultora-window.ts`                    |
+| MCP       | En macOS, Cmd+Q con la ventana Consultora al frente cierra toda la app y con ella el servidor                                                            | menú por defecto de Electron, `window.ts`              |
+| MCP       | Sin ventanas visibles, macOS puede aplicar App Nap y frenar la app. No hay `powerSaveBlocker`                                                            | `index.ts`                                             |
+| MCP       | El cliente MCP no tiene timeout ni intenta abrir la app. Si falla, responde «no está abierto»                                                            | `src/mcp/client.ts`                                    |
+| MCP       | El servicio de launchd que reabría la app se apagó al instalar la versión oficial                                                                        | `scripts/install.sh`                                   |
+| Boards    | `board_edit` admite 200 operaciones y una sola mala aborta todo el lote                                                                                  | `src/shared/canvas.ts`                                 |
+| Boards    | Sin x e y, cada nodo nuevo va a la derecha del anterior: un diagrama queda en una fila                                                                   | `applyBoardOps`                                        |
+| Boards    | Cada edición devuelve el board completo con todos sus textos, y el contexto de Claude se llena rápido                                                    | `workspace.controller.ts`                              |
+| Boards    | Si el board está abierto en la app, una edición de Claude dispara el aviso de conflicto y no se recarga sola                                             | `BoardPane.tsx`                                        |
+| Outreach  | `GET /emailer_campaigns/{id}` sí devuelve pasos, toques y plantillas con asunto y HTML. El adaptador descarta el contenido                               | prueba real y `providers/apollo/sequences.ts`          |
+| Outreach  | Editar hoy manda pasos sin id. Con el diff declarativo de Apollo eso borra y recrea los pasos y pierde su progreso                                       | `apolloSequences.save`                                 |
+| Outreach  | Apollo no permite borrar secuencias por API. Permite archivarlas con `POST /emailer_campaigns/{id}/archive`, que las desactiva y termina a los inscritos | docs.apollo.io                                         |
 
 ## R1 · Pie legal opcional
 

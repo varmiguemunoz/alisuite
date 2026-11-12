@@ -45,8 +45,6 @@ export function namesFrom(options: AutomationOptions | null, def: Definition): N
   return (kind, id) => {
     if (kind === 'node') return def.nodes[id]?.name
     if (kind === 'tag') return find(options?.tags, id) ?? id
-    if (kind === 'pipeline') return find(options?.pipelines, id)
-    if (kind === 'stage') return find(options?.stages, id)
     if (kind === 'client') return find(options?.clients, id)
     return find(options?.projects, id)
   }

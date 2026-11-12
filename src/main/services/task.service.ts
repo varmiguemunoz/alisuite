@@ -38,7 +38,7 @@ import {
 import { TaskModel } from '../models/task.model'
 import { ClientModel } from '../models/client.model'
 import { ProjectModel } from '../models/project.model'
-import { ProspectModel } from '../models/prospect.model'
+
 import { transactionGuard } from '../guards/transaction.guard'
 import { AppError } from './app.error'
 import { pageByDay } from './page-by-day'
@@ -230,7 +230,7 @@ export class TaskService implements TasksApi {
     if (q.effort) where.effort = checkEffort(q.effort)!
     if (q.client) where.clientId = String(q.client)
     if (q.project) where.projectId = String(q.project)
-    if (q.prospect) where.prospectId = String(q.prospect)
+
     if (q.assignee) where.assigneeId = optionalUserId(q.assignee) ?? IsNull()
     const repo = this.tasks()
     let list = await repo.find({ where, order: { date: 'ASC', position: 'ASC' } })
@@ -245,7 +245,7 @@ export class TaskService implements TasksApi {
   }
 
   async forRecord(kind: TaskRecordKind, id: string): Promise<Task[]> {
-    const field = { client: 'clientId', project: 'projectId', prospect: 'prospectId' }[kind]
+    const field = { client: 'clientId', project: 'projectId' }[kind]
     if (!field || typeof id !== 'string') throw new AppError('invalid', 'Relación desconocida.')
     const repo = this.tasks()
     const list = await repo.find({
@@ -484,7 +484,7 @@ async function resolveLinks(
 ): Promise<Pick<Task, 'clientId' | 'projectId' | 'prospectId'>> {
   let clientId = task.clientId ?? null
   let projectId = task.projectId ?? null
-  let prospectId = task.prospectId ?? null
+  const prospectId = task.prospectId ?? null
   if (patch.client !== undefined) {
     clientId = patch.client
       ? (await exists(manager, ClientModel, patch.client, 'ese cliente')).id
@@ -504,17 +504,12 @@ async function resolveLinks(
       clientId = project.clientId
     } else projectId = null
   }
-  if (patch.prospect !== undefined) {
-    prospectId = patch.prospect
-      ? (await exists(manager, ProspectModel, patch.prospect, 'ese prospecto')).id
-      : null
-  }
   return { clientId, projectId, prospectId }
 }
 
 async function exists(
   manager: EntityManager,
-  model: typeof ClientModel | typeof ProspectModel,
+  model: typeof ClientModel | typeof ProjectModel,
   id: unknown,
   what: string
 ): Promise<{ id: string }> {
@@ -526,34 +521,25 @@ async function exists(
 }
 
 async function withLinks(manager: EntityManager, list: Task[]): Promise<Task[]> {
-  const ids = (key: 'clientId' | 'projectId' | 'prospectId'): string[] => [
+  const ids = (key: 'clientId' | 'projectId'): string[] => [
     ...new Set(list.map((t) => t[key]).filter((v): v is string => !!v))
   ]
-  const [clients, projects, prospects] = await Promise.all([
+  const [clients, projects] = await Promise.all([
     ids('clientId').length
       ? manager.getRepository(ClientModel).findBy({ id: In(ids('clientId')) })
       : [],
     ids('projectId').length
       ? manager.getRepository(ProjectModel).findBy({ id: In(ids('projectId')) })
-      : [],
-    ids('prospectId').length
-      ? manager.getRepository(ProspectModel).findBy({ id: In(ids('prospectId')) })
       : []
   ])
   const client = new Map<string, string>(clients.map((c): [string, string] => [c.id, c.name]))
   const project = new Map<string, string>(projects.map((p): [string, string] => [p.id, p.name]))
-  const prospect = new Map<string, string>(
-    prospects.map((p): [string, string] => [p.id, p.company])
-  )
   return list.map((t) => {
     const links: Task['links'] = {}
     if (t.clientId && client.has(t.clientId))
       links.client = { id: t.clientId, name: client.get(t.clientId)! }
     if (t.projectId && project.has(t.projectId))
       links.project = { id: t.projectId, name: project.get(t.projectId)! }
-    if (t.prospectId && prospect.has(t.prospectId)) {
-      links.prospect = { id: t.prospectId, company: prospect.get(t.prospectId)! }
-    }
     return Object.keys(links).length ? { ...t, links } : t
   })
 }
@@ -566,7 +552,6 @@ export async function unlinkTasks(
   const repo = manager.getRepository(TaskModel)
   if (kind === 'client') await repo.update({ clientId: id }, { clientId: null, projectId: null })
   else if (kind === 'project') await repo.update({ projectId: id }, { projectId: null })
-  else await repo.update({ prospectId: id }, { prospectId: null })
 }
 
 async function findOrFail(tasks: Tasks, id: unknown): Promise<Task> {
@@ -655,7 +640,7 @@ export interface AutomatedTaskInput {
   tags: string[]
   effort: Task['effort']
   clientId: string | null
-  prospectId: string | null
+  prospectId?: string | null
 }
 
 const shiftDay = (day: DayKey, days: number): DayKey => {
@@ -694,7 +679,7 @@ export async function insertTaskWithRoom(
     status: 'todo',
     clientId: input.clientId,
     projectId: null,
-    prospectId: input.prospectId,
+    prospectId: input.prospectId ?? null,
     assigneeId: me
   }
   await tasks.insert(task)

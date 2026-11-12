@@ -1,20 +1,14 @@
 import type { WidgetKind, WidgetSize } from '@shared/metrics'
 import {
   ActionItems,
-  Contacts,
-  DealsLost,
-  DealsWon,
   Meetings,
   Overdue,
-  PipelineOpen,
   TasksByStatus,
   TasksOpenClosed,
-  ValueByStage,
-  WinRate,
   type WidgetViewProps
 } from './widgets'
 
-export type WidgetSettingKey = 'period' | 'pipeline'
+export type WidgetSettingKey = 'period'
 
 export interface WidgetDef {
   kind: WidgetKind
@@ -46,58 +40,13 @@ export const WIDGETS: Record<WidgetKind, WidgetDef> = {
     settings: ['period'],
     View: TasksByStatus
   },
-  'pipeline-open': {
-    kind: 'pipeline-open',
-    title: 'Pipeline abierto',
-    description: 'Valor de los prospectos en etapas abiertas.',
-    size: 'quarter',
-    rows: 1,
-    settings: ['pipeline'],
-    View: PipelineOpen
-  },
-  'deals-won': {
-    kind: 'deals-won',
-    title: 'Negocios ganados',
-    description: 'Cantidad y valor ganados en el periodo.',
-    size: 'quarter',
-    rows: 1,
-    settings: ['period', 'pipeline'],
-    View: DealsWon
-  },
-  'deals-lost': {
-    kind: 'deals-lost',
-    title: 'Negocios perdidos',
-    description: 'Cantidad y valor perdidos en el periodo.',
-    size: 'quarter',
-    rows: 1,
-    settings: ['period', 'pipeline'],
-    View: DealsLost
-  },
-  'value-by-stage': {
-    kind: 'value-by-stage',
-    title: 'Valor por etapa',
-    description: 'Barras por etapa abierta del pipeline.',
-    size: 'half',
-    rows: 2,
-    settings: ['pipeline'],
-    View: ValueByStage
-  },
-  'win-rate': {
-    kind: 'win-rate',
-    title: 'Tasa de cierre',
-    description: 'Ganados sobre ganados más perdidos.',
-    size: 'quarter',
-    rows: 1,
-    settings: ['period', 'pipeline'],
-    View: WinRate
-  },
   overdue: {
     kind: 'overdue',
     title: 'Atrasadas',
     description: 'Tareas de días pasados y próximos pasos vencidos.',
     size: 'half',
     rows: 2,
-    settings: ['pipeline'],
+    settings: [],
     View: Overdue
   },
   meetings: {
@@ -117,14 +66,5 @@ export const WIDGETS: Record<WidgetKind, WidgetDef> = {
     rows: 2,
     settings: [],
     View: ActionItems
-  },
-  contacts: {
-    kind: 'contacts',
-    title: 'Contactos nuevos',
-    description: 'Contactos nuevos y suscritos del email marketing.',
-    size: 'quarter',
-    rows: 1,
-    settings: ['period'],
-    View: Contacts
   }
 }

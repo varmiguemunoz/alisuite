@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Activity, Briefcase, FolderKanban, SquareKanban } from 'lucide-react'
+import { Activity, Briefcase, FolderKanban } from 'lucide-react'
 import {
   TASK_STATUSES,
   TASK_STATUS_LABEL,
@@ -78,7 +78,6 @@ export function TaskDrawer({
   const isSubtask = fresh.parentId !== null
   const client = refs?.clients.find((c) => c.id === fresh.clientId)
   const project = refs?.projects.find((p) => p.id === fresh.projectId)
-  const prospect = refs?.prospects.find((p) => p.id === fresh.prospectId)
   const projects = (refs?.projects ?? []).filter(
     (p) => !fresh.clientId || p.clientId === fresh.clientId
   )
@@ -123,13 +122,6 @@ export function TaskDrawer({
                   value={project ? { id: project.id, label: project.name } : null}
                   options={projects.map((p) => ({ id: p.id, label: p.name }))}
                   onChange={(id) => void patch({ project: id })}
-                />
-                <RefPicker
-                  icon={SquareKanban}
-                  label="Prospecto"
-                  value={prospect ? { id: prospect.id, label: prospect.company } : null}
-                  options={(refs?.prospects ?? []).map((p) => ({ id: p.id, label: p.company }))}
-                  onChange={(id) => void patch({ prospect: id })}
                 />
               </>
             )}

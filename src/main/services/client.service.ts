@@ -17,9 +17,7 @@ import {
 } from '@shared/consultora'
 import { ClientModel } from '../models/client.model'
 import { ProjectModel } from '../models/project.model'
-import { ProspectModel } from '../models/prospect.model'
 import { MeetingModel } from '../models/meeting.model'
-import { ContactModel } from '../models/contact.model'
 import { NoteRelationModel } from '../models/note-relation.model'
 import { afterCommit, transactionGuard } from '../guards/transaction.guard'
 import { notesOfClient, removeRelationsOf } from './note.service'
@@ -73,17 +71,10 @@ export class ClientService {
     const meetings: Meeting[] = await this.db
       .getRepository(MeetingModel)
       .find({ where: { clientId: client.id }, order: { date: 'DESC' } })
-    const prospects = await this.db.getRepository(ProspectModel).findBy({ clientId: client.id })
-    const contacts = await this.db
-      .getRepository(ContactModel)
-      .find({ where: { clientId: client.id }, order: { name: 'ASC' } })
-
     return {
       ...client,
-      contacts,
       projects: projects.map((p) => ({ ...p, openDeliverables: openChecklist(p.deliverablesMd) })),
       meetings: meetings.map(brief),
-      prospects,
       openActionItems: openActionItems(meetings),
       documents: await listDocuments(client.folderPath),
       notes: await notesOfClient(this.db.manager, client.id, folder),
@@ -97,8 +88,6 @@ export class ClientService {
     return {
       projects: await m.getRepository(ProjectModel).countBy({ clientId: client.id }),
       meetings: await m.getRepository(MeetingModel).countBy({ clientId: client.id }),
-      contacts: await m.getRepository(ContactModel).countBy({ clientId: client.id }),
-      prospects: await m.getRepository(ProspectModel).countBy({ clientId: client.id }),
       notes: await m
         .getRepository(NoteRelationModel)
         .countBy({ targetType: 'client', targetId: client.id }),
@@ -113,10 +102,6 @@ export class ClientService {
       await manager
         .getRepository(MeetingModel)
         .update({ clientId: client.id }, { clientId: null, projectId: null })
-      await manager
-        .getRepository(ContactModel)
-        .update({ clientId: client.id }, { clientId: null, projectId: null })
-      await manager.getRepository(ProspectModel).update({ clientId: client.id }, { clientId: null })
       await removeRelationsOf(manager, 'client', client.id)
       await unlinkTasks(manager, 'client', client.id)
       await manager.getRepository(ClientModel).softDelete({ id: client.id })

@@ -4,12 +4,8 @@ import { DataSource } from 'typeorm'
 import { TaskModel } from '../models/task.model'
 import { ClientModel } from '../models/client.model'
 import { ProjectModel } from '../models/project.model'
-import { StageModel } from '../models/stage.model'
-import { ProspectModel } from '../models/prospect.model'
 import { MeetingModel } from '../models/meeting.model'
-import { ContactModel } from '../models/contact.model'
 import { NoteRelationModel } from '../models/note-relation.model'
-import { PipelineModel } from '../models/pipeline.model'
 import { WorkspaceItemModel, WorkspaceRefModel } from '../models/workspace.model'
 import { CreateTasks1727600000000 } from './migrations/CreateTasks'
 import { AddTaskDescription1727800000000 } from './migrations/AddTaskDescription'
@@ -35,38 +31,20 @@ import { AddFileManifest1729400000000 } from './migrations/AddFileManifest'
 import { AddActivityCache1729500000000 } from './migrations/AddActivityCache'
 import { AddAutomations1729600000000 } from './migrations/AddAutomations'
 import { MigrateRulesToAutomations1729700000000 } from './migrations/MigrateRulesToAutomations'
+import { RemoveMarketingModules1729800000000 } from './migrations/RemoveMarketingModules'
 import { AUTOMATION_ENTITIES } from '../models/automation.model'
-import { DashboardModel, StageEventModel } from '../models/metrics.model'
-import {
-  ContactEventModel,
-  ContactTagModel,
-  HubReceiptModel,
-  LeadSourceModel,
-  NewsletterModel,
-  OutboxModel,
-  TagModel
-} from '../models/marketing.model'
+import { DashboardModel } from '../models/metrics.model'
+import { TagModel } from '../models/marketing.model'
 
 export const ENTITIES = [
   TaskModel,
   ClientModel,
   ProjectModel,
-  StageModel,
-  ProspectModel,
   MeetingModel,
-  ContactModel,
   TagModel,
-  ContactTagModel,
-  ContactEventModel,
-  LeadSourceModel,
-  NewsletterModel,
-  OutboxModel,
-  HubReceiptModel,
   NoteRelationModel,
-  PipelineModel,
   WorkspaceItemModel,
   WorkspaceRefModel,
-  StageEventModel,
   DashboardModel,
   ...AUTOMATION_ENTITIES
 ]
@@ -94,7 +72,8 @@ export const MIGRATIONS = [
   AddFileManifest1729400000000,
   AddActivityCache1729500000000,
   AddAutomations1729600000000,
-  MigrateRulesToAutomations1729700000000
+  MigrateRulesToAutomations1729700000000,
+  RemoveMarketingModules1729800000000
 ]
 
 export async function openDatabase(dir: string): Promise<DataSource> {

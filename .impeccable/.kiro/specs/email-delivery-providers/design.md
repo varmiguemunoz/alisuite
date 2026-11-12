@@ -102,11 +102,11 @@ export function canReceive(role: DeliveryRole, r: Recipient): Eligibility
 
 Tabla de verdad:
 
-| Rol | Sin email | none | subscribed | unsubscribed, bounced, complained |
-| --- | --- | --- | --- | --- |
-| transactional | no | sí | sí | sí |
-| marketing | no | no | sí | no |
-| outreach | no | sí | sí | no |
+| Rol           | Sin email | none | subscribed | unsubscribed, bounced, complained |
+| ------------- | --------- | ---- | ---------- | --------------------------------- |
+| transactional | no        | sí   | sí         | sí                                |
+| marketing     | no        | no   | sí         | no                                |
+| outreach      | no        | sí   | sí         | no                                |
 
 Errores:
 
@@ -159,8 +159,15 @@ export interface EmailSender {
 ```
 
 ```ts
-export interface RemoteContact { id: string; email: string; unsubscribed: boolean }
-export interface RemoteGroup { id: string; name: string }
+export interface RemoteContact {
+  id: string
+  email: string
+  unsubscribed: boolean
+}
+export interface RemoteGroup {
+  id: string
+  name: string
+}
 
 export interface ContactInput {
   email: string
@@ -236,10 +243,10 @@ export interface SequenceEngine {
 
 `entryModes` y `authoring` hacen explícita la diferencia entre motores:
 
-| Proveedor | entryModes | authoring | trigger | enroll |
-| --- | --- | --- | --- | --- |
-| resend | event | sí | envía el evento | no soportado |
-| apollo | enrollment | a confirmar en el spike | no soportado | inscribe contactos |
+| Proveedor | entryModes | authoring               | trigger         | enroll             |
+| --------- | ---------- | ----------------------- | --------------- | ------------------ |
+| resend    | event      | sí                      | envía el evento | no soportado       |
+| apollo    | enrollment | a confirmar en el spike | no soportado    | inscribe contactos |
 
 `SequenceInput` de `@shared/marketing` ya es neutral: nombre, evento, emails con espera. El
 servicio conserva la validación y manda un `SequenceDraft` al motor. El armado de templates,
@@ -277,7 +284,10 @@ export interface HeaderBag {
 
 export type DeliveryEventSource =
   | { mode: 'push'; parse(payload: string, headers: HeaderBag): DeliveryEvent[] }
-  | { mode: 'pull'; poll(cursor: string | null): Promise<{ events: DeliveryEvent[]; cursor: string }> }
+  | {
+      mode: 'pull'
+      poll(cursor: string | null): Promise<{ events: DeliveryEvent[]; cursor: string }>
+    }
 ```
 
 `parse` verifica la firma y lanza si es inválida. Es la función que hoy hace el Worker con
@@ -341,20 +351,20 @@ política en una versión nueva.
 
 El código no se reescribe, se mueve. `createResendGateway` se parte por capacidad.
 
-| Método de `ResendGateway` | Destino |
-| --- | --- |
-| `test` | `provider.test` |
-| `sendEmail` | `EmailSender.send` |
-| `findContact`, `createContact`, `updateContact` | `AudienceStore` con el mismo nombre |
-| `contactSegments`, `addToSegment`, `removeFromSegment` | `groupsOf`, `addToGroup`, `removeFromGroup` |
-| `ensureSegment`, `deleteSegment` | `ensureGroup`, `deleteGroup` |
-| `sendEvent` | `SequenceEngine.trigger` |
-| `listAutomations`, `getAutomation`, `createAutomation`, `updateAutomation` | `list`, `get`, `save`, `setEnabled` |
-| `createTemplate` | interno de `save`, se crea y publica un template por email |
-| `sendBroadcast` | `BroadcastSender.send` |
-| Verificación svix y `toStatuses` del Worker | `DeliveryEventSource.parse` |
-| `ResendError` | `EmailProviderError` con `provider: 'resend'` |
-| `splitName` | `domain/names.ts` |
+| Método de `ResendGateway`                                                  | Destino                                                    |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `test`                                                                     | `provider.test`                                            |
+| `sendEmail`                                                                | `EmailSender.send`                                         |
+| `findContact`, `createContact`, `updateContact`                            | `AudienceStore` con el mismo nombre                        |
+| `contactSegments`, `addToSegment`, `removeFromSegment`                     | `groupsOf`, `addToGroup`, `removeFromGroup`                |
+| `ensureSegment`, `deleteSegment`                                           | `ensureGroup`, `deleteGroup`                               |
+| `sendEvent`                                                                | `SequenceEngine.trigger`                                   |
+| `listAutomations`, `getAutomation`, `createAutomation`, `updateAutomation` | `list`, `get`, `save`, `setEnabled`                        |
+| `createTemplate`                                                           | interno de `save`, se crea y publica un template por email |
+| `sendBroadcast`                                                            | `BroadcastSender.send`                                     |
+| Verificación svix y `toStatuses` del Worker                                | `DeliveryEventSource.parse`                                |
+| `ResendError`                                                              | `EmailProviderError` con `provider: 'resend'`              |
+| `splitName`                                                                | `domain/names.ts`                                          |
 
 `client.ts` define `ResendApi`, un subconjunto estructural del SDK, y el helper `call` con la
 cadena de promesas y el intervalo de 110 ms. Los adaptadores reciben `ResendApi` por parámetro, así
@@ -385,24 +395,24 @@ Se construye en la fase 3, después del spike. Lo que ya sabemos de la API públ
 
 Mapa hacia los puertos:
 
-| Puerto | Apollo |
-| --- | --- |
-| `AudienceStore` | contactos y etiquetas. Grupo igual a etiqueta |
-| `SequenceEngine.enroll` | `add_contact_ids` con buzones, estado `active` o `paused` |
-| `SequenceEngine.save` | solo si el spike confirma creación por API. Si no, `authoring: false` |
-| `SequenceEngine.setEnabled` | activar existe. Pausar se confirma en el spike |
-| `DeliveryEventSource.poll` | `emailer_messages/search`, cursor igual a la última fecha vista |
-| `test` | listar buzones conectados |
+| Puerto                      | Apollo                                                                |
+| --------------------------- | --------------------------------------------------------------------- |
+| `AudienceStore`             | contactos y etiquetas. Grupo igual a etiqueta                         |
+| `SequenceEngine.enroll`     | `add_contact_ids` con buzones, estado `active` o `paused`             |
+| `SequenceEngine.save`       | solo si el spike confirma creación por API. Si no, `authoring: false` |
+| `SequenceEngine.setEnabled` | activar existe. Pausar se confirma en el spike                        |
+| `DeliveryEventSource.poll`  | `emailer_messages/search`, cursor igual a la última fecha vista       |
+| `test`                      | listar buzones conectados                                             |
 
 Mapa de eventos:
 
-| Apollo | DeliveryEvent |
-| --- | --- |
-| Respuesta quiere reunión, pregunta o referido | `replied` con `detail.class` |
-| Respuesta no interesado o fuera de oficina | `replied` con `detail.class` |
-| Respuesta de baja | `unsubscribed` |
-| Estado rebotado | `bounced` |
-| Estado spam bloqueado | `delivered` sin supresión, queda en `detail` |
+| Apollo                                        | DeliveryEvent                                |
+| --------------------------------------------- | -------------------------------------------- |
+| Respuesta quiere reunión, pregunta o referido | `replied` con `detail.class`                 |
+| Respuesta no interesado o fuera de oficina    | `replied` con `detail.class`                 |
+| Respuesta de baja                             | `unsubscribed`                               |
+| Estado rebotado                               | `bounced`                                    |
+| Estado spam bloqueado                         | `delivered` sin supresión, queda en `detail` |
 
 Política: `coldOutreach: true`, `sender: 'mailbox'`. Límites: `minIntervalMs` conservador y
 `dailyCap` tomado de ajustes, nunca fijo en código.
@@ -448,20 +458,20 @@ en una migración aparte.
 
 ## Consumidores
 
-| Archivo | Cambio |
-| --- | --- |
-| `src/main/services/resend.provider.ts` | Se elimina. Lo reemplaza `src/main/email.ts`, que arma registro, router y credenciales desde `config` |
-| `src/main/marketing.ts` | Recibe `DeliveryRouter`. `testResend` pasa a `testProvider(id)` y conserva un alias para la IPC actual |
-| `marketing-sync.ts` | Usa `router.find('marketing')` y `AudienceStore`. Usa `SequenceEngine.trigger` en lugar de `sendEvent`. Usa `err.fatal` del error común |
-| `sequence.service.ts` | Usa `router.sequences('marketing')`. Arma un `SequenceDraft`. Ya no conoce templates ni conexiones |
-| `newsletter.service.ts` | Usa `audience` para el segmento, `sender('transactional')` para la copia de prueba y `broadcasts('marketing')` para el envío |
-| `automations/adapters.ts` | `resendEmail` pasa a `deliveryEmail`. `EmailPort.send` recibe `role`, usa `sender(role)` y `err.retryable`. `send_email` va por `marketing`, `email_owner` por `transactional` |
-| `workers/leads-hub/src/*` | Ver sección siguiente |
-| `services/cloud` | Ver sección siguiente |
-| `src/main/config.ts` y `src/shared/consultora.ts` | Roles y claves por proveedor |
-| `SettingsEmail.tsx` | Tarjeta por proveedor y selector de rol |
-| `src/mcp/tools/marketing.ts` y `contacts.ts` | Los textos dicen «proveedor de email» en lugar de «Resend» donde la herramienta ya no es exclusiva |
-| `src/main/test/fake-resend.ts` | Se reemplaza por `fake-provider.ts` |
+| Archivo                                           | Cambio                                                                                                                                                                         |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/main/services/resend.provider.ts`            | Se elimina. Lo reemplaza `src/main/email.ts`, que arma registro, router y credenciales desde `config`                                                                          |
+| `src/main/marketing.ts`                           | Recibe `DeliveryRouter`. `testResend` pasa a `testProvider(id)` y conserva un alias para la IPC actual                                                                         |
+| `marketing-sync.ts`                               | Usa `router.find('marketing')` y `AudienceStore`. Usa `SequenceEngine.trigger` en lugar de `sendEvent`. Usa `err.fatal` del error común                                        |
+| `sequence.service.ts`                             | Usa `router.sequences('marketing')`. Arma un `SequenceDraft`. Ya no conoce templates ni conexiones                                                                             |
+| `newsletter.service.ts`                           | Usa `audience` para el segmento, `sender('transactional')` para la copia de prueba y `broadcasts('marketing')` para el envío                                                   |
+| `automations/adapters.ts`                         | `resendEmail` pasa a `deliveryEmail`. `EmailPort.send` recibe `role`, usa `sender(role)` y `err.retryable`. `send_email` va por `marketing`, `email_owner` por `transactional` |
+| `workers/leads-hub/src/*`                         | Ver sección siguiente                                                                                                                                                          |
+| `services/cloud`                                  | Ver sección siguiente                                                                                                                                                          |
+| `src/main/config.ts` y `src/shared/consultora.ts` | Roles y claves por proveedor                                                                                                                                                   |
+| `SettingsEmail.tsx`                               | Tarjeta por proveedor y selector de rol                                                                                                                                        |
+| `src/mcp/tools/marketing.ts` y `contacts.ts`      | Los textos dicen «proveedor de email» en lugar de «Resend» donde la herramienta ya no es exclusiva                                                                             |
+| `src/main/test/fake-resend.ts`                    | Se reemplaza por `fake-provider.ts`                                                                                                                                            |
 
 ## Worker leads-hub
 
@@ -492,13 +502,13 @@ en una migración aparte.
 
 Ajustes planos, como el resto de `StoredSettings`:
 
-| Clave | Tipo | Notas |
-| --- | --- | --- |
-| `resendApiKey` | string | Existente, sin cambios |
-| `apolloApiKey` | string | Nueva, fase 3. Entra en `NEVER_SYNC.settings` de `edition.ts` |
-| `emailRoles` | JSON | `{ transactional, marketing, outreach }`. Por defecto Resend, Resend, vacío |
-| `outreachDailyCap` | number | Tope de inscripciones por día |
-| `outreachFooter` | string | Texto del pie con dirección física |
+| Clave              | Tipo   | Notas                                                                       |
+| ------------------ | ------ | --------------------------------------------------------------------------- |
+| `resendApiKey`     | string | Existente, sin cambios                                                      |
+| `apolloApiKey`     | string | Nueva, fase 3. Entra en `NEVER_SYNC.settings` de `edition.ts`               |
+| `emailRoles`       | JSON   | `{ transactional, marketing, outreach }`. Por defecto Resend, Resend, vacío |
+| `outreachDailyCap` | number | Tope de inscripciones por día                                               |
+| `outreachFooter`   | string | Texto del pie con dirección física                                          |
 
 `config.ts` expone `emailRoles()` y `providerCredentials(id)`. La validación de que `outreach` no
 apunte a un proveedor con `coldOutreach: false` vive en la capa y se invoca desde `saveSettings`.
@@ -531,16 +541,16 @@ Estrangulamiento. Cada paso deja la app funcionando y `npm run check` en cero.
 
 ## Riesgos y decisiones
 
-| Riesgo | Mitigación |
-| --- | --- |
-| La API pública de Apollo no permite crear secuencias | `authoring: false` y secuencias hechas en la interfaz de Apollo |
-| El plan Basic limita buzones y envíos al día | Los límites viven en ajustes y en `ProviderLimits`, no en código. El spike los mide |
-| Reputación del dominio por correo en frío | Fuera del código. Dominios secundarios, buzones calentados y topes bajos. Guía en el README de la capa |
-| Cumplimiento CAN-SPAM y reglas de otras jurisdicciones | Pie obligatorio, supresión global y decisión R8.3 antes de la fase 3 |
-| Romper la compatibilidad app y Worker | Formato de cable sin cambios y ruta `/resend/webhook` intacta |
-| Ids remotos de un proveedor usados con otro | R2.6, invalidar y reencolar al cambiar el proveedor de audiencia |
-| El limitador de 110 ms se pierde si hay dos instancias | El registro mantiene una instancia por huella de credenciales |
-| SES no está verificado para frío | Entra con `coldOutreach: false` hasta revisar su política de uso aceptable |
+| Riesgo                                                 | Mitigación                                                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| La API pública de Apollo no permite crear secuencias   | `authoring: false` y secuencias hechas en la interfaz de Apollo                                        |
+| El plan Basic limita buzones y envíos al día           | Los límites viven en ajustes y en `ProviderLimits`, no en código. El spike los mide                    |
+| Reputación del dominio por correo en frío              | Fuera del código. Dominios secundarios, buzones calentados y topes bajos. Guía en el README de la capa |
+| Cumplimiento CAN-SPAM y reglas de otras jurisdicciones | Pie obligatorio, supresión global y decisión R8.3 antes de la fase 3                                   |
+| Romper la compatibilidad app y Worker                  | Formato de cable sin cambios y ruta `/resend/webhook` intacta                                          |
+| Ids remotos de un proveedor usados con otro            | R2.6, invalidar y reencolar al cambiar el proveedor de audiencia                                       |
+| El limitador de 110 ms se pierde si hay dos instancias | El registro mantiene una instancia por huella de credenciales                                          |
+| SES no está verificado para frío                       | Entra con `coldOutreach: false` hasta revisar su política de uso aceptable                             |
 
 ## Cómo añadir un proveedor
 

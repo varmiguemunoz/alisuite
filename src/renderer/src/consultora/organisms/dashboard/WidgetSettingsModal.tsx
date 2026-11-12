@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { PipelineSummary } from '@shared/consultora'
+
 import {
   METRIC_PERIODS,
   WIDGET_SIZES,
@@ -18,12 +18,10 @@ const DATE =
 
 export function WidgetSettingsModal({
   widget,
-  pipelines,
   onSave,
   onClose
 }: {
   widget: WidgetPlacement
-  pipelines: PipelineSummary[]
   onSave: (widget: WidgetPlacement) => void
   onClose: () => void
 }): React.JSX.Element | null {
@@ -113,20 +111,6 @@ export function WidgetSettingsModal({
               </span>
             )}
           </div>
-        )}
-        {def.settings.includes('pipeline') && (
-          <label className="flex items-center justify-between gap-3">
-            Pipeline
-            <Select
-              label="Pipeline del componente"
-              value={draft.settings.pipeline ?? INHERIT}
-              onChange={(v) => set({ pipeline: v || undefined })}
-              options={[
-                { value: INHERIT, label: 'El de Inicio' },
-                ...pipelines.map((p) => ({ value: p.id, label: p.name }))
-              ]}
-            />
-          </label>
         )}
       </div>
     </Modal>

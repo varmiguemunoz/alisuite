@@ -11,13 +11,13 @@
 
 Se borra:
 
-| Capa | Archivos |
-| --- | --- |
-| UI | `screens/Sequences.tsx`, entrada en `sections.ts`, `lib.ts` y `ConsultoraApp.tsx` |
+| Capa     | Archivos                                                                                                   |
+| -------- | ---------------------------------------------------------------------------------------------------------- |
+| UI       | `screens/Sequences.tsx`, entrada en `sections.ts`, `lib.ts` y `ConsultoraApp.tsx`                          |
 | Contrato | `listSequences`, `setSequenceStatus` y tipos de secuencia de `@shared/marketing` que solo use esa pantalla |
-| Main | `services/sequence.service.ts`, su uso en `marketing.ts`, IPC, rutas y controlador `/marketing/sequences` |
-| MCP | `list_sequences`, `save_sequence`, `set_sequence_status` |
-| Pruebas | `sequence.service.test.ts` y el tramo de secuencias de `marketing.routes.test.ts` |
+| Main     | `services/sequence.service.ts`, su uso en `marketing.ts`, IPC, rutas y controlador `/marketing/sequences`  |
+| MCP      | `list_sequences`, `save_sequence`, `set_sequence_status`                                                   |
+| Pruebas  | `sequence.service.test.ts` y el tramo de secuencias de `marketing.routes.test.ts`                          |
 
 Se conserva: newsletter, sincronización de contactos y segments, Worker, webhooks y correos de automatizaciones.
 
@@ -61,8 +61,16 @@ export interface BoardEditOptions {
   response?: 'compact' | 'full'
 }
 
-export function validateBoardOps(canvas: CanvasFile, ops: BoardOp[]): { index: number; message: string }[]
-export function layoutNodes(nodes: CanvasNode[], edges: CanvasEdge[], ids: string[], layout: BoardLayout): void
+export function validateBoardOps(
+  canvas: CanvasFile,
+  ops: BoardOp[]
+): { index: number; message: string }[]
+export function layoutNodes(
+  nodes: CanvasNode[],
+  edges: CanvasEdge[],
+  ids: string[],
+  layout: BoardLayout
+): void
 ```
 
 1. `validateBoardOps` simula las operaciones sobre una copia y junta todos los errores. `applyBoardOps` solo corre si no hay errores.
@@ -125,14 +133,14 @@ export interface RemoteSequenceStepContent {
 
 ### Interfaz, diseño atómico
 
-| Nivel | Componente | Props principales |
-| --- | --- | --- |
-| Átomo | `HtmlPreview` | `html` |
-| Molécula | `StepEditor` | `step`, `index`, `onChange`, `onRemove`, `onMove` |
-| Molécula | `StepPreview` | `step`, `index` |
-| Organismo | `SequenceEditor` | `value`, `onChange`, `onSave`, `saving` |
-| Organismo | `SequenceViewer` | `sequence`, `onEdit`, `onArchive` |
-| Pantalla | `OutreachSequence` | `id` o `new` |
+| Nivel     | Componente         | Props principales                                 |
+| --------- | ------------------ | ------------------------------------------------- |
+| Átomo     | `HtmlPreview`      | `html`                                            |
+| Molécula  | `StepEditor`       | `step`, `index`, `onChange`, `onRemove`, `onMove` |
+| Molécula  | `StepPreview`      | `step`, `index`                                   |
+| Organismo | `SequenceEditor`   | `value`, `onChange`, `onSave`, `saving`           |
+| Organismo | `SequenceViewer`   | `sequence`, `onEdit`, `onArchive`                 |
+| Pantalla  | `OutreachSequence` | `id` o `new`                                      |
 
 1. `HtmlPreview` usa un `iframe` con `srcdoc` y `sandbox` vacío: no hay scripts ni navegación.
 2. El cuerpo se edita según D2.
@@ -150,9 +158,9 @@ export interface RemoteSequenceStepContent {
 
 ## Riesgos
 
-| Riesgo | Mitigación |
-| --- | --- |
-| Apollo no deja editar una secuencia activa | Spike S2. Si lo rechaza, la UI pide pausar antes de guardar |
-| Editar texto de un paso cambia lo que reciben inscritos a medio camino | Aviso de R5.5 |
-| Abrir la app desde el MCP en Windows | La ruta del ejecutable viene del registro de instalación de NSIS. Se prueba en el checklist de Windows |
-| El layout propio no basta para grafos muy densos | Tarea opcional con `dagre` |
+| Riesgo                                                                 | Mitigación                                                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Apollo no deja editar una secuencia activa                             | Spike S2. Si lo rechaza, la UI pide pausar antes de guardar                                            |
+| Editar texto de un paso cambia lo que reciben inscritos a medio camino | Aviso de R5.5                                                                                          |
+| Abrir la app desde el MCP en Windows                                   | La ruta del ejecutable viene del registro de instalación de NSIS. Se prueba en el checklist de Windows |
+| El layout propio no basta para grafos muy densos                       | Tarea opcional con `dagre`                                                                             |

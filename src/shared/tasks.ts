@@ -60,7 +60,7 @@ export interface TaskBoardQuery {
   assignee?: string
 }
 
-export type TaskRecordKind = 'client' | 'project' | 'prospect'
+export type TaskRecordKind = 'client' | 'project'
 
 export interface SubtaskProgress {
   total: number

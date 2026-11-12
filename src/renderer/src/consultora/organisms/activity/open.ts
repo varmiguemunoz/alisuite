@@ -14,14 +14,8 @@ export async function screensFor(entity: string, id: string): Promise<Screen[] |
       return [{ name: 'clients' }, { name: 'project', id }]
     case 'meetings':
       return [{ name: 'meetings' }, { name: 'meeting', id }]
-    case 'prospects':
-      return [{ name: 'pipeline' }, { name: 'prospect', id }]
-    case 'contacts':
-      return [{ name: 'contacts' }, { name: 'contact', id }]
     case 'tasks':
       return [{ name: 'tasks', task: id }]
-    case 'pipelines':
-      return [{ name: 'pipeline' }]
     case 'members':
       return [{ name: 'settings' }]
     case 'file_manifest': {

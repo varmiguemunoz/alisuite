@@ -7,7 +7,7 @@ import { Delta } from '../../atoms/Delta'
 import { BarList } from '../../molecules/BarList'
 import { Sparkline } from '../../molecules/Sparkline'
 import { WidgetFrame, type WidgetState } from './WidgetFrame'
-import { openPipeline, openTasks, percent, rangeLabel, usd } from './lib'
+import { openTasks, percent, rangeLabel, usd } from './lib'
 
 export interface WidgetViewProps {
   result: MetricsResult | null
@@ -19,7 +19,6 @@ export interface WidgetViewProps {
 const stateOf = (props: WidgetViewProps, ready: boolean, empty = false): WidgetState =>
   props.error ? 'error' : !props.result || !ready ? 'loading' : empty ? 'empty' : 'ready'
 
-const pipelineId = (r: MetricsResult | null): string | null => r?.pipeline?.id ?? null
 const scopeName = (r: MetricsResult | null): string => (r?.pipeline ? ` · ${r.pipeline.name}` : '')
 
 function LinkRow({
@@ -128,7 +127,7 @@ export function PipelineOpen(props: WidgetViewProps): React.JSX.Element {
       state={stateOf(props, !!m)}
       error={props.error}
       toolbar={props.toolbar}
-      onOpen={() => openPipeline(props.go, pipelineId(props.result), { kinds: ['open'] })}
+      onOpen={() => undefined}
       summary={m && `${usd(m.valueUsd, false)} en ${m.count} prospectos abiertos.`}
     >
       {m && (
@@ -158,7 +157,7 @@ function Deals({
       state={stateOf(props, !!m)}
       error={props.error}
       toolbar={props.toolbar}
-      onOpen={() => openPipeline(props.go, pipelineId(props.result), { kinds: [kind] })}
+      onOpen={() => undefined}
       footnote={
         m?.estimated
           ? 'Algunas fechas son aproximadas: se cerraron antes del registro de etapas.'
@@ -193,7 +192,7 @@ function Deals({
                   key={r.prospectId}
                   title={r.company}
                   meta={usd(r.valueUsd)}
-                  onClick={() => props.go({ name: 'prospect', id: r.prospectId })}
+                  onClick={() => props.go({ name: 'clients' })}
                 />
               ))}
             </ul>
@@ -213,7 +212,7 @@ export const DealsLost = (props: WidgetViewProps): React.JSX.Element => (
 
 export function ValueByStage(props: WidgetViewProps): React.JSX.Element {
   const m = props.result?.valueByStage
-  const open = (): void => openPipeline(props.go, pipelineId(props.result), { kinds: ['open'] })
+  const open = (): void => undefined
   return (
     <WidgetFrame
       title={`Valor por etapa${m?.pipeline ? ` · ${m.pipeline.name}` : ' · todos'}`}
@@ -253,7 +252,7 @@ export function WinRate(props: WidgetViewProps): React.JSX.Element {
       state={stateOf(props, !!m)}
       error={props.error}
       toolbar={props.toolbar}
-      onOpen={() => openPipeline(props.go, pipelineId(props.result), { kinds: ['won', 'lost'] })}
+      onOpen={() => undefined}
       summary={m && `${percent(m.rate)} con ${m.won} ganados y ${m.lost} perdidos.`}
     >
       {m && (
@@ -324,7 +323,7 @@ export function Overdue(props: WidgetViewProps): React.JSX.Element {
                     title={s.nextStep ? `${s.company}, ${s.nextStep}` : s.company}
                     meta={ago(s.date)}
                     late
-                    onClick={() => props.go({ name: 'prospect', id: s.prospectId })}
+                    onClick={() => props.go({ name: 'clients' })}
                   />
                 ))}
               </ul>
@@ -412,7 +411,7 @@ export function Contacts(props: WidgetViewProps): React.JSX.Element {
       state={stateOf(props, !!m)}
       error={props.error}
       toolbar={props.toolbar}
-      onOpen={() => props.go({ name: 'contacts' })}
+      onOpen={() => props.go({ name: 'clients' })}
       summary={
         m &&
         `${m.created} contactos nuevos, ${m.createdPrevious} en el periodo anterior. ${m.subscribed} suscritos.`

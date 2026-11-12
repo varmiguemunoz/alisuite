@@ -70,10 +70,7 @@ import { registerIpc } from './ipc'
 import { registerUiIpc } from './ipc.ui'
 import { initUiState } from './services/ui-state'
 import { registerConsultoraIpc } from './ipc.consultora'
-import { createMarketing } from './marketing'
-import { registerMarketingIpc } from './ipc.marketing'
-import { deliveryRouter, providerRegistry } from './email'
-import { hubFromConfig } from './services/hub.client'
+import { deliveryRouter } from './email'
 import { startServer } from './server'
 import { installMacMenu } from './app-menu'
 import { createMenubarWindow, createTray } from './window'
@@ -337,11 +334,6 @@ async function start(): Promise<void> {
   workspaceShortcut.refresh()
   app.on('will-quit', () => workspaceShortcut.dispose())
   registerConsultoraIpc(consultora, notify, voice, workspaceShortcut)
-  const marketing = createMarketing(db, deliveryRouter, hubFromConfig, notify, providerRegistry)
-  registerMarketingIpc(marketing, notify)
-  marketing.sync.start()
-  marketing.outreachSync.start()
-  powerMonitor.on('resume', () => void marketing.sync.tick())
   const automations = new AutomationEngine(db, {
     handlers: createHandlers(notes),
     ports: createPorts(deliveryRouter),
@@ -382,7 +374,6 @@ async function start(): Promise<void> {
       tasks,
       notes,
       consultora,
-      marketing,
       workspace,
       automations: new AutomationService({ ...automationDeps, origin: () => 'claude' })
     },

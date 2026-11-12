@@ -4,9 +4,6 @@ import * as tasks from './tools/tasks'
 import * as notes from './tools/notes'
 import * as clients from './tools/clients'
 import * as meetings from './tools/meetings'
-import * as pipeline from './tools/pipeline'
-import * as contacts from './tools/contacts'
-import * as marketing from './tools/marketing'
 import * as workspace from './tools/workspace'
 import * as automations from './tools/automations'
 
@@ -25,17 +22,7 @@ const server = new McpServer(
   }
 )
 
-for (const module of [
-  tasks,
-  notes,
-  clients,
-  meetings,
-  pipeline,
-  contacts,
-  marketing,
-  workspace,
-  automations
-])
+for (const module of [tasks, notes, clients, meetings, workspace, automations])
   module.register(server)
 
 void server.connect(new StdioServerTransport())

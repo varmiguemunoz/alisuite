@@ -11,18 +11,15 @@ import { noteRoutes } from './routes/note.routes'
 import { consultoraRoutes } from './routes/consultora.routes'
 import { ClientController } from './controllers/client.controller'
 import { ProjectController } from './controllers/project.controller'
-import { ProspectController } from './controllers/prospect.controller'
 import { MeetingController } from './controllers/meeting.controller'
 import { ContextController } from './controllers/context.controller'
-import { ContactController } from './controllers/contact.controller'
 import { MetricsController } from './controllers/metrics.controller'
 import type { Consultora } from './consultora'
-import type { Marketing } from './marketing'
-import { MarketingController } from './controllers/marketing.controller'
+
 import type { WorkspaceService } from './services/workspace.service'
 import { WorkspaceController } from './controllers/workspace.controller'
 import { workspaceRoutes } from './routes/workspace.routes'
-import { marketingRoutes } from './routes/marketing.routes'
+
 import type { AutomationsApi } from '@shared/automations'
 import { AutomationController } from './controllers/automation.controller'
 import { automationRoutes } from './routes/automation.routes'
@@ -40,7 +37,6 @@ export function startServer(
     tasks: TaskService
     notes: NoteService
     consultora: Consultora
-    marketing: Marketing
     workspace: WorkspaceService
     automations: AutomationsApi
   },
@@ -68,14 +64,11 @@ export function startServer(
     consultoraRoutes({
       clients: new ClientController(c.clients),
       projects: new ProjectController(c.projects),
-      prospects: new ProspectController(c.prospects),
       meetings: new MeetingController(c.meetings, c.recordings),
       context: new ContextController(c.context),
-      contacts: new ContactController(c.contacts),
       metrics: new MetricsController(c.metrics, c.dashboards)
     })
   )
-  app.use('/marketing', marketingRoutes(new MarketingController(services.marketing)))
   app.use('/workspace', workspaceRoutes(new WorkspaceController(services.workspace)))
   app.use('/automations', automationRoutes(new AutomationController(services.automations)))
   app.use(notFound)

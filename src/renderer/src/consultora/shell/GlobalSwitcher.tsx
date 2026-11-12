@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Briefcase, CalendarClock, FolderKanban, Search, SquareKanban, User } from 'lucide-react'
+import { Briefcase, CalendarClock, FolderKanban, Search, User } from 'lucide-react'
 import { normalizeName, type SearchHit } from '@shared/consultora'
 import type { WorkspaceItem } from '@shared/workspace'
 import { api, type Go, type Screen } from '../lib'
@@ -10,9 +10,7 @@ import { kbd } from '../../lib/platform'
 const TYPE: Record<SearchHit['type'], { label: string; Icon: typeof User }> = {
   client: { label: 'Cliente', Icon: Briefcase },
   project: { label: 'Proyecto', Icon: FolderKanban },
-  meeting: { label: 'Reunión', Icon: CalendarClock },
-  prospect: { label: 'Prospecto', Icon: SquareKanban },
-  contact: { label: 'Contacto', Icon: User }
+  meeting: { label: 'Reunión', Icon: CalendarClock }
 }
 
 type Choice =

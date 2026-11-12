@@ -12,7 +12,7 @@ import {
 import { todayKey } from '@shared/tasks'
 import { errorMessage } from '../../lib/api'
 import { useUiState } from '../../lib/ui-state'
-import { api, useLoad, type Go } from '../lib'
+import { useLoad, type Go } from '../lib'
 import { Button, ErrorNote, Page, Select } from '../ui'
 import { DashboardGrid } from '../organisms/dashboard/DashboardGrid'
 import { WidgetCatalog } from '../organisms/dashboard/WidgetCatalog'
@@ -29,7 +29,6 @@ import {
   type HomeScope
 } from '../organisms/dashboard/lib'
 
-const ALL = ''
 const DATE =
   'h-[30px] rounded-[4px] border border-ob-border bg-ob-bg px-1.5 text-[13px] text-ob-text [color-scheme:dark]'
 
@@ -43,7 +42,7 @@ export function Home({ go }: { go: Go }): React.JSX.Element {
     { from: today, to: today },
     (v) => !!v && typeof (v as { from?: unknown }).from === 'string'
   )
-  const [pipeline, setPipeline] = useUiState('home.pipeline', ALL, (v) => typeof v === 'string')
+
   const [mine, setMine] = useUiState('home.mine', false, (v) => typeof v === 'boolean')
   const account = useAccount()
   const { active } = useOrgs()
@@ -56,16 +55,11 @@ export function Home({ go }: { go: Go }): React.JSX.Element {
 
   const loadDashboard = useCallback(() => dashboardApi.dashboard(), [])
   const { data: dashboard, error: dashboardError, reload } = useLoad(loadDashboard)
-  const loadPipelines = useCallback(() => api.listPipelines(), [])
-  const { data: pipelines } = useLoad(loadPipelines)
 
   const layout = pending ?? dashboard?.layout ?? null
-  // Un pipeline recordado que ya no existe cuenta como «Todos».
-  const known = !pipeline || !!pipelines?.some((p) => p.id === pipeline)
   const scope: HomeScope = {
     period,
     range,
-    pipeline: known ? pipeline : ALL,
     assignee: mine && me ? me : null
   }
 
@@ -145,15 +139,7 @@ export function Home({ go }: { go: Go }): React.JSX.Element {
               />
             </span>
           )}
-          <Select
-            label="Pipeline"
-            value={scope.pipeline}
-            onChange={setPipeline}
-            options={[
-              { value: ALL, label: 'Todos los pipelines' },
-              ...(pipelines ?? []).map((p) => ({ value: p.id, label: p.name }))
-            ]}
-          />
+
           {me && (
             <Button kind={mine ? 'primary' : 'quiet'} onClick={() => setMine(!mine)}>
               Mis tareas
@@ -221,7 +207,6 @@ export function Home({ go }: { go: Go }): React.JSX.Element {
       {configuring && layout && (
         <WidgetSettingsModal
           widget={configuring}
-          pipelines={pipelines ?? []}
           onClose={() => setConfiguring(null)}
           onSave={(w) => {
             setConfiguring(null)

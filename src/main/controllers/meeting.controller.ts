@@ -15,7 +15,6 @@ export class MeetingController {
       await this.service.list({
         client: text(req.query.client),
         project: text(req.query.project),
-        prospect: text(req.query.prospect),
         from: text(req.query.from),
         to: text(req.query.to),
         page: int(req.query.page),
@@ -64,7 +63,6 @@ export class MeetingController {
       participants: Array.isArray(body.participants) ? body.participants : [],
       clientId: text(body.clientId) ?? null,
       projectId: text(body.projectId) ?? null,
-      prospectId: text(body.prospectId) ?? null,
       language: body.language
     })
     res.status(201).json(meetingView(meeting))

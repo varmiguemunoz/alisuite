@@ -101,8 +101,6 @@ export interface Option {
 
 export interface AutomationOptions {
   tags: Option[]
-  pipelines: Option[]
-  stages: (Option & { pipelineId: string })[]
   clients: Option[]
   projects: (Option & { clientId: string })[]
 }

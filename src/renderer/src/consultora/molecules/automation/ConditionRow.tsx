@@ -12,30 +12,19 @@ import {
   type FieldSpec,
   type SubjectType
 } from '@shared/automations'
-import { CONTACT_STATUSES, slugify } from '@shared/marketing'
+import { slugify } from '@shared/marketing'
 import { INPUT } from '../../ui'
 
 const SELECT = `${INPUT} cursor-pointer pr-1.5`
 const CUSTOM = '__custom__'
 
-const STATUS_LABEL: Record<string, string> = {
-  none: 'Sin marketing',
-  subscribed: 'Suscrito',
-  unsubscribed: 'Baja',
-  bounced: 'Rebotó',
-  complained: 'Spam'
-}
-
 function sourceOptions(
   field: FieldSpec,
   options: AutomationOptions | null
 ): { value: string; label: string }[] {
-  if (field.source === 'status')
-    return CONTACT_STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] ?? s }))
-  if (field.source === 'pipeline')
-    return (options?.pipelines ?? []).map((p) => ({ value: p.id, label: p.name }))
-  if (field.source === 'stage')
-    return (options?.stages ?? []).map((s) => ({ value: s.id, label: s.name }))
+  if (field.source === 'status') return []
+  if (field.source === 'pipeline') return []
+  if (field.source === 'stage') return []
   if (field.source === 'client')
     return (options?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))
   return field.options ?? []

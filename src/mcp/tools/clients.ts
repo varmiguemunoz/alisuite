@@ -132,10 +132,10 @@ export function register(server: McpServer): void {
     'append_note',
     {
       description:
-        'Añade una nota fechada al final de las notas de un cliente, proyecto, prospecto o reunión. ' +
+        'Añade una nota fechada al final de las notas de un cliente, proyecto o reunión. ' +
         'La forma más rápida de guardar contexto que el dueño te cuenta ("anota que Acme aprobó el presupuesto").',
       inputSchema: {
-        entity: z.enum(['client', 'project', 'prospect', 'meeting']),
+        entity: z.enum(['client', 'project', 'meeting']),
         ref: z.string().describe('id o nombre (reunión: id)'),
         text: z.string().min(1)
       }

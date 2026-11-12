@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import {
   FIELDS,
-  str,
   type AutomationOptions,
   type ParamSpec,
   type Params,
@@ -252,32 +251,8 @@ export function ParamField({ spec, params, ctx, onChange }: ParamFieldProps): Re
       )
     }
     case 'pipeline':
-      return (
-        <Choice
-          label={label}
-          value={text}
-          required={spec.required}
-          options={(o?.pipelines ?? []).map((p) => ({ value: p.id, label: p.name }))}
-          onChange={onChange}
-        />
-      )
-    case 'stage': {
-      const pipeline = str(params, 'pipeline')
-      const stages = (o?.stages ?? []).filter((s) => !pipeline || s.pipelineId === pipeline)
-      const pipelines = new Map((o?.pipelines ?? []).map((p) => [p.id, p.name]))
-      return (
-        <Choice
-          label={label}
-          value={text}
-          required={spec.required}
-          options={stages.map((s) => ({
-            value: s.id,
-            label: pipeline ? s.name : `${pipelines.get(s.pipelineId) ?? ''} · ${s.name}`
-          }))}
-          onChange={onChange}
-        />
-      )
-    }
+    case 'stage':
+      return <></>
     case 'client':
       return (
         <Choice

@@ -1,7 +1,4 @@
 import type { EntityManager } from 'typeorm'
-import type { Contact, Prospect } from '@shared/consultora'
-import { ContactModel } from '../../models/contact.model'
-import { ProspectModel } from '../../models/prospect.model'
 import type { NodeContext, NodeResult } from '../ports'
 
 export class Skip extends Error {}
@@ -21,22 +18,6 @@ export function numberParam(ctx: NodeContext, key: string): number | null {
   if (value === '' || value === null || value === undefined) return null
   const n = Number(value)
   return Number.isFinite(n) ? n : null
-}
-
-export async function contactOf(ctx: NodeContext): Promise<Contact> {
-  const scoped = ctx.scope.contact as { id?: string } | undefined
-  if (!scoped?.id) throw new Skip('No hay contacto.')
-  const contact = await manager(ctx).getRepository(ContactModel).findOneBy({ id: scoped.id })
-  if (!contact) throw new Skip('El contacto ya no existe.')
-  return contact
-}
-
-export async function prospectOf(ctx: NodeContext): Promise<Prospect> {
-  const scoped = ctx.scope.prospect as { id?: string } | undefined
-  if (!scoped?.id) throw new Skip('No tiene prospecto.')
-  const prospect = await manager(ctx).getRepository(ProspectModel).findOneBy({ id: scoped.id })
-  if (!prospect) throw new Skip('El prospecto ya no existe.')
-  return prospect
 }
 
 export function clientIdOf(ctx: NodeContext): string | null {

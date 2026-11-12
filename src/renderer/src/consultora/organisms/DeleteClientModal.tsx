@@ -47,10 +47,6 @@ export function DeleteClientModal({
           `Se borran ${impact.projects} ${impact.projects === 1 ? 'proyecto' : 'proyectos'}.`,
         impact.meetings &&
           `${impact.meetings} ${impact.meetings === 1 ? 'reunión queda' : 'reuniones quedan'} sin cliente.`,
-        impact.contacts &&
-          `${impact.contacts} ${impact.contacts === 1 ? 'contacto queda' : 'contactos quedan'} sin empresa.`,
-        impact.prospects &&
-          `${impact.prospects} ${impact.prospects === 1 ? 'prospecto pierde' : 'prospectos pierden'} el cliente.`,
         impact.notes &&
           `${impact.notes} ${impact.notes === 1 ? 'nota pierde' : 'notas pierden'} la relación (no se borran).`
       ].filter(Boolean)

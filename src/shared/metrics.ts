@@ -58,31 +58,14 @@ export const inRange = (day: DayKey, r: DayRange): boolean => day >= r.from && d
 
 // ---- Indicadores ----
 
-export type MetricKind =
-  | 'tasks'
-  | 'tasksByStatus'
-  | 'openPipeline'
-  | 'won'
-  | 'lost'
-  | 'valueByStage'
-  | 'winRate'
-  | 'overdue'
-  | 'meetings'
-  | 'actionItems'
-  | 'contacts'
+export type MetricKind = 'tasks' | 'tasksByStatus' | 'overdue' | 'meetings' | 'actionItems'
 
 export const METRIC_KINDS: MetricKind[] = [
   'tasks',
   'tasksByStatus',
-  'openPipeline',
-  'won',
-  'lost',
-  'valueByStage',
-  'winRate',
   'overdue',
   'meetings',
-  'actionItems',
-  'contacts'
+  'actionItems'
 ]
 
 export interface MetricsQuery {
@@ -220,30 +203,14 @@ export interface MetricsResult extends Partial<MetricValues> {
 // ---- Dashboard ----
 
 export type WidgetKind =
-  | 'tasks-open-closed'
-  | 'tasks-by-status'
-  | 'pipeline-open'
-  | 'deals-won'
-  | 'deals-lost'
-  | 'value-by-stage'
-  | 'win-rate'
-  | 'overdue'
-  | 'meetings'
-  | 'action-items'
-  | 'contacts'
+  'tasks-open-closed' | 'tasks-by-status' | 'overdue' | 'meetings' | 'action-items'
 
 export const WIDGET_KINDS: WidgetKind[] = [
   'tasks-open-closed',
   'tasks-by-status',
-  'pipeline-open',
-  'deals-won',
-  'deals-lost',
-  'value-by-stage',
-  'win-rate',
   'overdue',
   'meetings',
-  'action-items',
-  'contacts'
+  'action-items'
 ]
 
 export type WidgetSize = 'quarter' | 'half' | 'full'
@@ -282,10 +249,6 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
   version: 1,
   widgets: [
     { id: 'w-tasks', kind: 'tasks-open-closed', size: 'quarter', rows: 1, settings: {} },
-    { id: 'w-open', kind: 'pipeline-open', size: 'quarter', rows: 1, settings: {} },
-    { id: 'w-won', kind: 'deals-won', size: 'quarter', rows: 1, settings: {} },
-    { id: 'w-lost', kind: 'deals-lost', size: 'quarter', rows: 1, settings: {} },
-    { id: 'w-stages', kind: 'value-by-stage', size: 'half', rows: 2, settings: {} },
     { id: 'w-status', kind: 'tasks-by-status', size: 'half', rows: 2, settings: {} }
   ]
 }
@@ -293,15 +256,9 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
 export const WIDGET_METRIC: Record<WidgetKind, MetricKind> = {
   'tasks-open-closed': 'tasks',
   'tasks-by-status': 'tasksByStatus',
-  'pipeline-open': 'openPipeline',
-  'deals-won': 'won',
-  'deals-lost': 'lost',
-  'value-by-stage': 'valueByStage',
-  'win-rate': 'winRate',
   overdue: 'overdue',
   meetings: 'meetings',
-  'action-items': 'actionItems',
-  contacts: 'contacts'
+  'action-items': 'actionItems'
 }
 
 export interface DashboardApi {

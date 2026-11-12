@@ -57,9 +57,9 @@ Cada bloque termina con `npm run check` en cero errores. Pruebas en `src/test`, 
 ## Fase 3 · Apollo para outreach
 
 - [~] S1. Spike con cuenta real y una secuencia desechable e inactiva: crear secuencia por REST, pausar
-      una secuencia, inscribir con varios buzones, campos devueltos por `emailer_messages/search`,
-      existencia de webhooks, límites reales del plan Basic. Resultado en
-      `adr/ADR-01-apollo.md`. Decide `authoring`
+  una secuencia, inscribir con varios buzones, campos devueltos por `emailer_messages/search`,
+  existencia de webhooks, límites reales del plan Basic. Resultado en
+  `adr/ADR-01-apollo.md`. Decide `authoring`
 - [x] 18. `providers/apollo`: cliente HTTP con reintentos y 429, `AudienceStore` con etiquetas,
       `SequenceEngine` según el ADR, `DeliveryEventSource` en modo pull. Pruebas con `fetch`
       inyectado y la suite de contrato

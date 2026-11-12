@@ -6,9 +6,7 @@ import { Empty, ErrorNote, List, Page, Pill, Row } from '../ui'
 const TYPE: Record<SearchHit['type'], string> = {
   client: 'Cliente',
   project: 'Proyecto',
-  meeting: 'Reunión',
-  prospect: 'Prospecto',
-  contact: 'Contacto'
+  meeting: 'Reunión'
 }
 
 const target = (hit: SearchHit): Screen => ({ name: hit.type, id: hit.id }) as Screen

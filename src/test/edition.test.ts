@@ -9,8 +9,6 @@ describe('lo que nunca se sincroniza', () => {
   })
 
   it('los secretos de las fuentes y las claves nunca viajan', () => {
-    expect(isNeverSynced('lead_sources', 'secret')).toBe(true)
-    expect(isNeverSynced('resend_outbox')).toBe(true)
     expect(isNeverSynced('clients', 'name')).toBe(false)
     expect(NEVER_SYNC.settings).toEqual(
       expect.arrayContaining(['openaiApiKey', 'resendApiKey', 'hubAdminToken'])

@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { Language, Refs } from '@shared/consultora'
 import { errorMessage } from '../lib/api'
-import { api, useLoad } from './lib'
+import { api } from './lib'
 import { Field, Select } from './ui'
 
 export interface SheetInfo {
@@ -10,7 +9,6 @@ export interface SheetInfo {
   participants: string[]
   clientId: string | null
   projectId: string | null
-  prospectId: string | null
   language: Language
 }
 
@@ -35,7 +33,6 @@ export function MeetingSheet({
   const [participants, setParticipants] = useState('')
   const [clientId, setClientId] = useState('')
   const [projectId, setProjectId] = useState('')
-  const [prospectId, setProspectId] = useState('')
   const [language, setLanguage] = useState<Language>('es')
   const [refs, setRefs] = useState<Refs | null>(null)
   const [busy, setBusy] = useState(false)
@@ -49,7 +46,6 @@ export function MeetingSheet({
     const s = await api.suggestAssociation(title)
     if (!clientId && s.clientId) setClientId(s.clientId)
     if (!projectId && s.projectId) setProjectId(s.projectId)
-    if (!prospectId && s.prospectId) setProspectId(s.prospectId)
   }
 
   const names = participants
@@ -65,7 +61,6 @@ export function MeetingSheet({
         participants: names,
         clientId: clientId || null,
         projectId: projectId || null,
-        prospectId: prospectId || null,
         language
       })
     } catch (e) {
@@ -107,12 +102,7 @@ export function MeetingSheet({
               className={input}
             />
           </Field>
-          <ContactChips
-            clientId={clientId || null}
-            prospectId={prospectId || null}
-            current={names}
-            onAdd={(name) => setParticipants([...names, name].join(', '))}
-          />
+
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -137,15 +127,7 @@ export function MeetingSheet({
             ]}
             onChange={setProjectId}
           />
-          <Select
-            label="Prospecto"
-            value={prospectId}
-            options={[
-              { value: '', label: 'Sin prospecto' },
-              ...(refs?.prospects ?? []).map((p) => ({ value: p.id, label: p.company }))
-            ]}
-            onChange={setProspectId}
-          />
+
         </div>
 
         <div role="radiogroup" aria-label="Idioma hablado" className="mt-4 flex items-center gap-3">
@@ -199,50 +181,3 @@ export function MeetingSheet({
   )
 }
 
-export function ContactChips({
-  clientId,
-  prospectId,
-  current,
-  onAdd
-}: {
-  clientId: string | null
-  prospectId: string | null
-  current: string[]
-  onAdd: (name: string) => void
-}): React.JSX.Element | null {
-  const load = useCallback(
-    () =>
-      clientId || prospectId
-        ? api
-            .listContacts({
-              client: clientId ?? undefined,
-              prospect: clientId ? undefined : (prospectId ?? undefined),
-              pageSize: 200
-            })
-            .then((page) => page.contacts)
-        : Promise.resolve([]),
-    [clientId, prospectId]
-  )
-  const { data } = useLoad(load)
-  // Solo sugerimos personas con nombre (los participantes se escriben por nombre).
-  const missing = (data ?? []).filter(
-    (c): c is typeof c & { name: string } =>
-      !!c.name && !current.some((p) => p.toLowerCase().includes(c.name!.toLowerCase()))
-  )
-  if (!missing.length) return null
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {missing.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          onClick={() => onAdd(c.name)}
-          className="flex h-6 items-center gap-1 rounded-full border border-ob-border px-2 text-[12px] text-ob-muted transition-colors hover:border-ob-accent hover:text-ob-text"
-        >
-          <Plus size={12} />
-          {c.name}
-        </button>
-      ))}
-    </div>
-  )
-}

@@ -14,7 +14,7 @@ import {
 import { MeetingModel } from '../models/meeting.model'
 import { ClientModel } from '../models/client.model'
 import { ProjectModel } from '../models/project.model'
-import { ProspectModel } from '../models/prospect.model'
+
 import { transactionGuard } from '../guards/transaction.guard'
 import { AppError } from './app.error'
 import { findByRef } from './ref'
@@ -43,17 +43,6 @@ export class MeetingService {
       where.projectId = (
         await findByRef(this.db.getRepository(ProjectModel), filter.project, 'name', 'el proyecto')
       ).id
-    if (filter.prospect) {
-      where.prospectId = (
-        await findByRef(
-          this.db.getRepository(ProspectModel),
-          filter.prospect,
-          'company',
-          'el prospecto'
-        )
-      ).id
-    }
-
     const meetings = await this.db
       .getRepository(MeetingModel)
       .find({ where, order: { date: 'DESC' } })
@@ -172,12 +161,11 @@ export class MeetingService {
 
     const project = best(await this.db.getRepository(ProjectModel).find(), (p) => p.name)
     const client = best(await this.db.getRepository(ClientModel).find(), (c) => c.name)
-    const prospect = best(await this.db.getRepository(ProspectModel).find(), (p) => p.company)
 
     return {
-      clientId: project?.clientId ?? client?.id ?? prospect?.clientId ?? null,
+      clientId: project?.clientId ?? client?.id ?? null,
       projectId: project?.id ?? null,
-      prospectId: prospect?.id ?? null
+      prospectId: null
     }
   }
 }
@@ -199,19 +187,6 @@ export async function associate(
     meeting.projectId = project?.id ?? null
     if (project && !meeting.clientId) meeting.clientId = project.clientId
   }
-  if (input.prospect !== undefined) {
-    const prospect = input.prospect
-      ? await findByRef(
-          manager.getRepository(ProspectModel),
-          input.prospect,
-          'company',
-          'el prospecto'
-        )
-      : null
-    meeting.prospectId = prospect?.id ?? null
-    if (prospect?.clientId && !meeting.clientId) meeting.clientId = prospect.clientId
-  }
-
   if (meeting.clientId && meeting.recordingPath) {
     const client = await manager.getRepository(ClientModel).findOneBy({ id: meeting.clientId })
     if (client)

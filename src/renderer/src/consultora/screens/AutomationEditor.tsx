@@ -93,8 +93,6 @@ function EditorBody({
     () =>
       options
         ? {
-            pipeline: new Set(options.pipelines.map((p) => p.id)),
-            stage: new Set(options.stages.map((s) => s.id)),
             client: new Set(options.clients.map((c) => c.id)),
             project: new Set(options.projects.map((p) => p.id))
           }

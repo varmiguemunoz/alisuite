@@ -69,36 +69,6 @@ export function registerConsultoraIpc(
   write('dashboard:save', (layout) => c.dashboards.save(layout))
   write('dashboard:reset', () => c.dashboards.reset())
 
-  read('consultora:listPipelines', () => c.prospects.listPipelines())
-  read('consultora:pipeline', (ref?: string) => c.prospects.pipeline(ref))
-  write('consultora:savePipeline', (input) => c.prospects.savePipeline(input))
-  write('consultora:removePipeline', (ref: string, moveTo) =>
-    c.prospects.removePipeline(ref, moveTo)
-  )
-  write('consultora:removeProspect', (ref: string) => c.prospects.remove(ref))
-  read('consultora:listStages', (pipeline?: string) => c.prospects.listStages(pipeline))
-  write('consultora:saveStages', (stages) => c.prospects.saveStages(stages))
-  read('consultora:getProspect', (ref: string) => c.prospects.get(ref))
-  write('consultora:createProspect', (input) => c.prospects.create(input))
-  write('consultora:updateProspect', (ref: string, patch) => c.prospects.update(ref, patch))
-  write(
-    'consultora:moveProspect',
-    (ref: string, stage: string, index?: number, pipeline?: string) =>
-      c.prospects.move(ref, stage, index, pipeline)
-  )
-
-  read('consultora:listContacts', (filter) => c.contacts.list(filter ?? {}))
-  read('consultora:getContact', (id: string) => c.contacts.get(id))
-  write('consultora:createContact', (input) => c.contacts.create(input))
-  write('consultora:updateContact', (id: string, patch) => c.contacts.update(id, patch))
-  write('consultora:removeContact', (id: string) => c.contacts.remove(id))
-  write('consultora:subscribeContact', (id: string) => c.contacts.subscribe(id))
-  write('consultora:unsubscribeContact', (id: string) => c.contacts.unsubscribe(id))
-  write('consultora:tagContact', (id: string, change) => c.contacts.tag(id, change ?? {}))
-  write('consultora:promoteContact', (id: string, stage?: string) => c.contacts.promote(id, stage))
-  write('consultora:convertContact', (id: string, input) => c.contacts.convert(id, input ?? {}))
-  write('consultora:detachContactProspect', (id: string) => c.contacts.detachProspect(id))
-
   ipcMain.handle('consultora:pickRecording', async (event) => {
     const options: Electron.OpenDialogOptions = {
       title: 'Subir grabación',

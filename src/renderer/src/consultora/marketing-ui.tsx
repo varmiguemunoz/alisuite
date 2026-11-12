@@ -1,21 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
-import type { ContactStatus, TagRef } from '@shared/marketing'
-import { Pill } from './ui'
-
-const STATUS: Record<ContactStatus, { tone: 'mint' | 'coral' | 'neutral'; label: string } | null> =
-  {
-    none: null,
-    subscribed: { tone: 'mint', label: 'Suscrito' },
-    unsubscribed: { tone: 'neutral', label: 'Baja' },
-    bounced: { tone: 'coral', label: 'Rebotó' },
-    complained: { tone: 'coral', label: 'Spam' }
-  }
-
-export function ContactStatusPill({ status }: { status: ContactStatus }): React.JSX.Element | null {
-  const entry = STATUS[status]
-  return entry ? <Pill tone={entry.tone}>{entry.label}</Pill> : null
-}
+import type { TagRef } from '@shared/marketing'
 
 export function Chips<T extends string>({
   label,

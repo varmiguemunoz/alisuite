@@ -1,7 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Radio } from 'lucide-react'
 import { normalizeName } from '@shared/consultora'
-import type { TagSummary } from '@shared/marketing'
 import type { TaskTagSummary } from '@shared/tasks'
 import { attempt, useLoad } from '../lib'
 import {
@@ -15,28 +13,17 @@ import {
   SearchField,
   Section
 } from '../ui'
-import { TagPill } from '../marketing-ui'
 
-const marketing = window.api.marketing
 const tasks = window.api.tasks
 
 export function Tags(): React.JSX.Element {
   const [query, setQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  const contactLoad = useCallback(() => marketing.listTags(), [])
-  const { data: contactTags, error: contactError } = useLoad(contactLoad)
   const taskLoad = useCallback(() => tasks.tagSummaries(), [])
   const { data: taskTags, error: taskError, reload: reloadTasks } = useLoad(taskLoad)
 
   const q = normalizeName(query)
-  const contacts = useMemo(
-    () =>
-      [...(contactTags ?? [])]
-        .filter((t) => !q || normalizeName(`${t.name} ${t.slug}`).includes(q))
-        .sort((a, b) => b.contacts - a.contacts || a.name.localeCompare(b.name, 'es')),
-    [contactTags, q]
-  )
   const taskList = useMemo(
     () => (taskTags ?? []).filter((t) => !q || normalizeName(t.tag).includes(q)),
     [taskTags, q]
@@ -45,17 +32,7 @@ export function Tags(): React.JSX.Element {
   const run = async (fn: () => Promise<unknown>): Promise<void> => setError(await attempt(fn))
 
   return (
-    <Page
-      title="Tags"
-      meta={
-        contactTags &&
-        taskTags && (
-          <span>
-            {contactTags.length} de contactos · {taskTags.length} de tareas
-          </span>
-        )
-      }
-    >
+    <Page title="Tags" meta={taskTags && <span>{taskTags.length} de tareas</span>}>
       <div className="mt-5 flex">
         <SearchField
           value={query}
@@ -64,29 +41,7 @@ export function Tags(): React.JSX.Element {
           label="Buscar tag"
         />
       </div>
-      <ErrorNote message={error ?? contactError ?? taskError} />
-
-      <Section title="Contactos">
-        {contacts.length === 0 ? (
-          <Empty title={q ? 'Ningún tag coincide.' : 'Aún no hay tags de contactos.'} />
-        ) : (
-          <List>
-            {contacts.map((t) => (
-              <ContactTagRow
-                key={t.slug}
-                tag={t}
-                onRename={(name) => void run(() => marketing.renameTag(t.slug, name))}
-                onAudience={(on) => void run(() => marketing.setTagAudience(t.slug, on))}
-                onRemove={() => void run(() => marketing.removeTag(t.slug))}
-              />
-            ))}
-          </List>
-        )}
-        <p className="mt-2 px-2 text-[12px] text-ob-faint">
-          Audiencia = tiene Segment en Resend y puede recibir newsletters. Tu plan de Resend limita
-          cuántos Segments puedes tener.
-        </p>
-      </Section>
+      <ErrorNote message={error ?? taskError} />
 
       <Section title="Tareas">
         {taskList.length === 0 ? (
@@ -108,60 +63,6 @@ export function Tags(): React.JSX.Element {
   )
 }
 
-function ContactTagRow({
-  tag,
-  onRename,
-  onAudience,
-  onRemove
-}: {
-  tag: TagSummary
-  onRename: (name: string) => void
-  onAudience: (on: boolean) => void
-  onRemove: () => void
-}): React.JSX.Element {
-  return (
-    <Row>
-      <span className="w-48 shrink-0">
-        <EditableText
-          value={tag.name}
-          label={`Nombre del tag ${tag.slug}`}
-          onSave={onRename}
-          className="text-list font-medium"
-        />
-      </span>
-      <span className="min-w-0 flex-1 truncate text-caption text-ob-muted">
-        {tag.contacts === 0 ? 'Sin uso' : `${tag.contacts} contactos · ${tag.subscribed} suscritos`}
-        <span className="ml-2 font-mono text-micro text-ob-faint">{tag.slug}</span>
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={tag.audience}
-        onClick={() => onAudience(!tag.audience)}
-        title={
-          tag.audience
-            ? 'Quitar audiencia (borra su Segment)'
-            : 'Marcar como audiencia (crea su Segment)'
-        }
-        className={`flex h-8 shrink-0 items-center gap-1.5 rounded-[4px] px-3 text-micro font-medium transition-colors ${
-          tag.audience
-            ? 'bg-ob-hover text-ob-text'
-            : 'text-ob-muted hover:bg-ob-hover hover:text-ob-text'
-        }`}
-      >
-        <Radio size={14} className={tag.audience ? 'text-ob-link' : ''} />
-        Audiencia
-      </button>
-      <ConfirmButton
-        label={`Borrar tag ${tag.name}`}
-        confirmLabel={tag.contacts ? `¿Quitar de ${tag.contacts}?` : '¿Borrar?'}
-        onConfirm={onRemove}
-        size="sm"
-      />
-    </Row>
-  )
-}
-
 function TaskTagRow({
   tag,
   onRename,
@@ -173,24 +74,10 @@ function TaskTagRow({
 }): React.JSX.Element {
   return (
     <Row>
-      <span className="w-48 shrink-0">
-        <EditableText
-          value={tag.tag}
-          label={`Renombrar #${tag.tag}`}
-          onSave={onRename}
-          className="text-list font-medium"
-        />
-      </span>
-      <span className="min-w-0 flex-1 truncate text-caption text-ob-muted">
-        {tag.tasks} {tag.tasks === 1 ? 'tarea' : 'tareas'}
-      </span>
-      <TagPill tag={{ slug: tag.tag, name: `#${tag.tag}` }} />
-      <ConfirmButton
-        label={`Quitar #${tag.tag} de todas las tareas`}
-        confirmLabel={`¿Quitar de ${tag.tasks}?`}
-        onConfirm={onRemove}
-        size="sm"
-      />
+      <span className="min-w-0 flex-1 truncate text-[14px]">{tag.tag}</span>
+      <span className="shrink-0 text-[12px] text-ob-muted">{tag.tasks} tareas</span>
+      <EditableText value={tag.tag} onSave={onRename} label="Renombrar tag" />
+      <ConfirmButton label="Borrar tag" onConfirm={onRemove} />
     </Row>
   )
 }

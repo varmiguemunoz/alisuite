@@ -6,9 +6,9 @@ S pequeña, M media, L grande. P0 imprescindible, P1 importante. Cada tarea term
 ## Fase A · Identidad sin perder datos
 
 - [x] A1 `DATA_DIR` compartido; `userData` fijo antes de `ready`; `mcp/client.ts` lo usa. S · P0 · R2.1,
-  R2.3
+      R2.3
 - [x] A2 `appId`, `productName` y textos visibles a Alisuite; `setAppUserModelId`. S · P0 · R1.1, R3.8 ·
-  tras A1
+      tras A1
 - [x] A3 Script de iconos y PNG versionados: app, bandeja macOS y bandeja Windows. S · P0 · R1.2, R1.3
 - [ ] A4 Probar en tu Mac que Alisuite abre con todos tus datos. S · P0 · tras A1 y A2
 
@@ -16,12 +16,12 @@ S pequeña, M media, L grande. P0 imprescindible, P1 importante. Cada tarea term
 
 - [x] B1 `platform.ts` y guardas en permisos, atajo de voz y voz. S · P0
 - [x] B2 `handleProtocolUrl` para `open-url`, `second-instance` y argv inicial, con pruebas. S · P0 ·
-  R3.7
+      R3.7
 - [x] B3 Ventana Consultora con `titleBarOverlay`; `platform` en preload; padding de `AppShell`. M · P0 ·
-  R3.3
+      R3.3
 - [x] B4 Sin menú en Windows. S · P0 · R3.4
 - [x] B5 Ventana compacta encima de la bandeja si está abajo; icono de bandeja por plataforma. S · P0 ·
-  R3.2
+      R3.2
 - [x] B6 `shared/keys.ts`, componente `Shortcut` y sustitución en los 16 archivos. M · P1 · R3.5
 - [x] B7 Atajo de voz por defecto en Windows. S · P1 · R3.6
 - [x] B8 Carpeta de documentos por defecto con `app.getPath('desktop')`. S · P1 · R3.11
@@ -32,12 +32,12 @@ S pequeña, M media, L grande. P0 imprescindible, P1 importante. Cada tarea term
 
 - [x] C1 `claude-config.ts` y botón Conectar con Claude, con pruebas. M · P1 · R6.1 · tras A1
 - [x] C2 `electron-updater`, `updater.ts`, versión y Buscar actualizaciones en Ajustes. M · P0 · R5.2,
-  R5.3 · tras P2
+      R5.3 · tras P2
 
 ## Fase D · Construcción y publicación
 
 - [x] D1 `electron-builder.yml` con `win`, `nsis`, `mac` y `publish`; scripts `build:win` y `release`.
-  S · P0 · R3.1, R4.2
+      S · P0 · R3.1, R4.2
 - [x] D2 Workflow de CI: check y pruebas en macOS y Windows en cada push. S · P0 · R7.1
 - [ ] D3 Corregir lo que falle en la suite de Windows. M · P0 · tras D2
 - [x] D4 Workflow de release con tag `v*`. S · P0 · R5.1 · tras D1, D3 y P2

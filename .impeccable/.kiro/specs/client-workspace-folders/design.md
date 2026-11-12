@@ -2,15 +2,15 @@
 
 ## Estado actual
 
-| pieza | hoy |
-|---|---|
-| ruta por defecto | `insertClient`: `join(config.docsPath(), safeFolderName(name))` |
-| subcarpetas | `documents.ts`, `ensureClientFolder`, `CLIENT_SUBFOLDERS` |
-| lista de la ficha | `listDocuments(folderPath)`, plana, profundidad 3 |
-| nube | `sync.ts`: `relocateClientFolders` y `fill` usan `docsPath()` |
-| columna | `clients.folder_path` absoluta y local, `LOCAL_ONLY.columns` en `shared/edition.ts` |
-| grabaciones | `meeting.service.ts` mueve a `<folderPath>/Reuniones` con `moveInto` |
-| Workspace | `WorkspaceService` indexa `config.workspacePath()` y vigila cambios |
+| pieza             | hoy                                                                                 |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| ruta por defecto  | `insertClient`: `join(config.docsPath(), safeFolderName(name))`                     |
+| subcarpetas       | `documents.ts`, `ensureClientFolder`, `CLIENT_SUBFOLDERS`                           |
+| lista de la ficha | `listDocuments(folderPath)`, plana, profundidad 3                                   |
+| nube              | `sync.ts`: `relocateClientFolders` y `fill` usan `docsPath()`                       |
+| columna           | `clients.folder_path` absoluta y local, `LOCAL_ONLY.columns` en `shared/edition.ts` |
+| grabaciones       | `meeting.service.ts` mueve a `<folderPath>/Reuniones` con `moveInto`                |
+| Workspace         | `WorkspaceService` indexa `config.workspacePath()` y vigila cambios                 |
 
 ## Cambios
 
@@ -69,18 +69,18 @@ Las rutas relativas que se guardan o se envían al renderer usan `/`. `listDocum
 
 ## Pruebas
 
-| tipo | qué |
-|---|---|
-| unidad | `clientFolderFor`, `safeFolderName` con nombres de Windows |
-| unidad | migración: mueve, respalda, fusiona, actualiza rutas, se puede repetir |
+| tipo        | qué                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------ |
+| unidad      | `clientFolderFor`, `safeFolderName` con nombres de Windows                           |
+| unidad      | migración: mueve, respalda, fusiona, actualiza rutas, se puede repetir               |
 | integración | crear, renombrar y borrar cliente con `tempWorkspace`; notas por carpeta en `detail` |
-| integración | `sync.ts` crea la carpeta en `Workspace/Clientes` para un cliente recibido |
+| integración | `sync.ts` crea la carpeta en `Workspace/Clientes` para un cliente recibido           |
 
 ## Riesgos
 
-| riesgo | mitigación |
-|---|---|
-| perder archivos al mover | copia de seguridad antes y fusión sin pisar |
-| grabaciones con ruta vieja | se actualizan en la misma pasada |
+| riesgo                                  | mitigación                                                                                                                                |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| perder archivos al mover                | copia de seguridad antes y fusión sin pisar                                                                                               |
+| grabaciones con ruta vieja              | se actualizan en la misma pasada                                                                                                          |
 | boards que referencian archivos movidos | el movimiento entra al Workspace como carpeta nueva; las rutas antiguas no estaban en el Workspace, así que no hay referencias que romper |
-| carpeta abierta en otra app en Windows | el `rename` falla; se reintenta en el siguiente arranque y se avisa |
+| carpeta abierta en otra app en Windows  | el `rename` falla; se reintenta en el siguiente arranque y se avisa                                                                       |

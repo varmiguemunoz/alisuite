@@ -17,17 +17,9 @@ export type Screen =
   | { name: 'project'; id: string }
   | { name: 'meetings' }
   | { name: 'meeting'; id: string }
-  | { name: 'pipeline' }
-  | { name: 'prospect'; id: string }
   | { name: 'tags' }
-  | { name: 'contacts' }
-  | { name: 'contact'; id: string }
   | { name: 'automations' }
   | { name: 'automation'; id: string }
-  | { name: 'sources' }
-  | { name: 'outreach' }
-  | { name: 'outreach-sequence'; id: string | null }
-  | { name: 'newsletters' }
   | { name: 'note'; id: string }
   | { name: 'document'; client: string; path: string }
   | { name: 'settings' }

@@ -87,8 +87,6 @@ export const LOCAL_CHANGE_LOG_LIMIT = 10_000
 export const NEVER_SYNC = {
   files: ['settings.json', 'ui-state.json', 'connection.json'],
   tables: [
-    'resend_outbox',
-    'hub_receipts',
     'change_log',
     'migrations',
     'sync_state',

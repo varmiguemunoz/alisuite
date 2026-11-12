@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'ele
 import type { TasksApi } from '../shared/tasks'
 import type { NotesApi } from '../shared/notes'
 import type { ConsultoraApi, StopInfo } from '../shared/consultora'
-import type { MarketingApi } from '../shared/marketing'
+
 import {
   AUTOMATION_METHODS,
   type AutomationsApi,
@@ -231,28 +231,6 @@ const consultora: ConsultoraApi = {
   createProject: call('createProject'),
   updateProject: call('updateProject'),
   removeProject: call('removeProject'),
-  listPipelines: call('listPipelines'),
-  pipeline: call('pipeline'),
-  savePipeline: call('savePipeline'),
-  removePipeline: call('removePipeline'),
-  removeProspect: call('removeProspect'),
-  listStages: call('listStages'),
-  saveStages: call('saveStages'),
-  getProspect: call('getProspect'),
-  createProspect: call('createProspect'),
-  updateProspect: call('updateProspect'),
-  moveProspect: call('moveProspect'),
-  listContacts: call('listContacts'),
-  getContact: call('getContact'),
-  createContact: call('createContact'),
-  updateContact: call('updateContact'),
-  removeContact: call('removeContact'),
-  subscribeContact: call('subscribeContact'),
-  unsubscribeContact: call('unsubscribeContact'),
-  tagContact: call('tagContact'),
-  promoteContact: call('promoteContact'),
-  convertContact: call('convertContact'),
-  detachContactProspect: call('detachContactProspect'),
   pickRecording: call('pickRecording'),
   importRecording: call('importRecording'),
   listMeetings: call('listMeetings'),
@@ -271,42 +249,6 @@ const consultora: ConsultoraApi = {
   renameDocument: call('renameDocument'),
   trashDocument: call('trashDocument'),
   appendNote: call('appendNote')
-}
-
-const callMarketing =
-  (method: keyof MarketingApi) =>
-  (...args: unknown[]) =>
-    ipcRenderer.invoke(`marketing:${method}`, ...args)
-
-const marketing: MarketingApi = {
-  listTags: callMarketing('listTags'),
-  renameTag: callMarketing('renameTag'),
-  setTagAudience: callMarketing('setTagAudience'),
-  tagUsage: callMarketing('tagUsage'),
-  removeTag: callMarketing('removeTag'),
-  status: callMarketing('status'),
-  syncNow: callMarketing('syncNow'),
-  testResend: callMarketing('testResend'),
-  emailProviders: callMarketing('emailProviders'),
-  testProvider: callMarketing('testProvider'),
-  outreachStatus: callMarketing('outreachStatus'),
-  listOutreachSequences: callMarketing('listOutreachSequences'),
-  saveOutreachSequence: callMarketing('saveOutreachSequence'),
-  getOutreachSequence: callMarketing('getOutreachSequence'),
-  archiveOutreachSequence: callMarketing('archiveOutreachSequence'),
-  setOutreachSequenceStatus: callMarketing('setOutreachSequenceStatus'),
-  enrollOutreach: callMarketing('enrollOutreach'),
-  pollOutreach: callMarketing('pollOutreach'),
-  listSources: callMarketing('listSources'),
-  createSource: callMarketing('createSource'),
-  updateSource: callMarketing('updateSource'),
-  rotateSourceSecret: callMarketing('rotateSourceSecret'),
-  removeSource: callMarketing('removeSource'),
-  testHub: callMarketing('testHub'),
-  listNewsletters: callMarketing('listNewsletters'),
-  getNewsletter: callMarketing('getNewsletter'),
-  newsletterContext: callMarketing('newsletterContext'),
-  setNewsletterPaused: callMarketing('setNewsletterPaused')
 }
 
 const recording = {
@@ -383,7 +325,6 @@ contextBridge.exposeInMainWorld('api', {
   notes,
   workspace,
   consultora,
-  marketing,
   automations,
   recording,
   permissions,

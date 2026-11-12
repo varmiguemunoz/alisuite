@@ -11,12 +11,7 @@ import {
 } from '@shared/consultora'
 import { ClientModel } from '../models/client.model'
 import { ProjectModel } from '../models/project.model'
-import { ProspectModel } from '../models/prospect.model'
 import { MeetingModel } from '../models/meeting.model'
-import { StageModel } from '../models/stage.model'
-import { PipelineModel } from '../models/pipeline.model'
-import { ContactModel } from '../models/contact.model'
-import { contactLabel } from '@shared/marketing'
 import { transactionGuard } from '../guards/transaction.guard'
 import { AppError } from './app.error'
 import { findByRef } from './ref'
@@ -46,19 +41,6 @@ export class ContextService {
       .getRepository(ProjectModel)
       .find({ order: { updatedAt: 'DESC' } })
     const meetings = await this.db.getRepository(MeetingModel).find({ order: { date: 'DESC' } })
-    const stages = await this.db.getRepository(StageModel).find({ order: { position: 'ASC' } })
-    const prospects = await this.db.getRepository(ProspectModel).find()
-    const pipelines = await this.db
-      .getRepository(PipelineModel)
-      .find({ order: { position: 'ASC' } })
-    const pipelineName = new Map(pipelines.map((p) => [p.id, p.name]))
-    const order = new Map(pipelines.map((p, i) => [p.id, i]))
-    stages.sort(
-      (a, b) =>
-        (order.get(a.pipelineId) ?? 0) - (order.get(b.pipelineId) ?? 0) || a.position - b.position
-    )
-
-    const openStages = new Set(stages.filter((s) => s.kind === 'open').map((s) => s.id))
 
     return {
       activeClients: clients.map((client) => {
@@ -78,25 +60,8 @@ export class ContextService {
         }
       }),
       openActionItems: openActionItems(meetings).slice(0, 40),
-      pipeline: stages.map((stage) => {
-        const list = prospects.filter((p) => p.stageId === stage.id)
-        return {
-          pipeline: pipelineName.get(stage.pipelineId) ?? '',
-          stage: stage.name,
-          kind: stage.kind,
-          count: list.length,
-          valueUsd: list.reduce((t, p) => t + (p.valueUsd ?? 0), 0)
-        }
-      }),
-      nextSteps: prospects
-        .filter((p) => openStages.has(p.stageId) && p.nextStep)
-        .sort((a, b) => (a.nextStepDate ?? '9999').localeCompare(b.nextStepDate ?? '9999'))
-        .map((p) => ({
-          prospectId: p.id,
-          company: p.company,
-          nextStep: p.nextStep!,
-          date: p.nextStepDate
-        })),
+      pipeline: [],
+      nextSteps: [],
       recentMeetings: meetings.slice(0, 5).map(brief)
     }
   }
@@ -104,11 +69,9 @@ export class ContextService {
   async refs(): Promise<Refs> {
     const clients = await this.db.getRepository(ClientModel).find({ order: { name: 'ASC' } })
     const projects = await this.db.getRepository(ProjectModel).find({ order: { name: 'ASC' } })
-    const prospects = await this.db.getRepository(ProspectModel).find({ order: { company: 'ASC' } })
     return {
       clients: clients.map(({ id, name, status }) => ({ id, name, status })),
-      projects: projects.map(({ id, name, clientId, status }) => ({ id, name, clientId, status })),
-      prospects: prospects.map(({ id, company, clientId }) => ({ id, company, clientId }))
+      projects: projects.map(({ id, name, clientId, status }) => ({ id, name, clientId, status }))
     }
   }
 
@@ -132,18 +95,8 @@ export class ContextService {
       ],
       order: { date: 'DESC' }
     })
-    const prospects = await this.db.getRepository(ProspectModel).find({
-      where: [{ company: like }, { notesMd: like }, { contactMd: like }, { nextStep: like }]
-    })
-
-    const contacts = await this.db
-      .getRepository(ContactModel)
-      .find({ where: [{ name: like }, { email: like }, { role: like }, { notesMd: like }] })
 
     return [
-      ...contacts.map((c) =>
-        hit('contact', c.id, contactLabel(c), q, [c.name, c.role, c.email, c.notesMd])
-      ),
       ...clients.map((c) =>
         hit('client', c.id, c.name, q, [c.name, c.sector, c.notesMd, c.contactsMd])
       ),
@@ -158,9 +111,6 @@ export class ContextService {
           m.rawNotesMd,
           m.transcriptMd
         ])
-      ),
-      ...prospects.map((p) =>
-        hit('prospect', p.id, p.company, q, [p.company, p.notesMd, p.contactMd, p.nextStep])
       )
     ].slice(0, 50)
   }
@@ -218,17 +168,13 @@ export class ContextService {
         const repo = manager.getRepository(ProjectModel)
         const row = await findByRef(repo, ref, 'name', 'el proyecto')
         await repo.save({ ...row, notesMd: add(row.notesMd), updatedAt: stamp })
-      } else if (entity === 'prospect') {
-        const repo = manager.getRepository(ProspectModel)
-        const row = await findByRef(repo, ref, 'company', 'el prospecto')
-        await repo.save({ ...row, notesMd: add(row.notesMd), updatedAt: stamp })
       } else if (entity === 'meeting') {
         const repo = manager.getRepository(MeetingModel)
         const row = await repo.findOneBy({ id: ref })
         if (!row) throw new AppError('not_found', 'No existe esa reunión.')
         await repo.save({ ...row, rawNotesMd: add(row.rawNotesMd), updatedAt: stamp })
       } else {
-        throw new AppError('invalid', 'entity debe ser client, project, prospect o meeting.')
+        throw new AppError('invalid', 'entity debe ser client, project o meeting.')
       }
     })
   }
