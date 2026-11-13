@@ -19,7 +19,7 @@ const credentials = (id: ProviderId): Record<string, string> | null => {
 }
 
 export const providerRegistry = new ProviderRegistry(
-  [resendDescriptor, apolloDescriptor({ footer: () => config.outreachFooter() })],
+  [resendDescriptor, apolloDescriptor()],
   credentials
 )
 

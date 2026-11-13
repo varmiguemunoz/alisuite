@@ -206,7 +206,7 @@ export interface Settings {
   voiceEnabled: boolean
 
   workspaceShortcut: string
-  // ---- Email marketing (los secretos, solo como pista) ----
+  // ---- Email (los secretos, solo como pista) ----
   hasResendKey: boolean
   resendKeyHint: string
   fromEmail: string
@@ -216,12 +216,9 @@ export interface Settings {
   hubUrl: string
   hasHubToken: boolean
   hubTokenHint: string
-  newsletterPaused: boolean
   emailRoles: RoleAssignment
   hasApolloKey: boolean
   apolloKeyHint: string
-  outreachDailyCap: number
-  outreachFooter: string
 }
 
 export interface VoiceStatus {
@@ -258,11 +255,8 @@ export interface SettingsInput {
   hubUrl?: string
 
   hubAdminToken?: string
-  newsletterPaused?: boolean
   emailRoles?: Partial<Record<DeliveryRole, string | null>>
   apolloApiKey?: string
-  outreachDailyCap?: number
-  outreachFooter?: string
 }
 
 export type NoteEntity = 'client' | 'project' | 'meeting'

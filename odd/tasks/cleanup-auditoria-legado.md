@@ -20,7 +20,7 @@ T1 | S1 | route: inline | status: done | commit: n/a (removed gitignored dist/, 
 T2 | S2 | route: inline | status: done | commit: 89b3e41 (dead unused files deleted)
 T3 | S3 | route: inline | status: done | commit: 590324d (active sync/activity/contracts aligned; tests/typecheck/lint pass for scope)
 T4 | S4 | route: inline | status: in-progress | commit: -
-T5 | S5 | route: inline | status: pending | commit: -
+T5 | S5 | route: inline | status: in-progress | commit: -
 T6 | S6 | route: inline | status: pending | commit: -
 T7 | S7 | route: inline | status: pending | commit: -
 
@@ -37,4 +37,6 @@ L8: T4 in progress: removed legacy CRM dashboard widgets/metrics contracts (pipe
 L9: T4 slice: removed `prospectId`/`prospect` linkage from shared task/meeting contracts, models, views, services, controllers, renderer task helpers, and MCP tools/index; cleaned related stale MCP/UI strings. `npm run typecheck` (node+web) OK. Commit `8b1e2e5`.
 L10: T4 slice: trimmed automations shared model/catalog/fields/validate/templates to active subjects/triggers/nodes (client/task/meeting/none), kept legacy subject/trigger/node compatibility and retired specs for stored defs/migrations, cleaned renderer automation UI/context, and updated automation domain/graph/migration/routes tests to active behavior while preserving migration compatibility. Evidence: `npx tsc --noEmit -p tsconfig.node.json --composite false` OK; `npx tsc --noEmit -p tsconfig.web.json --composite false` OK; vitest `automations-domain, automations-graph, automations-migration, automations-mcp, automations.routes` 42/42 passed. Commit `7730c39`.
 L11: T4 slice: removed stale pipeline wording from App title, Settings help text, and Home dashboard copy/comments. `tsc web` OK. Commit `b3c9179`.
-L12: T4 slice: removed stale pipeline/contacto group entries from automation NodePicker/Canvas, dropped legacy `pipeline.` ui-state migration key, and removed unused `Overview.pipeline`/`Overview.nextSteps` from shared consultora types and context service. `tsc node/web` OK. Commit `ea68bc1`.
+L12: T4 slice: removed stale pipeline/contacto group entries from automation NodePicker/Canvas, dropped legacy `pipeline.` ui-state migration key, and removed unused `Overview.pipeline`/`Overview.nextSteps` from shared consultora types and context service. `tsc node/web` OK. Commit `9ce207e`.
+
+L13: T5 slice: removed dead newsletter/outreach config fields and wiring (`newsletterPaused`, `outreachDailyCap`, `outreachFooter`, `outreachCursor`/`saveOutreachCursor`) from `src/main/config.ts`, `src/shared/consultora.ts`, and `src/main/email.ts` (apollo no longer receives outreach footer). Kept email delivery/`email_owner` transactional path intact. `tsc node/web` OK. Commit `1833e99`.
