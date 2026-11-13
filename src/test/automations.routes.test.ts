@@ -52,15 +52,21 @@ describe('/automations (API que usa Claude)', () => {
   }
 
   it('crea, guarda borrador, publica, pausa, lista ejecuciones y borra', async () => {
-    const created = await call('POST', '', { name: 'Bienvenida', subject: 'contact' })
+    const created = await call('POST', '', { name: 'Bienvenida', subject: 'client' })
     expect(created.status).toBe(201)
     const id = created.data.automation.id
     const draft = {
       ...created.data.automation.draft,
-      triggers: [{ id: 't', type: 'contact.created', params: {}, conditions: [] }],
+      triggers: [{ id: 't', type: 'client.created', params: {}, conditions: [] }],
       root: 'a',
       nodes: {
-        a: { id: 'a', type: 'add_tag', name: 'Tag', params: { tag: 'nuevo' }, next: { next: null } }
+        a: {
+          id: 'a',
+          type: 'create_task',
+          name: 'Tarea',
+          params: { title: 'Seguimiento' },
+          next: { next: null }
+        }
       }
     }
     expect((await call('PUT', `/${id}/draft`, { definition: draft })).data.issues).toEqual([])
@@ -73,7 +79,7 @@ describe('/automations (API que usa Claude)', () => {
     expect((await call('GET', `/${id}/versions`)).data).toHaveLength(1)
     expect((await call('POST', `/${id}/test`, { subjectId: null })).data.steps).toHaveLength(1)
     expect((await call('GET', '/nope')).status).toBe(404)
-    expect((await call('GET', '/catalog')).data.nodes.length).toBeGreaterThan(20)
+    expect((await call('GET', '/catalog')).data.nodes.length).toBeGreaterThan(5)
     expect((await call('DELETE', `/${id}`)).data).toEqual({ ok: true })
     expect((await call('GET', '')).data).toEqual([])
   })

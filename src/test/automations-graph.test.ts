@@ -22,8 +22,8 @@ import {
 
 const node = (
   id: string,
-  type: NodeDef['type'] = 'add_tag',
-  params: NodeDef['params'] = { tag: 'x' }
+  type: NodeDef['type'] = 'create_task',
+  params: NodeDef['params'] = { title: 'Tarea' }
 ): NodeDef => ({
   id,
   type,
@@ -37,15 +37,15 @@ const branches = (...ids: string[]): NodeDef['params'] => ({
     id,
     name: id,
     groups: [
-      { join: 'and', conditions: [{ field: 'contact.tags', operator: 'includes', value: id }] }
+      { join: 'and', conditions: [{ field: 'client.name', operator: 'contains', value: id }] }
     ]
   }))
 })
 
 const chain = (...ids: string[]): Definition => {
   let def: Definition = {
-    ...emptyDefinition('contact'),
-    triggers: [{ id: 't1', type: 'contact.created', params: {}, conditions: [] }]
+    ...emptyDefinition('client'),
+    triggers: [{ id: 't1', type: 'client.created', params: {}, conditions: [] }]
   }
   let slot = ROOT_SLOT
   for (const id of ids) {

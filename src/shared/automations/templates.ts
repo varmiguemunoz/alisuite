@@ -41,38 +41,9 @@ function chain(subject: SubjectType, trigger: TriggerDef, nodes: NodeDef[]): Def
 
 export const TEMPLATES: AutomationTemplate[] = [
   {
-    id: 'welcome',
-    name: 'Bienvenida a suscriptores',
-    description: 'Email de bienvenida, espera dos días y lo marca para nurture.',
-    subject: 'contact',
-    build: () =>
-      chain('contact', { id: 't1', type: 'contact.subscribed', params: {}, conditions: [] }, [
-        step('n1', 'send_email', 'Email de bienvenida', {
-          subject: 'Bienvenido, {{contact.first_name}}',
-          body: 'Hola {{contact.first_name}}, gracias por suscribirte.'
-        }),
-        step('n2', 'wait', 'Esperar 2 días', { mode: 'delay', amount: 2, unit: 'days' }),
-        step('n3', 'add_tag', 'Pasar a nurture', { tag: 'nurture' })
-      ])
-  },
-  {
-    id: 'won',
-    name: 'Prospecto ganado a cliente',
-    description: 'Al ganar un prospecto crea el cliente y una tarea de kickoff para mañana.',
-    subject: 'prospect',
-    build: () =>
-      chain('prospect', { id: 't1', type: 'prospect.won', params: {}, conditions: [] }, [
-        step('n1', 'create_client', 'Crear cliente', {}),
-        step('n2', 'create_task', 'Tarea de kickoff', {
-          title: 'Kickoff con {{prospect.company}}',
-          inDays: 1
-        })
-      ])
-  },
-  {
     id: 'weekly',
-    name: 'Revisión semanal del pipeline',
-    description: 'Cada lunes a las 9 crea una tarea para revisar el pipeline.',
+    name: 'Revisión semanal',
+    description: 'Cada lunes a las 9 crea una tarea de revisión.',
     subject: 'none',
     build: () =>
       chain(
@@ -83,7 +54,7 @@ export const TEMPLATES: AutomationTemplate[] = [
           params: { frequency: 'weekly', weekday: '1', time: '09:00' },
           conditions: []
         },
-        [step('n1', 'create_task', 'Revisar pipeline', { title: 'Revisar el pipeline', inDays: 0 })]
+        [step('n1', 'create_task', 'Revisar semana', { title: 'Revisar la semana', inDays: 0 })]
       )
   }
 ]

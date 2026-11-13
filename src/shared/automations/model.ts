@@ -1,5 +1,9 @@
-export const SUBJECT_TYPES = ['contact', 'prospect', 'client', 'task', 'meeting', 'none'] as const
-export type SubjectType = (typeof SUBJECT_TYPES)[number]
+// Active subjects/triggers/nodes exposed in UI. Legacy values kept for stored/published
+// automations and migration compatibility (see ALL_* and catalog retired specs).
+export const SUBJECT_TYPES = ['client', 'task', 'meeting', 'none'] as const
+export const LEGACY_SUBJECT_TYPES = ['contact', 'prospect'] as const
+export const ALL_SUBJECT_TYPES = [...SUBJECT_TYPES, ...LEGACY_SUBJECT_TYPES] as const
+export type SubjectType = (typeof ALL_SUBJECT_TYPES)[number]
 
 export const SUBJECT_LABELS: Record<SubjectType, string> = {
   contact: 'Contacto',
@@ -14,6 +18,13 @@ export const AUTOMATION_STATUSES = ['draft', 'active', 'paused', 'locked'] as co
 export type AutomationStatus = (typeof AUTOMATION_STATUSES)[number]
 
 export const TRIGGER_TYPES = [
+  'client.created',
+  'task.completed',
+  'meeting.ready',
+  'schedule',
+  'manual'
+] as const
+export const LEGACY_TRIGGER_TYPES = [
   'contact.created',
   'contact.tag_added',
   'contact.tag_removed',
@@ -24,20 +35,25 @@ export const TRIGGER_TYPES = [
   'prospect.created',
   'prospect.stage_changed',
   'prospect.won',
-  'prospect.lost',
-  'client.created',
-  'task.completed',
-  'meeting.ready',
-  'schedule',
-  'manual'
+  'prospect.lost'
 ] as const
-export type TriggerType = (typeof TRIGGER_TYPES)[number]
+export const ALL_TRIGGER_TYPES = [...TRIGGER_TYPES, ...LEGACY_TRIGGER_TYPES] as const
+export type TriggerType = (typeof ALL_TRIGGER_TYPES)[number]
 
 export const NODE_TYPES = [
   'if_else',
   'wait',
   'go_to',
   'finish',
+  'create_client',
+  'create_project',
+  'email_owner',
+  'create_task',
+  'create_note',
+  'notify_mac',
+  'webhook'
+] as const
+export const LEGACY_NODE_TYPES = [
   'add_tag',
   'remove_tag',
   'update_contact',
@@ -52,17 +68,11 @@ export const NODE_TYPES = [
   'move_prospect',
   'update_prospect',
   'delete_prospect',
-  'create_client',
-  'create_project',
   'send_email',
-  'start_sequence',
-  'email_owner',
-  'create_task',
-  'create_note',
-  'notify_mac',
-  'webhook'
+  'start_sequence'
 ] as const
-export type NodeType = (typeof NODE_TYPES)[number]
+export const ALL_NODE_TYPES = [...NODE_TYPES, ...LEGACY_NODE_TYPES] as const
+export type NodeType = (typeof ALL_NODE_TYPES)[number]
 
 export type TimeUnit = 'minutes' | 'hours' | 'days'
 export const TIME_UNITS: TimeUnit[] = ['minutes', 'hours', 'days']

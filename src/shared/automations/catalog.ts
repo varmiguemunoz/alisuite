@@ -16,10 +16,7 @@ export type ParamKind =
   | 'number'
   | 'select'
   | 'boolean'
-  | 'tag'
   | 'tags'
-  | 'pipeline'
-  | 'stage'
   | 'client'
   | 'project'
   | 'field'
@@ -42,17 +39,14 @@ export interface ParamSpec {
   min?: number
 }
 
-export type RefKind = 'tag' | 'pipeline' | 'stage' | 'client' | 'project' | 'node'
+export type RefKind = 'client' | 'project' | 'node'
 
 export type Names = (kind: RefKind, id: string) => string | undefined
 
-export type NodeGroup =
-  'control' | 'contacto' | 'pipeline' | 'clientes' | 'email' | 'productividad' | 'integraciones'
+export type NodeGroup = 'control' | 'clientes' | 'email' | 'productividad' | 'integraciones' | 'contacto' | 'pipeline'
 
-export const NODE_GROUPS: { id: NodeGroup; label: string }[] = [
+export const NODE_GROUPS: { id: Exclude<NodeGroup, 'contacto' | 'pipeline'>; label: string }[] = [
   { id: 'control', label: 'Control' },
-  { id: 'contacto', label: 'Contacto' },
-  { id: 'pipeline', label: 'Pipeline' },
   { id: 'clientes', label: 'Clientes' },
   { id: 'email', label: 'Email' },
   { id: 'productividad', label: 'Productividad' },
@@ -79,7 +73,7 @@ export interface NodeSpec {
   sentence(params: Params, names: Names): string
 }
 
-export type TriggerGroup = 'contacto' | 'pipeline' | 'clientes' | 'productividad' | 'tiempo'
+export type TriggerGroup = 'clientes' | 'productividad' | 'tiempo'
 
 export interface TriggerSpec {
   type: TriggerType
@@ -396,214 +390,17 @@ const CONTROL: NodeSpec[] = [
   }
 ]
 
-const CONTACT_ONLY: SubjectType[] = ['contact']
-const CONTACT_OR_PROSPECT: SubjectType[] = ['contact', 'prospect']
-
-const CONTACT_FIELDS = [
-  { value: 'name', label: 'Nombre' },
-  { value: 'role', label: 'Rol' },
-  { value: 'phone', label: 'Teléfono' },
-  { value: 'linkedin', label: 'LinkedIn' }
-]
-
 const DOMAIN: NodeSpec[] = [
-  action({
-    type: 'add_tag',
-    group: 'contacto',
-    label: 'Añadir tag',
-    description: 'Añade un tag al contacto.',
-    icon: 'Tag',
-    subjects: CONTACT_ONLY,
-    params: [{ key: 'tag', label: 'Tag', kind: 'tag', required: true }],
-    sentence: (p, n) => `Añadir el tag ${quote(ref(n, 'tag', str(p, 'tag'), '…'))}`
-  }),
-  action({
-    type: 'remove_tag',
-    group: 'contacto',
-    label: 'Quitar tag',
-    description: 'Quita un tag del contacto.',
-    icon: 'TagX',
-    subjects: CONTACT_ONLY,
-    params: [{ key: 'tag', label: 'Tag', kind: 'tag', required: true }],
-    sentence: (p, n) => `Quitar el tag ${quote(ref(n, 'tag', str(p, 'tag'), '…'))}`
-  }),
-  action({
-    type: 'update_contact',
-    group: 'contacto',
-    label: 'Actualizar dato',
-    description: 'Cambia el nombre, el rol, el teléfono o el LinkedIn del contacto.',
-    icon: 'UserPen',
-    subjects: CONTACT_ONLY,
-    params: [
-      { key: 'field', label: 'Dato', kind: 'select', required: true, options: CONTACT_FIELDS },
-      { key: 'value', label: 'Valor', kind: 'text', vars: true }
-    ],
-    sentence: (p) => {
-      const field = CONTACT_FIELDS.find((f) => f.value === str(p, 'field'))?.label ?? 'un dato'
-      return `Cambiar ${field.toLowerCase()} a ${quote(str(p, 'value'))}`
-    }
-  }),
-  action({
-    type: 'set_field',
-    group: 'contacto',
-    label: 'Guardar campo',
-    description: 'Guarda un campo personalizado del contacto.',
-    icon: 'RectangleEllipsis',
-    subjects: CONTACT_ONLY,
-    params: [
-      { key: 'key', label: 'Campo', kind: 'text', required: true },
-      { key: 'value', label: 'Valor', kind: 'text', vars: true }
-    ],
-    sentence: (p) => `Guardar ${str(p, 'key') || 'un campo'} = ${quote(str(p, 'value'))}`
-  }),
-  action({
-    type: 'append_contact_note',
-    group: 'contacto',
-    label: 'Añadir a las notas',
-    description: 'Añade un texto al final de las notas del contacto.',
-    icon: 'NotebookPen',
-    subjects: CONTACT_ONLY,
-    params: [{ key: 'text', label: 'Texto', kind: 'markdown', required: true, vars: true }],
-    sentence: () => 'Añadir a las notas del contacto'
-  }),
-  action({
-    type: 'assign_client',
-    group: 'contacto',
-    label: 'Asignar a cliente',
-    description: 'Asigna el contacto a un cliente elegido, o al de su empresa si existe o se crea.',
-    icon: 'Building',
-    subjects: CONTACT_ONLY,
-    params: [
-      {
-        key: 'from',
-        label: 'Cliente',
-        kind: 'select',
-        required: true,
-        options: [
-          { value: 'pick', label: 'Elegir uno' },
-          { value: 'company', label: 'El de su empresa' }
-        ]
-      },
-      {
-        key: 'client',
-        label: 'Cliente',
-        kind: 'client',
-        required: true,
-        when: { key: 'from', is: ['pick'] }
-      }
-    ],
-    sentence: (p, n) =>
-      str(p, 'from') === 'company'
-        ? 'Asignar al cliente de su empresa'
-        : `Asignar al cliente ${quote(ref(n, 'client', str(p, 'client'), '…'))}`
-  }),
-  action({
-    type: 'unassign_client',
-    group: 'contacto',
-    label: 'Quitar de su cliente',
-    description: 'Desliga el contacto de su cliente.',
-    icon: 'Unlink',
-    subjects: CONTACT_ONLY,
-    params: [],
-    sentence: () => 'Quitar de su cliente'
-  }),
-  action({
-    type: 'assign_project',
-    group: 'contacto',
-    label: 'Asignar a proyecto',
-    description: 'Asigna el contacto a un proyecto de su cliente.',
-    icon: 'FolderKanban',
-    subjects: CONTACT_ONLY,
-    params: [{ key: 'project', label: 'Proyecto', kind: 'project', required: true }],
-    sentence: (p, n) => `Asignar al proyecto ${quote(ref(n, 'project', str(p, 'project'), '…'))}`
-  }),
-  action({
-    type: 'unsubscribe',
-    group: 'contacto',
-    label: 'Dar de baja de marketing',
-    description: 'Marca al contacto como dado de baja.',
-    icon: 'MailX',
-    subjects: CONTACT_ONLY,
-    params: [],
-    sentence: () => 'Dar de baja de marketing'
-  }),
-  action({
-    type: 'delete_contact',
-    group: 'contacto',
-    label: 'Borrar contacto',
-    description: 'Manda el contacto a la papelera.',
-    icon: 'UserX',
-    subjects: CONTACT_ONLY,
-    destructive: true,
-    params: [],
-    sentence: () => 'Borrar el contacto'
-  }),
-  action({
-    type: 'create_prospect',
-    group: 'pipeline',
-    label: 'Convertir en prospecto',
-    description: 'Crea un prospecto para el contacto en un pipeline y etapa.',
-    icon: 'Target',
-    subjects: CONTACT_ONLY,
-    outputs: [{ key: 'prospectId', label: 'Id del prospecto' }],
-    params: [
-      { key: 'pipeline', label: 'Pipeline', kind: 'pipeline', required: true },
-      { key: 'stage', label: 'Etapa', kind: 'stage', required: true },
-      { key: 'value', label: 'Valor en USD', kind: 'number' }
-    ],
-    sentence: (p, n) => `Convertir en prospecto en ${quote(ref(n, 'stage', str(p, 'stage'), '…'))}`
-  }),
-  action({
-    type: 'move_prospect',
-    group: 'pipeline',
-    label: 'Mover prospecto',
-    description: 'Mueve el prospecto a otra etapa.',
-    icon: 'MoveRight',
-    subjects: CONTACT_OR_PROSPECT,
-    params: [
-      { key: 'pipeline', label: 'Pipeline', kind: 'pipeline', required: true },
-      { key: 'stage', label: 'Etapa', kind: 'stage', required: true }
-    ],
-    sentence: (p, n) => `Mover el prospecto a ${quote(ref(n, 'stage', str(p, 'stage'), '…'))}`
-  }),
-  action({
-    type: 'update_prospect',
-    group: 'pipeline',
-    label: 'Actualizar prospecto',
-    description: 'Cambia el valor o el próximo paso del prospecto.',
-    icon: 'PencilLine',
-    subjects: CONTACT_OR_PROSPECT,
-    params: [
-      { key: 'value', label: 'Valor en USD', kind: 'number' },
-      { key: 'nextStep', label: 'Próximo paso', kind: 'text', vars: true },
-      { key: 'inDays', label: 'En cuántos días', kind: 'number', min: 0 }
-    ],
-    validate: (p) =>
-      num(p, 'value') === null && !str(p, 'nextStep') ? ['Indica el valor o el próximo paso.'] : [],
-    sentence: () => 'Actualizar el prospecto'
-  }),
-  action({
-    type: 'delete_prospect',
-    group: 'pipeline',
-    label: 'Borrar prospecto',
-    description: 'Manda el prospecto a la papelera.',
-    icon: 'Trash',
-    subjects: CONTACT_OR_PROSPECT,
-    destructive: true,
-    params: [],
-    sentence: () => 'Borrar el prospecto'
-  }),
   action({
     type: 'create_client',
     group: 'clientes',
     label: 'Crear cliente',
-    description: 'Crea un cliente desde el prospecto o la empresa del contacto, si no existe.',
+    description: 'Crea un cliente.',
     icon: 'Building',
-    subjects: CONTACT_OR_PROSPECT,
+    subjects: ['client', 'task', 'meeting', 'none'],
     outputs: [{ key: 'clientId', label: 'Id del cliente' }],
-    params: [{ key: 'name', label: 'Nombre', kind: 'text', vars: true }],
-    sentence: (p) =>
-      str(p, 'name') ? `Crear el cliente ${quote(str(p, 'name'))}` : 'Crear el cliente'
+    params: [{ key: 'name', label: 'Nombre', kind: 'text', required: true, vars: true }],
+    sentence: (p) => `Crear el cliente ${quote(str(p, 'name'))}`
   }),
   action({
     type: 'create_project',
@@ -611,40 +408,10 @@ const DOMAIN: NodeSpec[] = [
     label: 'Crear proyecto',
     description: 'Crea un proyecto en el cliente del sujeto.',
     icon: 'FolderPlus',
-    subjects: ['contact', 'prospect', 'client'],
+    subjects: ['client'],
     outputs: [{ key: 'projectId', label: 'Id del proyecto' }],
     params: [{ key: 'name', label: 'Nombre', kind: 'text', required: true, vars: true }],
     sentence: (p) => `Crear el proyecto ${quote(str(p, 'name'))}`
-  }),
-  action({
-    type: 'send_email',
-    group: 'email',
-    label: 'Enviar email',
-    description: 'Envía un email con Resend. Solo a contactos suscritos, con pie de baja.',
-    icon: 'Send',
-    subjects: CONTACT_ONLY,
-    external: true,
-    communication: true,
-    params: [
-      { key: 'subject', label: 'Asunto', kind: 'text', required: true, vars: true },
-      { key: 'body', label: 'Cuerpo', kind: 'markdown', required: true, vars: true }
-    ],
-    sentence: (p) => `Enviar el email ${quote(str(p, 'subject'))}`
-  }),
-  action({
-    type: 'start_sequence',
-    group: 'email',
-    label: 'Iniciar secuencia',
-    description: 'Retirado. Las secuencias de Resend ya no existen; usa Outreach.',
-    retired: 'Las secuencias de Resend se retiraron. Quita este paso o usa Outreach.',
-    icon: 'ListOrdered',
-    subjects: CONTACT_ONLY,
-    params: [{ key: 'event', label: 'Evento de la secuencia', kind: 'text', required: true }],
-    validate: (p) =>
-      str(p, 'event') && !/^[a-zA-Z0-9._-]{1,100}$/.test(str(p, 'event'))
-        ? ['El evento solo admite letras, números, puntos, guiones y guiones bajos.']
-        : [],
-    sentence: (p) => `Iniciar la secuencia ${quote(str(p, 'event'))}`
   }),
   action({
     type: 'email_owner',
@@ -739,8 +506,73 @@ const DOMAIN: NodeSpec[] = [
   })
 ]
 
-export const NODES: NodeSpec[] = [...CONTROL, ...DOMAIN]
 
+// Legacy/retired specs kept for stored automations and published migrations.
+// Not exported in ACTIVE_NODES/active UI lists; recognized for validation/graph compat.
+const RETIRED_MSG = 'Estos pasos se retiraron; no se puede ejecutar.'
+
+const legacyAction = (type: NodeType, subjects: SubjectType[] | 'any' = 'any'): NodeSpec =>
+  action({
+    type,
+    group: 'contacto',
+    label: type,
+    description: '',
+    icon: 'Circle',
+    subjects,
+    retired: RETIRED_MSG,
+    params: [],
+    sentence: () => type
+  })
+
+const LEGACY_NODES: NodeSpec[] = [
+  legacyAction('add_tag'),
+  legacyAction('remove_tag'),
+  legacyAction('update_contact'),
+  legacyAction('set_field'),
+  legacyAction('append_contact_note'),
+  legacyAction('assign_client'),
+  legacyAction('unassign_client'),
+  legacyAction('assign_project'),
+  legacyAction('unsubscribe'),
+  legacyAction('delete_contact'),
+  legacyAction('create_prospect'),
+  legacyAction('move_prospect'),
+  legacyAction('update_prospect'),
+  legacyAction('delete_prospect'),
+  legacyAction('send_email'),
+  legacyAction('start_sequence')
+]
+
+const legacyTrigger = (
+  type: TriggerType,
+  subject: SubjectType | 'any'
+): TriggerSpec => ({
+  type,
+  group: 'clientes',
+  label: type,
+  description: '',
+  icon: 'Circle',
+  subject,
+  params: [],
+  matches: () => false,
+  sentence: () => type
+})
+
+const LEGACY_TRIGGERS: TriggerSpec[] = [
+  legacyTrigger('contact.created', 'contact'),
+  legacyTrigger('contact.tag_added', 'contact'),
+  legacyTrigger('contact.tag_removed', 'contact'),
+  legacyTrigger('contact.updated', 'contact'),
+  legacyTrigger('contact.subscribed', 'contact'),
+  legacyTrigger('contact.unsubscribed', 'contact'),
+  legacyTrigger('contact.bounced', 'contact'),
+  legacyTrigger('prospect.created', 'prospect'),
+  legacyTrigger('prospect.stage_changed', 'prospect'),
+  legacyTrigger('prospect.won', 'prospect'),
+  legacyTrigger('prospect.lost', 'prospect')
+]
+
+export const NODES: NodeSpec[] = [...CONTROL, ...DOMAIN, ...LEGACY_NODES]
 export const ACTIVE_NODES: NodeSpec[] = NODES.filter((n) => !n.retired)
 
 const NODE_INDEX = new Map(NODES.map((n) => [n.type, n]))
@@ -759,137 +591,13 @@ export function nodeIssues(spec: NodeSpec, params: Params): string[] {
 }
 
 const payload = (event: AutomationEvent, key: string): unknown => event.payload[key]
-
 const same = (wanted: string, actual: unknown): boolean => !wanted || wanted === actual
-
 const optional = (key: string, label: string, kind: ParamKind): ParamSpec => ({ key, label, kind })
-
-const contactTrigger = (
-  type: TriggerType,
-  label: string,
-  description: string,
-  icon: string,
-  params: ParamSpec[] = [],
-  match: (p: Params, e: AutomationEvent) => boolean = () => true,
-  sentence: (p: Params, n: Names) => string = () => label
-): TriggerSpec => ({
-  type,
-  group: 'contacto',
-  label,
-  description,
-  icon,
-  subject: 'contact',
-  params,
-  matches: (t, e) => e.type === type && match(t.params, e),
-  sentence
-})
-
-const pipelineTrigger = (
-  type: TriggerType,
-  label: string,
-  description: string,
-  icon: string,
-  extra: ParamSpec[] = [],
-  match: (p: Params, e: AutomationEvent) => boolean = () => true
-): TriggerSpec => ({
-  type,
-  group: 'pipeline',
-  label,
-  description,
-  icon,
-  subject: 'prospect',
-  params: [optional('pipeline', 'Pipeline', 'pipeline'), ...extra],
-  matches: (t, e) =>
-    e.type === type &&
-    same(str(t.params, 'pipeline'), payload(e, 'pipelineId')) &&
-    match(t.params, e),
-  sentence: (p, n) =>
-    str(p, 'pipeline') ? `${label} en ${quote(ref(n, 'pipeline', str(p, 'pipeline'), '…'))}` : label
-})
 
 export const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export const TRIGGERS: TriggerSpec[] = [
-  contactTrigger(
-    'contact.created',
-    'Entra un contacto',
-    'A mano, por una fuente o desde Claude.',
-    'UserPlus',
-    [optional('source', 'Fuente', 'text')],
-    (p, e) => same(str(p, 'source'), payload(e, 'source')),
-    (p) =>
-      str(p, 'source') ? `Entra un contacto por ${quote(str(p, 'source'))}` : 'Entra un contacto'
-  ),
-  contactTrigger(
-    'contact.tag_added',
-    'Se añade un tag',
-    'A un contacto se le añade un tag.',
-    'Tag',
-    [{ key: 'tag', label: 'Tag', kind: 'tag', required: true }],
-    (p, e) => same(str(p, 'tag'), payload(e, 'tag')),
-    (p, n) => `Entra el tag ${quote(ref(n, 'tag', str(p, 'tag'), '…'))}`
-  ),
-  contactTrigger(
-    'contact.tag_removed',
-    'Se quita un tag',
-    'A un contacto se le quita un tag.',
-    'TagX',
-    [{ key: 'tag', label: 'Tag', kind: 'tag', required: true }],
-    (p, e) => same(str(p, 'tag'), payload(e, 'tag')),
-    (p, n) => `Sale el tag ${quote(ref(n, 'tag', str(p, 'tag'), '…'))}`
-  ),
-  contactTrigger(
-    'contact.updated',
-    'Cambia un contacto',
-    'Cambia un dato del contacto.',
-    'UserPen',
-    [optional('field', 'Dato', 'text')],
-    (p, e) => {
-      const field = str(p, 'field')
-      const fields = payload(e, 'fields')
-      return !field || (Array.isArray(fields) && fields.includes(field))
-    },
-    (p) => (str(p, 'field') ? `Cambia ${str(p, 'field')} del contacto` : 'Cambia un contacto')
-  ),
-  contactTrigger('contact.subscribed', 'Se suscribe', 'El contacto pasa a suscrito.', 'MailPlus'),
-  contactTrigger(
-    'contact.unsubscribed',
-    'Se da de baja',
-    'El contacto se da de baja.',
-    'MailMinus'
-  ),
-  contactTrigger(
-    'contact.bounced',
-    'Rebota o marca spam',
-    'Su email rebota o lo marca como spam.',
-    'MailWarning'
-  ),
-  pipelineTrigger(
-    'prospect.created',
-    'Se crea un prospecto',
-    'Se crea un prospecto en un pipeline.',
-    'Target'
-  ),
-  pipelineTrigger(
-    'prospect.stage_changed',
-    'Cambia de etapa',
-    'Un prospecto pasa de una etapa a otra.',
-    'ArrowRightLeft',
-    [
-      optional('fromStage', 'Desde la etapa', 'stage'),
-      optional('toStage', 'Hacia la etapa', 'stage')
-    ],
-    (p, e) =>
-      same(str(p, 'fromStage'), payload(e, 'fromStageId')) &&
-      same(str(p, 'toStage'), payload(e, 'toStageId'))
-  ),
-  pipelineTrigger('prospect.won', 'Se gana un prospecto', 'Llega a una etapa ganada.', 'Trophy'),
-  pipelineTrigger(
-    'prospect.lost',
-    'Se pierde un prospecto',
-    'Llega a una etapa perdida.',
-    'CircleX'
-  ),
+  ...LEGACY_TRIGGERS,
   {
     type: 'client.created',
     group: 'clientes',

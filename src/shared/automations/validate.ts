@@ -15,7 +15,7 @@ import {
 import { fieldSpec, OPERATORS_BY_KIND, VALUELESS } from './fields'
 import { portsOf, reachable, upstream } from './graph'
 import {
-  SUBJECT_TYPES,
+  ALL_SUBJECT_TYPES,
   type ConditionGroup,
   type Definition,
   type Issue,
@@ -28,18 +28,11 @@ export type RefTarget = Exclude<RefKind, 'node'>
 export type Refs = Partial<Record<RefTarget, Set<string>>>
 
 const REF_KINDS: Record<string, Exclude<RefKind, 'node'>> = {
-  tag: 'tag',
-  tags: 'tag',
-  pipeline: 'pipeline',
-  stage: 'stage',
   client: 'client',
   project: 'project'
 }
 
 const REF_LABEL: Record<Exclude<RefKind, 'node'>, string> = {
-  tag: 'El tag',
-  pipeline: 'El pipeline',
-  stage: 'La etapa',
   client: 'El cliente',
   project: 'El proyecto'
 }
@@ -94,7 +87,7 @@ export function validateDefinition(def: Definition, refs: Refs = {}): Issue[] {
     issues.push({ path, message, ...extra })
   }
 
-  if (!SUBJECT_TYPES.includes(def.subject)) push('subject', 'El tipo de sujeto no existe.')
+  if (!ALL_SUBJECT_TYPES.includes(def.subject)) push('subject', 'El tipo de sujeto no existe.')
   if (def.triggers.length === 0) push('triggers', 'Añade al menos un trigger.')
 
   const triggerIds = new Set<string>()

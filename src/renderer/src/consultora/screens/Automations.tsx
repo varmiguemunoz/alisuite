@@ -37,7 +37,7 @@ export function Automations({ go }: { go: Go }): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
-  const [subject, setSubject] = useState<SubjectType>('contact')
+  const [subject, setSubject] = useState<SubjectType>('client')
 
   const create = async (): Promise<void> => {
     try {
@@ -68,7 +68,7 @@ export function Automations({ go }: { go: Go }): React.JSX.Element {
   return (
     <Page
       title="Automatizaciones"
-      meta={<span>Flujos que corren solos cuando pasa algo: un tag, una etapa, una fecha.</span>}
+      meta={<span>Flujos que corren solos cuando pasa algo.</span>}
       actions={
         <Button kind="primary" onClick={() => setCreating(true)}>
           <Plus size={15} aria-hidden />

@@ -50,7 +50,12 @@ describe('migración de reglas', () => {
       ['start_sequence', { event: 'nurture.start' }, { next: 'n4' }],
       ['create_prospect', { pipeline: 'p1', stage: 's2' }, { next: null }]
     ])
-    expect(validateDefinition(def).map((i) => i.path)).toEqual(['nodes.n3'])
+    expect(validateDefinition(def).map((i) => i.path).sort()).toEqual([
+      'nodes.n1',
+      'nodes.n2',
+      'nodes.n3',
+      'nodes.n4'
+    ])
     expect(JSON.stringify(validateDefinition(def))).toMatch(/se retiraron/)
   })
 

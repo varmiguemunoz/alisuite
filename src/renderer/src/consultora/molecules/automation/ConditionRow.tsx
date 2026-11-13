@@ -1,6 +1,5 @@
 import { X } from 'lucide-react'
 import {
-  CUSTOM_FIELD_PREFIX,
   FIELDS,
   fieldSpec,
   OPERATOR_LABELS,
@@ -12,19 +11,15 @@ import {
   type FieldSpec,
   type SubjectType
 } from '@shared/automations'
-import { slugify } from '@shared/marketing'
 import { INPUT } from '../../ui'
 
 const SELECT = `${INPUT} cursor-pointer pr-1.5`
-const CUSTOM = '__custom__'
 
 function sourceOptions(
   field: FieldSpec,
   options: AutomationOptions | null
 ): { value: string; label: string }[] {
   if (field.source === 'status') return []
-  if (field.source === 'pipeline') return []
-  if (field.source === 'stage') return []
   if (field.source === 'client')
     return (options?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))
   return field.options ?? []
@@ -92,10 +87,7 @@ function ValueInput({
         <option value="false">No</option>
       </select>
     )
-  if (
-    field.kind === 'select' ||
-    (field.kind === 'list' && field.source && field.source !== 'tag')
-  ) {
+  if (field.kind === 'select' || field.kind === 'list') {
     const list = sourceOptions(field, options)
     return (
       <select
@@ -111,32 +103,6 @@ function ValueInput({
           </option>
         ))}
       </select>
-    )
-  }
-  if (field.source === 'tag') {
-    const id = 'condition-tags'
-    const shown = options?.tags.find((t) => t.id === one)?.name ?? one
-    return (
-      <>
-        <input
-          aria-label="Tag"
-          list={id}
-          defaultValue={shown}
-          key={one}
-          onBlur={(e) => {
-            const match = options?.tags.find(
-              (t) => t.name.toLowerCase() === e.target.value.trim().toLowerCase()
-            )
-            onChange(match ? match.id : slugify(e.target.value))
-          }}
-          className={INPUT}
-        />
-        <datalist id={id}>
-          {(options?.tags ?? []).map((t) => (
-            <option key={t.id} value={t.name} />
-          ))}
-        </datalist>
-      </>
     )
   }
   return (
@@ -165,16 +131,13 @@ export function ConditionRow({
   onRemove: () => void
 }): React.JSX.Element {
   const fields = FIELDS[subject]
-  const custom = condition.field.startsWith(CUSTOM_FIELD_PREFIX)
   const field = fieldSpec(subject, condition.field)
-  const allowsCustom = fields.some((f) => f.key.startsWith('contact.'))
   const operators = field ? OPERATORS_BY_KIND[field.kind] : []
 
   const pickField = (key: string): void => {
-    const next = key === CUSTOM ? `${CUSTOM_FIELD_PREFIX}` : key
-    const spec = fieldSpec(subject, next || `${CUSTOM_FIELD_PREFIX}x`)
+    const spec = fieldSpec(subject, key)
     onChange({
-      field: next,
+      field: key,
       operator: spec ? OPERATORS_BY_KIND[spec.kind][0] : 'is',
       value: undefined
     })
@@ -185,7 +148,7 @@ export function ConditionRow({
       <div className="flex items-center gap-1.5">
         <select
           aria-label="Campo"
-          value={custom ? CUSTOM : condition.field}
+          value={condition.field}
           onChange={(e) => pickField(e.target.value)}
           className={SELECT}
         >
@@ -195,7 +158,6 @@ export function ConditionRow({
               {f.label}
             </option>
           ))}
-          {allowsCustom && <option value={CUSTOM}>Campo personalizado…</option>}
         </select>
         <button
           type="button"
@@ -206,17 +168,6 @@ export function ConditionRow({
           <X size={14} aria-hidden />
         </button>
       </div>
-      {custom && (
-        <input
-          aria-label="Clave del campo"
-          placeholder="clave del campo, por ejemplo origen"
-          value={condition.field.slice(CUSTOM_FIELD_PREFIX.length)}
-          onChange={(e) =>
-            onChange({ ...condition, field: `${CUSTOM_FIELD_PREFIX}${e.target.value.trim()}` })
-          }
-          className={INPUT}
-        />
-      )}
       {field && (
         <div className="flex flex-col gap-1.5">
           <select

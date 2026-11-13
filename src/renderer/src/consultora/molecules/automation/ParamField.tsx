@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import {
   FIELDS,
   type AutomationOptions,
@@ -104,47 +104,6 @@ function TextWithVars({
   )
 }
 
-function TagInput({
-  value,
-  options,
-  onChange,
-  label
-}: {
-  value: string
-  options: { id: string; name: string }[]
-  onChange: (value: string) => void
-  label: string
-}): React.JSX.Element {
-  const shown = options.find((t) => t.id === value)?.name ?? value
-  const [draft, setDraft] = useState<string | null>(null)
-  const list = `tags-${label}`
-  const commit = (): void => {
-    if (draft === null) return
-    const match = options.find((t) => t.name.toLowerCase() === draft.trim().toLowerCase())
-    onChange(match ? match.id : slugify(draft))
-    setDraft(null)
-  }
-  return (
-    <>
-      <input
-        aria-label={label}
-        list={list}
-        value={draft ?? shown}
-        placeholder="Escribe o elige un tag"
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-        className={INPUT}
-      />
-      <datalist id={list}>
-        {options.map((t) => (
-          <option key={t.id} value={t.name} />
-        ))}
-      </datalist>
-    </>
-  )
-}
-
 export function ParamField({ spec, params, ctx, onChange }: ParamFieldProps): React.JSX.Element {
   const value = params[spec.key]
   const text =
@@ -237,8 +196,6 @@ export function ParamField({ spec, params, ctx, onChange }: ParamFieldProps): Re
           onChange={(v) => onChange(v || undefined)}
         />
       )
-    case 'tag':
-      return <TagInput label={label} value={text} options={o?.tags ?? []} onChange={onChange} />
     case 'tags': {
       const tags = Array.isArray(value) ? (value as string[]) : []
       return (
@@ -250,9 +207,6 @@ export function ParamField({ spec, params, ctx, onChange }: ParamFieldProps): Re
         />
       )
     }
-    case 'pipeline':
-    case 'stage':
-      return <></>
     case 'client':
       return (
         <Choice

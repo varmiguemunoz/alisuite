@@ -19,7 +19,7 @@ S7: Keep published migrations untouched; typecheck/lint/test/build pass.
 T1 | S1 | route: inline | status: done | commit: n/a (removed gitignored dist/, out/, .eslintcache; ~1GB freed)
 T2 | S2 | route: inline | status: done | commit: 89b3e41 (dead unused files deleted)
 T3 | S3 | route: inline | status: done | commit: 590324d (active sync/activity/contracts aligned; tests/typecheck/lint pass for scope)
-T4 | S4 | route: inline | status: pending | commit: -
+T4 | S4 | route: inline | status: in-progress | commit: - (automation slice pending commit)
 T5 | S5 | route: inline | status: pending | commit: -
 T6 | S6 | route: inline | status: pending | commit: -
 T7 | S7 | route: inline | status: pending | commit: -

@@ -31,16 +31,9 @@ import {
 const scope: Scope = {
   now: '2026-10-14T12:00:00.000Z',
   today: '2026-10-14',
-  contact: {
-    name: 'Ana Pérez',
-    first_name: 'Ana',
-    email: 'ana@acme.com',
-    tags: ['webinar', 'lead'],
-    status: 'subscribed',
-    createdAt: '2026-10-10T12:00:00.000Z',
-    fields: { plan: 'pro' }
-  },
-  prospect: { value: 1500, open: true },
+  client: { name: 'Acme', status: 'activo' },
+  task: { title: 'Llamar a Acme', tags: ['ventas', 'urgente'] },
+  meeting: { title: 'Kickoff', date: '2026-10-10T12:00:00.000Z' },
   steps: { n1: { status: 200, body: '{"ok":true}' } }
 }
 
@@ -53,28 +46,39 @@ const node = (id: string, type: NodeDef['type'], params: NodeDef['params'] = {})
 })
 
 const base = (): Definition => ({
-  ...emptyDefinition('contact'),
-  triggers: [{ id: 't1', type: 'contact.tag_added', params: { tag: 'webinar' }, conditions: [] }]
+  ...emptyDefinition('task'),
+  triggers: [{ id: 't1', type: 'task.completed', params: {}, conditions: [] }]
 })
 
 describe('catálogo', () => {
-  it('cubre todos los tipos sin repetir', () => {
-    expect(NODES.map((n) => n.type).sort()).toEqual([...NODE_TYPES].sort())
-    expect(TRIGGERS.map((t) => t.type).sort()).toEqual([...TRIGGER_TYPES].sort())
+  it('cubre todos los tipos activos sin repetir', () => {
+    expect(NODES.filter((n) => !n.retired).map((n) => n.type).sort()).toEqual(
+      [...NODE_TYPES].sort()
+    )
+    expect(
+      TRIGGERS.filter((t) => (TRIGGER_TYPES as readonly string[]).includes(t.type))
+        .map((t) => t.type)
+        .sort()
+    ).toEqual([...TRIGGER_TYPES].sort())
   })
 
-  it('el trigger de tag compara el tag del evento', () => {
-    const spec = triggerSpec('contact.tag_added')!
-    const trigger = base().triggers[0]
-    const event = (tag: string): AutomationEvent => ({
+  it('el trigger de tarea completada filtra por tag cuando se indica', () => {
+    const spec = triggerSpec('task.completed')!
+    const trigger = {
+      id: 't1',
+      type: 'task.completed' as const,
+      params: { tag: 'ventas' },
+      conditions: []
+    }
+    const event = (tags: string[]): AutomationEvent => ({
       id: 'e',
-      type: 'contact.tag_added',
-      subject: { type: 'contact', id: 'c1' },
-      payload: { tag },
+      type: 'task.completed',
+      subject: { type: 'task', id: 'task-1' },
+      payload: { tags },
       createdAt: ''
     })
-    expect(spec.matches(trigger, event('webinar'), 'a1')).toBe(true)
-    expect(spec.matches(trigger, event('otro'), 'a1')).toBe(false)
+    expect(spec.matches(trigger, event(['ventas', 'urgente']), 'a1')).toBe(true)
+    expect(spec.matches(trigger, event(['otro']), 'a1')).toBe(false)
   })
 
   it('manual y programada solo responden a su automatización', () => {
@@ -82,7 +86,7 @@ describe('catálogo', () => {
     const event: AutomationEvent = {
       id: 'e',
       type: 'manual',
-      subject: { type: 'contact', id: 'c1' },
+      subject: { type: 'client', id: 'c1' },
       payload: { automationId: 'a1' },
       createdAt: ''
     }
@@ -93,51 +97,38 @@ describe('catálogo', () => {
 })
 
 describe('condiciones', () => {
-  it('operadores de texto, número, fecha y lista', () => {
-    expect(
-      testCondition({ field: 'contact.name', operator: 'contains', value: 'pérez' }, scope)
-    ).toBe(true)
-    expect(
-      testCondition({ field: 'contact.email', operator: 'starts_with', value: 'ana' }, scope)
-    ).toBe(true)
-    expect(testCondition({ field: 'prospect.value', operator: 'gte', value: 1500 }, scope)).toBe(
+  it('operadores de texto, fecha y lista', () => {
+    expect(testCondition({ field: 'client.name', operator: 'contains', value: 'ac' }, scope)).toBe(
       true
     )
     expect(
-      testCondition(
-        { field: 'prospect.value', operator: 'between', value: ['1000', '2000'] },
-        scope
-      )
+      testCondition({ field: 'task.title', operator: 'starts_with', value: 'Llamar' }, scope)
+    ).toBe(true)
+    expect(testCondition({ field: 'task.tags', operator: 'includes', value: 'ventas' }, scope)).toBe(
+      true
+    )
+    expect(
+      testCondition({ field: 'task.tags', operator: 'excludes', value: 'cliente' }, scope)
     ).toBe(true)
     expect(
-      testCondition({ field: 'contact.tags', operator: 'includes', value: 'webinar' }, scope)
+      testCondition({ field: 'meeting.date', operator: 'within_days', value: 7 }, scope)
     ).toBe(true)
     expect(
-      testCondition({ field: 'contact.tags', operator: 'excludes', value: 'cliente' }, scope)
-    ).toBe(true)
-    expect(
-      testCondition({ field: 'contact.createdAt', operator: 'within_days', value: 7 }, scope)
-    ).toBe(true)
-    expect(
-      testCondition({ field: 'contact.createdAt', operator: 'older_than_days', value: 7 }, scope)
+      testCondition({ field: 'meeting.date', operator: 'older_than_days', value: 7 }, scope)
     ).toBe(false)
-    expect(testCondition({ field: 'prospect.open', operator: 'is', value: true }, scope)).toBe(true)
   })
 
   it('un campo que falta cuenta como vacío y no rompe', () => {
-    expect(testCondition({ field: 'contact.phone', operator: 'is_empty' }, scope)).toBe(true)
-    expect(testCondition({ field: 'contact.phone', operator: 'contains', value: '5' }, scope)).toBe(
+    expect(testCondition({ field: 'client.status', operator: 'is_not_empty' }, scope)).toBe(true)
+    expect(testCondition({ field: 'nada.de.nada', operator: 'is_empty' }, scope)).toBe(true)
+    expect(testCondition({ field: 'nada.de.nada', operator: 'contains', value: 'x' }, scope)).toBe(
       false
     )
-    expect(testCondition({ field: 'contact.phone', operator: 'is_not', value: '5' }, scope)).toBe(
-      true
-    )
-    expect(testCondition({ field: 'nada.de.nada', operator: 'gt', value: 1 }, scope)).toBe(false)
   })
 
   it('AND dentro del grupo, OR dentro del grupo y AND entre grupos', () => {
-    const yes = { field: 'contact.tags', operator: 'includes' as const, value: 'lead' }
-    const no = { field: 'contact.tags', operator: 'includes' as const, value: 'cliente' }
+    const yes = { field: 'task.tags', operator: 'includes' as const, value: 'ventas' }
+    const no = { field: 'task.tags', operator: 'includes' as const, value: 'cliente' }
     expect(evaluate([{ join: 'and', conditions: [yes, no] }], scope)).toBe(false)
     expect(evaluate([{ join: 'or', conditions: [yes, no] }], scope)).toBe(true)
     expect(
@@ -152,23 +143,23 @@ describe('condiciones', () => {
   })
 
   it('gana la primera rama que se cumple, y si ninguna, none', () => {
-    const lead = {
+    const yes = {
       join: 'and' as const,
-      conditions: [{ field: 'contact.tags', operator: 'includes' as const, value: 'lead' }]
+      conditions: [{ field: 'task.tags', operator: 'includes' as const, value: 'ventas' }]
     }
-    const pro = {
+    const later = {
       join: 'and' as const,
-      conditions: [{ field: 'contact.fields.plan', operator: 'is' as const, value: 'pro' }]
+      conditions: [{ field: 'client.name', operator: 'is' as const, value: 'Acme' }]
     }
     const never = {
       join: 'and' as const,
-      conditions: [{ field: 'contact.tags', operator: 'includes' as const, value: 'x' }]
+      conditions: [{ field: 'task.tags', operator: 'includes' as const, value: 'x' }]
     }
     expect(
       pickBranch(
         [
-          { id: 'a', name: 'A', groups: [lead] },
-          { id: 'b', name: 'B', groups: [pro] }
+          { id: 'a', name: 'A', groups: [yes] },
+          { id: 'b', name: 'B', groups: [later] }
         ],
         scope
       )
@@ -179,12 +170,12 @@ describe('condiciones', () => {
 
 describe('plantillas', () => {
   it('resuelve sujeto, salidas de pasos y deja vacío lo desconocido', () => {
-    expect(render('Hola {{contact.first_name}}, plan {{ contact.fields.plan }}', scope)).toBe(
-      'Hola Ana, plan pro'
+    expect(render('Cliente {{client.name}} · {{task.title}}', scope)).toBe(
+      'Cliente Acme · Llamar a Acme'
     )
     expect(render('Código {{steps.n1.status}}', scope)).toBe('Código 200')
-    expect(render('[{{contact.nada}}]', scope)).toBe('[]')
-    expect(render('{{contact.tags}}', scope)).toBe('webinar, lead')
+    expect(render('[{{client.nada}}]', scope)).toBe('[]')
+    expect(render('{{task.tags}}', scope)).toBe('ventas, urgente')
   })
 
   it('escapa HTML cuando se pide', () => {
@@ -221,24 +212,33 @@ describe('programadas', () => {
 describe('validación', () => {
   it('una automatización correcta no tiene errores', () => {
     let def = base()
-    def = insert(def, ROOT_SLOT, node('n1', 'add_tag', { tag: 'nurture' }))
+    def = insert(def, ROOT_SLOT, node('n1', 'create_task', { title: 'Seguimiento' }))
     expect(validateDefinition(def)).toEqual([])
-    expect(describeDefinition(def)).toBe('Cuando entra el tag «webinar» → añadir el tag «nurture»')
+    expect(describeDefinition(def)).toBe(
+      'Cuando se completa una tarea → crear la tarea «seguimiento»'
+    )
   })
 
   it('exige trigger, parámetros requeridos y sujeto compatible', () => {
-    let def: Definition = { ...emptyDefinition('client') }
-    def = insert(def, ROOT_SLOT, node('n1', 'add_tag', {}))
+    let def: Definition = { ...emptyDefinition('task') }
+    def = insert(def, ROOT_SLOT, node('n1', 'create_project', {}))
     const messages = validateDefinition(def).map((i) => i.message)
     expect(messages).toContain('Añade al menos un trigger.')
-    expect(messages).toContain('Falta tag.')
+    expect(messages).toContain('Falta nombre.')
     expect(messages).toContain('Este paso no aplica a este tipo de sujeto.')
   })
 
   it('valida referencias contra los datos actuales', () => {
-    const def = insert(base(), ROOT_SLOT, node('n1', 'add_tag', { tag: 'borrado' }))
-    const issues = validateDefinition(def, { tag: new Set(['webinar']) })
-    expect(issues.map((i) => i.message)).toContain('El tag ya no existe.')
+    let def = base()
+    def.triggers[0] = {
+      id: 't1',
+      type: 'meeting.ready',
+      params: { client: 'borrado' },
+      conditions: []
+    }
+    def = { ...def, subject: 'meeting' }
+    const issues = validateDefinition(def, { client: new Set(['acme']) })
+    expect(issues.map((i) => i.message)).toContain('El cliente ya no existe.')
   })
 
   it('ramas sin condiciones y espera por condición sin máximo son errores', () => {
@@ -261,17 +261,16 @@ describe('validación', () => {
   it('una condición con operador que no corresponde al campo es error', () => {
     const def = base()
     def.triggers[0].conditions = [
-      { join: 'and', conditions: [{ field: 'prospect.value', operator: 'contains', value: '1' }] }
+      { join: 'and', conditions: [{ field: 'client.name', operator: 'gt', value: 1 }] }
     ]
     expect(validateDefinition(def).map((i) => i.message)).toContain(
-      'El operador no sirve para valor del prospecto.'
+      'El operador no sirve para cliente.'
     )
   })
 
-  it('marca la automatización como destructiva', () => {
-    const def = insert(base(), ROOT_SLOT, node('n1', 'delete_contact'))
-    expect(isDestructive(def)).toBe(true)
-    expect(isDestructive(base())).toBe(false)
+  it('no marca destructivo un flujo sin pasos destructivos', () => {
+    const def = insert(base(), ROOT_SLOT, node('n1', 'create_task', { title: 'Seguimiento' }))
+    expect(isDestructive(def)).toBe(false)
   })
 })
 

@@ -7,10 +7,10 @@ import {
   type ObjectLiteral
 } from 'typeorm'
 import {
+  ALL_NODE_TYPES,
+  ALL_TRIGGER_TYPES,
   MAX_VERSIONS,
-  NODE_TYPES,
   SUBJECT_TYPES,
-  TRIGGER_TYPES,
   branchesOf,
   describeDefinition,
   describeNode,
@@ -91,10 +91,10 @@ function parseDefinition(value: unknown, subject: SubjectType): Definition {
   if (!Array.isArray(def.triggers) || typeof def.nodes !== 'object' || def.nodes === null)
     throw new AppError('invalid', 'La definición no es válida.')
   for (const t of def.triggers)
-    if (!TRIGGER_TYPES.includes(t?.type))
+    if (!ALL_TRIGGER_TYPES.includes(t?.type))
       throw new AppError('invalid', 'Hay un trigger desconocido.')
   for (const n of Object.values(def.nodes))
-    if (!NODE_TYPES.includes(n?.type)) throw new AppError('invalid', 'Hay un paso desconocido.')
+    if (!ALL_NODE_TYPES.includes(n?.type)) throw new AppError('invalid', 'Hay un paso desconocido.')
   const reentry = def.settings?.reentry === 'never' ? 'never' : 'allow'
   return { ...def, settings: { reentry, window: def.settings?.window ?? null } }
 }
@@ -218,7 +218,7 @@ export class AutomationService implements AutomationsApi {
 
   async create(input: { name: string; subject: SubjectType }): Promise<AutomationDetail> {
     const name = requiredText(input?.name, 'El nombre', 120)
-    if (!SUBJECT_TYPES.includes(input?.subject))
+    if (!(SUBJECT_TYPES as readonly SubjectType[]).includes(input.subject))
       throw new AppError('invalid', 'El tipo de sujeto no existe.')
     const detail = await transactionGuard(this.db, async (manager) => {
       const stamp = new Date().toISOString()
