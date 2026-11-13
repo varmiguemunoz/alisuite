@@ -176,8 +176,6 @@ export interface Overview {
     lastMeeting: { id: string; date: string; title: string } | null
   }[]
   openActionItems: OpenActionItem[]
-  pipeline: unknown[]
-  nextSteps: unknown[]
   recentMeetings: MeetingBrief[]
 }
 

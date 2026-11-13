@@ -60,8 +60,6 @@ export class ContextService {
         }
       }),
       openActionItems: openActionItems(meetings).slice(0, 40),
-      pipeline: [],
-      nextSteps: [],
       recentMeetings: meetings.slice(0, 5).map(brief)
     }
   }

@@ -26,8 +26,6 @@ interface Entry {
 }
 
 const TRIGGER_GROUPS = [
-  { id: 'contacto', label: 'Contacto' },
-  { id: 'pipeline', label: 'Pipeline' },
   { id: 'clientes', label: 'Clientes' },
   { id: 'productividad', label: 'Productividad' },
   { id: 'tiempo', label: 'Tiempo' }

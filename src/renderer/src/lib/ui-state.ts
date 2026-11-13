@@ -39,7 +39,6 @@ const LEGACY = [
   'ws.',
   'settings.tab',
   'today.expanded',
-  'pipeline.',
   'props.collapsed.'
 ]
 const MIGRATED = 'migrated.localStorage'

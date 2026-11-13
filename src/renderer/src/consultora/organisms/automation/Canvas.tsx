@@ -57,8 +57,6 @@ type FlowNode =
 const SLOT = 24
 const NOOP = (): void => undefined
 const GROUP_LABEL: Record<string, string> = {
-  contacto: 'Contacto',
-  pipeline: 'Pipeline',
   clientes: 'Clientes',
   productividad: 'Productividad',
   tiempo: 'Tiempo'
