@@ -50,7 +50,7 @@ src/main/
   views/               V: forma del JSON
   controllers/         C: petición → servicio → vista
   routes/              rutas → controlador
-  services/            reglas: tareas, notas y consultora (clientes, proyectos, pipeline, reuniones, AI, grabación)
+  services/            reglas: tareas, notas y consultora (clientes, proyectos, reuniones, AI, grabación)
   consultora.ts        crea los servicios de la consultora
   consultora-window.ts ventana grande + captura de pantalla con audio del sistema
   config.ts            ajustes (settings.json), editables desde la ventana
@@ -61,7 +61,7 @@ src/preload/           puente seguro window.api
 src/renderer/          UI React
 ```
 
-Specs (SDD) en `.kiro/specs/`. Consultora: `.kiro/specs/consultora-context/`. Email marketing: `.kiro/specs/email-automations/`.
+Specs (SDD) en `.kiro/specs/`. Consultora: `.kiro/specs/consultora-context/`.
 
 Tests: `npm test` (Vitest dentro de Electron, porque better-sqlite3 está compilado para su ABI; base SQLite en memoria con las migraciones reales y proveedores de email falsos). Incluye la lógica del Worker `workers/leads-hub`.
 
@@ -79,10 +79,9 @@ de nube. La edición Equipo, en construcción, suma cuenta, organización y sinc
   vacíos; el código de nube (`src/main/cloud`) solo se carga en Equipo.
 - Cada cambio en las tablas sincronizables deja una fila en `change_log` por triggers de SQLite.
   En Local se queda en las últimas 10 000.
-- Borrar clientes, proyectos, reuniones, prospectos, pipelines, contactos, tags, fuentes,
-  automatizaciones o tareas marca `deleted_at`. Se purgan a los 30 días.
+- Borrar clientes, proyectos, reuniones, tags, automatizaciones o tareas marca `deleted_at`. Se purgan a los 30 días.
 - Nunca salen del Mac: `settings.json`, claves de API, tokens, `ui-state.json`, secretos de las
-  fuentes, la cola de voz, grabaciones en curso y el outbox del email (`NEVER_SYNC`).
+  la cola de voz y grabaciones en curso (`NEVER_SYNC`).
 - Microservicio en `services/cloud`, NestJS hexagonal sobre Supabase. Ver su README.
 
 ### Cuenta
@@ -99,7 +98,7 @@ Con sesión, el botón de abajo en la cinta cambia entre Local y tus organizacio
 Cada organización tiene su propia base y su bóveda en `Organizaciones` dentro de tu carpeta de
 documentos; Local queda intacto. Cambiar de espacio reinicia la app. En «Cuenta y equipo» se ven
 los miembros con su rol, las invitaciones por email o por enlace, salir, transferir y borrar. Las
-tareas, prospectos, proyectos y reuniones ganan «Responsable», y Tareas e Inicio tienen «Mis
+tareas, proyectos y reuniones ganan «Responsable», y Tareas e Inicio tienen «Mis
 tareas».
 
 ### Sincronización
@@ -118,9 +117,9 @@ editando». No bloquea, solo avisa. La pestaña «Actividad» de la barra latera
 hizo el equipo: crear, cambiar, mover de etapa, ganar o perder, completar, asignar, subir, renombrar
 o borrar archivos, invitar y unirse. Se filtra por persona, tipo y elemento, muestra cuántas
 novedades no has visto y un clic abre el elemento. Cada ficha muestra su propia actividad al final.
-Cuando te asignan una tarea, un prospecto o una reunión llega un aviso del sistema. En Ajustes,
+Cuando te asignan una tarea o una reunión llega un aviso del sistema. En Ajustes,
 Cuenta, Equipo se apagan los avisos por tipo y se puede ocultar la propia presencia. Lo que otra
-persona acaba de cambiar se resalta un momento en tareas, prospectos, clientes y contactos.
+persona acaba de cambiar se resalta un momento en tareas y clientes.
 
 ### Archivos
 
@@ -154,7 +153,7 @@ app; si cambias algo fuera, la app lo ve en menos de 2 s.
   para mover, ⌥ para colocar sin rejilla.
 - Mover o renombrar actualiza los enlaces de notas e imágenes de boards que apuntan a lo movido.
 
-## Consultora (clientes, proyectos, reuniones, pipeline)
+## Consultora (clientes, proyectos y reuniones)
 
 Ventana aparte para el contexto de la consultora: clic derecho en el icono del menubar → **Abrir Consultora**, o el botón del maletín junto a las pestañas.
 
@@ -165,7 +164,6 @@ lateral con las pestañas **Secciones** y **Archivos**. Atajos: ⌘K buscar en t
 - **Clientes**: crear uno crea su carpeta en `CLIENTS_DOCS_PATH/<Nombre>/` con `Contratos/`, `Entregables/`, `Documentación técnica/`, `Reuniones/`. Los documentos se leen en vivo de esa carpeta.
 - **Proyectos**: objetivo, entregables (casillas `- [ ]` marcables), notas y reuniones.
 - **Reuniones**: «Grabar reunión» graba pantalla + micrófono + audio del sistema. Al detener se transcribe (OpenAI Whisper) y se resume: resumen ejecutivo, decisiones y action items. También se pueden crear sin grabar.
-- **Pipeline**: etapas configurables (Ajustes). Pasar un prospecto a una etapa _ganada_ lo convierte en cliente con su carpeta.
 
 ### Ajustes
 
@@ -183,81 +181,23 @@ La primera grabación pide **Micrófono** y **Grabación de pantalla y audio del
 
 Grabaciones: `CLIENTS_DOCS_PATH/_reuniones/` hasta que se asocian a un cliente; entonces se mueven a `<Cliente>/Reuniones/`. Coste orientativo: 1 h ≈ 0,36 USD de transcripción.
 
-## Email marketing (leads, newsletter y outreach)
-
-Un GoHighLevel pequeño dentro de la Consultora: **Contactos** (personas de clientes y prospectos, y leads de email en la misma base) y el grupo **Email**: Fuentes, Outreach y Newsletters. Spec: `.kiro/specs/email-automations/`. Lo que antes eran Reglas ahora son [Automatizaciones](#automatizaciones).
-
-```
-Formulario / Zapier / Make ──POST /in/<fuente>──▶ Worker leads-hub (Cloudflare, siempre encendido)
-                                                   │ escribe en Resend: contacto, segments, eventos
-                                                   └─ cola D1 ──▶ DayliOS la descarga cada minuto
-Resend: Broadcasts (newsletter) · webhooks de bajas/rebotes ──▶ Worker
-Claude Cowork ──MCP──▶ DayliOS ──▶ Resend (newsletter diario, tags) · Apollo (outreach en frío)
-```
-
-- **Solo opt-in.** Un contacto creado a mano queda «Sin marketing»; suscribirlo pide confirmar que dio su permiso. Los leads de una fuente entran suscritos y guardan fuente y fecha como prueba de consentimiento.
-- **Tags**: cada lead lleva `origen-<fuente>` y los tags por defecto de la fuente. Cada tag es un Segment de Resend (`tag:<slug>`). Al entrar en un tag, un suscrito dispara el evento `tag.<slug>`; uno nuevo, `lead.created`.
-- **Tags que disparan algo**: se arman como automatizaciones con el trigger «Se añade un tag». El Worker ya no evalúa reglas: solo marca como nuevos los tags que el contacto no tenía.
-- **Resend** queda para el Worker, los correos internos y el newsletter. Las secuencias de Resend se retiraron: ya no se envían eventos `tag.<slug>` ni `lead.created`, y el paso «Iniciar secuencia» de las automatizaciones quedó retirado.
-- **Newsletter**: lo escribe y lo envía Claude (`send_newsletter`). Salvaguardas: pausa global, máximo uno por día, tag con suscritos, copia previa a tu email, enlace de baja obligatorio e historial. Si algún suscrito del tag aún no está sincronizado con Resend, no se envía.
-- **Sin conexión**: todo cambio hacia Resend pasa por una cola local con reintentos (1 min → 6 h). Ajustes → Email muestra lo pendiente.
-
-### Proveedores de email y outreach en frío
-
-El envío pasa por la capa `src/shared/email-delivery`, que separa proveedores por rol: transaccional, marketing y outreach. Por defecto transaccional y marketing usan Resend. El outreach en frío usa Apollo, porque Resend lo prohíbe en su política. Ajustes → Email muestra qué proveedor cubre cada rol. Guía para sumar proveedores en `src/shared/email-delivery/README.md`.
-
-- **Outreach**: pantalla Outreach para crear, ver, editar y eliminar secuencias con un editor sencillo, y herramientas MCP `list_outreach_sequences`, `get_outreach_sequence`, `save_outreach_sequence`, `archive_outreach_sequence`, `enroll_outreach`, `set_outreach_sequence_status`, `poll_outreach_replies` y `get_outreach_status`. Editar conserva los ids de cada paso, así no se pierde el avance de los inscritos. Eliminar archiva en Apollo y termina a los inscritos.
-- **Salvaguardas**: secuencias siempre creadas inactivas, activar exige confirmación, tope diario de inscritos, pie legal opcional y supresión global de bajas, rebotes y quejas.
-- **Respuestas**: se consultan cada 5 minutos. Una respuesta con interés crea una tarea del día.
-- **Puesta en marcha**: en Apollo conecta buzones de dominios secundarios calentados. En Ajustes → Email pega la API key maestra de Apollo, el tope diario y, si tus plantillas de Apollo no lo traen, el pie legal, y asigna Apollo al rol Outreach en frío.
-
 ### MCP y boards
 
 - El servidor local vive mientras Alisuite esté abierta, aunque la ventana esté cerrada. En Mac, Cmd+Q solo oculta las ventanas; para salir de verdad usa «Salir de Alisuite» en la bandeja. La app evita App Nap para responder rápido en segundo plano.
 - Si Alisuite está cerrada, el MCP la abre solo y espera hasta 20 segundos. Cada petición tiene 30 segundos de límite.
 - `board_edit` valida todas las operaciones y devuelve todos los errores juntos, acomoda los nodos nuevos con `layout` y responde corto por defecto. `board_diagram` dibuja un diagrama completo en una llamada. Si el board está abierto sin cambios pendientes, se recarga solo.
 
-### Puesta en marcha
-
-1. **Resend** (plan pago para pasar de 100 emails/día): dominio verificado (SPF, DKIM, DMARC) y una API key con acceso completo.
-2. **Consultora → Ajustes → Email (Resend)**: API key, remitente (`hola@tudominio.com`), nombre, «responder a» y tu email (recibe la copia de cada newsletter).
-3. **Worker**: sigue `workers/leads-hub/README.md` (crear D1, secretos y desplegar).
-4. **Ajustes → Hub de leads**: URL del Worker y el mismo `ADMIN_TOKEN`. «Probar conexión».
-5. **Resend → Webhooks**: `https://<worker>/resend/webhook` con `contact.updated`, `email.bounced` y `email.complained`. Copia el signing secret al Worker (`RESEND_WEBHOOK_SECRET`).
-6. **Fuentes**: crea una por cada sitio que manda leads y pega su URL y secreto en la herramienta (cabecera `Authorization: Bearer <secreto>`, o `?key=<secreto>`). Formato:
-
-```json
-{ "email": "ana@ejemplo.com", "name": "Ana", "tags": ["webinar"], "fields": { "company": "Acme" } }
-```
-
-### Newsletter diario con Claude Cowork
-
-Tarea programada (por ejemplo, de lunes a viernes a las 08:00):
-
-> Usa get_newsletter_context. Si está en pausa o ya se envió hoy, termina sin hacer nada. Elige el tag con suscritos que toque hoy (alterna entre ellos) y escribe un newsletter breve y útil en español para educar a esos contactos sobre integración de software y AI: un tema que no aparezca en los últimos asuntos, un asunto claro de menos de 60 caracteres, 3–5 párrafos cortos en HTML simple y una sola llamada a la acción. Sin datos inventados ni promesas. Envíalo con send_newsletter. Si falla, explica el error.
-
-Las tareas programadas y la app corren con el Mac despierto. Las secuencias de Apollo y la recepción de leads no dependen del Mac.
-
 ## Automatizaciones
 
-Un motor de flujos al estilo de GoHighLevel dentro de la Consultora. Spec e investigación: `.kiro/specs/automations/`.
+Motor de flujos dentro de la Consultora. Spec e investigación: `.kiro/specs/automations/`.
 
-- **Qué es**: triggers (un tag, una etapa, un prospecto ganado, una tarea completada, una hora fija, a mano) que
-  inscriben a un sujeto (contacto, prospecto, cliente, tarea, reunión o ninguno) en un árbol de pasos: tags, campos,
-  pipeline, clientes, proyectos, tareas, notas, emails, notificaciones del Mac, webhooks, esperas, Si o si no, Ir a y
-  Finalizar.
-- **Editor**: lienzo en árbol de arriba abajo. «+» entre pasos y al final de cada rama. Se arrastra un paso, o con ⌥
-  el paso con lo que cuelga, a cualquier «+». ⌘Z y ⇧⌘Z, ⌘C y ⇧⌘C para copiar con lo que cuelga, ⌘V en un «+».
-- **Borrador y versiones**: el borrador se guarda solo. Publicar crea una versión inmutable y la activa. Las
-  ejecuciones en curso siguen con su versión. Se guardan las últimas 10 y se puede restaurar cualquiera.
+- **Qué es**: triggers (cliente creado, tarea completada, reunión lista, una hora fija o a mano) que inscriben a un sujeto (cliente, tarea, reunión o ninguno) en un árbol de pasos: control, clientes/proyectos, email al responsable, tareas, notas, notificaciones del Mac, webhooks y esperas.
+- **Editor**: lienzo en árbol de arriba abajo. «+» entre pasos y al final de cada rama. Se arrastra un paso, o con ⌥ el paso con lo que cuelga, a cualquier «+». ⌘Z y ⇧⌘Z, ⌘C y ⇧⌘C para copiar con lo que cuelga, ⌘V en un «+».
+- **Borrador y versiones**: el borrador se guarda solo. Publicar crea una versión inmutable y la activa. Las ejecuciones en curso siguen con su versión. Se guardan las últimas 10 y se puede restaurar cualquiera.
 - **Probar** simula sobre un sujeto real sin escribir nada. **Ejecutar** corre la versión publicada a mano.
-- **Ejecuciones**: corren en este Mac. Sobreviven al cierre de la app y lo vencido corre al abrir, marcado «con
-  retraso». Los pasos externos reintentan a 1, 5 y 30 minutos. Anti bucles: cadena de 5, sin auto disparo y bloqueo a
-  20 entradas del mismo sujeto en 30 minutos. Se guardan 60 días.
-- **Equipo**: las definiciones se sincronizan; las ejecuciones son de cada Mac y un cambio que llega de otro Mac no
-  dispara nada en el tuyo.
-- **Ampliar**: un nodo nuevo es su especificación en `src/shared/automations/catalog.ts` y su handler en
-  `src/main/automations/handlers`. Un test falla si falta uno de los dos.
+- **Ejecuciones**: corren en este Mac. Sobreviven al cierre de la app y lo vencido corre al abrir, marcado «con retraso». Los pasos externos reintentan a 1, 5 y 30 minutos. Anti bucles: cadena de 5, sin auto disparo y bloqueo a 20 entradas del mismo sujeto en 30 minutos. Se guardan 60 días.
+- **Equipo**: las definiciones se sincronizan; las ejecuciones son de cada Mac y un cambio que llega de otro Mac no dispara nada en el tuyo.
+- **Ampliar**: un nodo nuevo es su especificación en `src/shared/automations/catalog.ts` y su handler en `src/main/automations/handlers`. Un test falla si falta uno de los dos.
 
 ## Tareas: tags y esfuerzo
 
@@ -265,11 +205,11 @@ Escribe `Propuesta Acme #ventas !alto` y se guarda la tarea «Propuesta Acme» c
 
 ## Inicio
 
-Primera sección de Consultora. Un dashboard con componentes elegibles: tareas abiertas y cerradas, tareas por estado, pipeline abierto, negocios ganados y perdidos, valor por etapa, tasa de cierre, atrasadas, reuniones, action items y contactos nuevos. Cada número se compara con el periodo anterior y un clic en el título abre su origen filtrado. «Editar dashboard» permite añadir, quitar, mover y dar a cada componente su propio tamaño, periodo o pipeline. El diseño se guarda en la base, no en el estado de la ventana. Claude lee los mismos números con `get_metrics`.
+Primera sección de Consultora. Dashboard con componentes base de tareas, reuniones, action items y pendientes vencidos. Cada número se compara con el periodo anterior y un clic en el título abre su origen filtrado. «Editar dashboard» permite añadir, quitar, mover y ajustar componentes. El diseño se guarda en la base.
 
 ## Tablero de tareas
 
-En Consultora, sección Tareas. Las mismas tareas del menubar con tres estados: Pendiente, En curso y Hecha. Se ven como tablero o como lista ordenable, con filtros por periodo, texto, tags, esfuerzo y relación. Arrastrar una tarjeta cambia su estado; Hecha equivale a marcarla en el menubar. Cada tarea puede relacionarse con un cliente, un proyecto o un prospecto y aparece en su ficha. El límite de ocho por día se mantiene.
+En Consultora, sección Tareas. Las mismas tareas del menubar con tres estados: Pendiente, En curso y Hecha. Se ven como tablero o como lista ordenable, con filtros por periodo, texto, tags, esfuerzo y relación. Arrastrar una tarjeta cambia su estado; Hecha equivale a marcarla en el menubar. Cada tarea puede relacionarse con un cliente o un proyecto y aparece en su ficha. El límite de ocho por día se mantiene.
 
 ## Nota de voz
 
@@ -319,7 +259,7 @@ App instalada en `/Applications`:
 ### Herramientas
 
 Las herramientas que borran piden `confirm: true`: sin él devuelven el impacto y no borran. Las referencias a
-clientes, proyectos, prospectos, pipelines y etapas aceptan id o nombre. Excepciones a propósito: claves y secretos,
+clientes y proyectos aceptan id o nombre. Excepciones a propósito: claves y secretos,
 permisos de macOS y empezar o detener una grabación en vivo.
 
 | Dominio          | Herramientas                                                                                                                                                                                                                                                                                                                                 |
@@ -329,18 +269,12 @@ permisos de macOS y empezar o detener una grabación en vivo.
 | Clientes         | `get_overview` · `list_clients` · `get_client` · `save_client` · `get_client_impact` · `delete_client` · `get_project` · `save_project` · `delete_project` · `search` · `append_note`                                                                                                                                                        |
 | Documentos       | `list_documents` · `read_document` · `write_document` · `rename_document` · `delete_document` (a la Papelera)                                                                                                                                                                                                                                |
 | Reuniones        | `list_meetings` · `get_meeting` · `create_meeting` · `update_meeting` · `process_meeting` · `delete_meeting` · `list_action_items` · `update_action_item` · `import_recording`                                                                                                                                                               |
-| Pipelines        | `list_pipelines` · `get_pipeline` · `get_metrics` (los números de Inicio) · `save_pipeline` · `delete_pipeline` · `get_prospect` · `save_prospect` · `move_prospect` · `delete_prospect`                                                                                                                                                     |
-| Contactos        | `list_contacts` · `get_contact` · `save_contact` · `delete_contact` · `tag_contact` · `set_contact_subscription` · `convert_contact` (alias `promote_contact`) · `detach_contact_prospect`                                                                                                                                                   |
-| Tags             | `list_tags` (`kind`: contact o task) · `rename_tag` · `set_tag_audience` · `delete_tag` · `rename_task_tag` · `delete_task_tag`                                                                                                                                                                                                              |
+| Tags             | `list_tags` (`kind`: task) · `rename_task_tag` · `delete_task_tag`                                                                                                                                                                                                                                                                           |
 | Workspace        | `workspace_tree` · `workspace_list` · `workspace_search` · `workspace_read` · `workspace_write_note` · `workspace_create_folder` · `workspace_move` · `workspace_delete` (a la Papelera) · `workspace_create_board` · `board_read` · `board_edit` · `board_diagram`                                                                          |
-| Email            | `list_sources` · `save_source` · `rotate_source_secret` · `delete_source` · `get_newsletter_context` · `send_newsletter` · `list_newsletters` · `get_newsletter` · `get_marketing_status` · `sync_marketing_now`                                                                                                                             |
 | Automatizaciones | `list_automation_catalog` · `list_automations` · `get_automation` · `save_automation_draft` · `publish_automation` (con `confirm`) · `set_automation_status` · `delete_automation` (con `confirm`) · `test_automation` · `run_automation` · `list_automation_runs` · `get_automation_run` · `cancel_automation_run` · `retry_automation_run` |
 
-`create_task` y `update_task` aceptan `description` (markdown), `tags` y `effort` (alto/medio/bajo). En el título también funcionan `#tag` y `!alto` / `!medio` / `!bajo`. `update_task` además acepta `status` (todo, doing, done) y `client`, `project` o `prospect` por id; cadena vacía quita la relación.
+`create_task` y `update_task` aceptan `description` (markdown), `tags` y `effort` (alto/medio/bajo). En el título también funcionan `#tag` y `!alto` / `!medio` / `!bajo`. `update_task` además acepta `status` (todo, doing, done) y `client` o `project` por id; cadena vacía quita la relación.
 
-Tags audiencia: solo los tags marcados como audiencia (pantalla Tags o `set_tag_audience`) tienen Segment en Resend y
-pueden recibir newsletters. Tras actualizar,
-**redespliega el Worker** (`cd workers/leads-hub && npm run deploy`) para que también respete las audiencias.
 
 ## Atajos
 

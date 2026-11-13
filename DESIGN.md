@@ -377,11 +377,10 @@ Both windows reopen as they were left, like Obsidian's `workspace.json`. State l
 Since W6 the whole Consultora window uses the Obsidian theme described under Workspace. The DayliOS look above (night, pastels, Nunito, pills) now belongs to the menubar only.
 
 - **Shell:** one frame for every section. A 38px draggable strip with back and forward, the route in the center («Clientes › Acme»), the record control and the «…» menu. A 44px ribbon: sidebar toggle, global search (⌘K), new note, new board, Ajustes at the bottom. A docked sidebar, 180 to 480px, with two tabs: Secciones (Consultora and Email groups, 30px rows) and Archivos (the vault explorer, mounted once). Each context remembers its tab.
-- **Shortcuts:** ⌘K global switcher over clients, projects, meetings, prospects, contacts and vault files; ⌘O vault switcher; ⌘F searches the current context; ⌘N new note; ⌘\ sidebar; ⌘[ and ⌘] back and forward; ⌘, Ajustes; Esc goes back outside the workspace.
+- **Shortcuts:** ⌘K global switcher over clients, projects, meetings and vault files; ⌘O vault switcher; ⌘F searches the current context; ⌘N new note; ⌘\ sidebar; ⌘[ and ⌘] back and forward; ⌘, Ajustes; Esc goes back outside the workspace.
 - **Pages:** three variants. Table pages use the full width with 24px gutters, a 20px semibold title and Obsidian Bases style tables: 28px muted header, 32px rows, 1px dividers, hover row. Document pages are a 760px reading column with a 28px bold inline title, a collapsible Properties block (icon, 140px muted name, value edited in place, links in the accent) and sections as 16px semibold headings over a 1px line. Board pages give the content the whole pane.
 - **Controls:** buttons 30px, 4px radius, weight 500: accent solid for the screen's main action, `#363636` for the rest, red text for danger. Inputs 32px with a 1px border on the document background and an accent border on focus. Selects are grey 30px. Tags and states are round 20px labels tinted 15% with the color's text, using the Obsidian palette.
 - **Feedback:** callouts with a 2px left border in the color over a 10% tint (accent info, green success, yellow warning, red error). Empty states are centered faint text, no cards.
-- **Pipeline:** Kanban plugin look. 280px columns on `#262626` with an 8px radius and a 1px border that turns accent when dropping; cards on the document background with a 1px border and 6px radius, no shadow.
 - **Ajustes:** a 200px category list on the left (General, Email, Hub de leads, Nota de voz, Atajos) and setting rows: name 15px and description 13px on the left, control on the right, 1px separators. Switches are round, accent when on.
 - **Recording:** in the strip. Idle is a quiet «Grabar» with a red dot; recording shows «REC» with a pulsing dot and timer plus «Detener». The stop sheet is an Obsidian modal.
 - **Shared pieces:** components shared with the menubar get `ui-*` hook classes (`ui-btn`, `ui-icon-btn`, `ui-menu`, `ui-modal`, `ui-drawer`, `ui-search`, `ui-seg`, `ui-list`…). They have no style outside the theme, so the menubar does not change; under `body.theme-obsidian` unlayered rules give them the Obsidian shape.
@@ -390,18 +389,7 @@ Since W6 the whole Consultora window uses the Obsidian theme described under Wor
 
 - **Tag chip:** 20px pill (24px in detail), surface-raised, milk-soft bold, `#tag`. Tags carry no color: they are not a meaning.
 - **Effort:** three 3px bars of 8/10/12px; filled milk-soft, empty hairline. Detail uses a three-pill rail (Bajo · Medio · Alto), active = surface-raised + milk; click again clears.
-- **Drag:** dragged row/card at 40% opacity; drop target = 3px apricot line above (or below the last) item. Pipeline column under the pointer steps from 50% surface to surface.
-
-### Email Marketing (Consultora)
-
-- **Sidebar group:** a micro milk-soft «Email» label under the main sections, then Fuentes, Secuencias, Newsletters (same side items). Automatizaciones lives in the main group.
-- **Subscription pill:** mint «Suscrito»; neutral «Baja»; coral «Rebotó» / «Spam». A work contact (`none`) shows nothing: calm by default.
-- **Tags:** neutral surface-raised micro pills. A tag is a label, not a state, so it never takes a pastel. The tag editor is a surface field with removable pills (rose on hover) and an inline input with native suggestions.
-- **Status filter:** chips (the Period pattern, apricot when selected); tag and source filters are pill selects next to the search pill.
-- **Consent:** subscribing by hand is two-step: «Suscribir» becomes «¿Te dio su permiso? Suscribir».
-- **Sources:** one surface card per source. URL and secret sit in night rows with system mono (they are code), each with a «Copiar» button that turns into a mint check. Rotating the secret is two-step (apricot), deleting is two-step (rose).
-- **Newsletters:** «Pausar» quiet pill; while paused it becomes an apricot «Reanudar». History rows expand into a sandboxed preview on milk (the email's own world). Status: mint sent, apricot scheduled or sending, coral failed.
-- **Notices that need action** (connect Resend or the hub) use a 10% apricot wash with an apricot action pill.
+- **Drag:** dragged row/card at 40% opacity; drop target = 3px apricot line above (or below the last) item.
 
 ### Automations (Consultora)
 
@@ -456,19 +444,6 @@ All motion uses the expo ease-out curve and runs only in response to a state cha
 
 - A maintenance table, not a dashboard: rows with the name editable in place, usage in caption, the slug in system mono milk-faint, an «Audiencia» switch pill (active = surface-raised, milk, apricot radio icon) and a confirm button. Tags never take a pastel.
 
-### Contact detail
-
-- Header: 48px initials circle, name editable as headline, «rol · empresa» and the subscription pill in the meta line. Actions: email and LinkedIn icon buttons, one apricot primary («Convertir en prospecto», or a quiet «Ver en pipeline» once converted) and the confirm delete.
-- Two columns: main (Notas, then Actividad, a single timeline of events and meetings) and a 300px side stack of groups without cards: Datos (inline fields, label micro over value, click to edit), Relaciones (Cliente, Proyecto, Prospecto as reference pickers: the link opens it, «Cambiar» opens a searchable modal with «Quitar»), Tags, Email marketing (one line plus its action), Formulario (collapsed).
-
-### Pipelines
-
-- Header is one row: the pipeline selector (a native select: choosing one of N is what a dropdown is for, «+ Nuevo pipeline» last), open value in caption, then the Columnas | Lista toggle, «Filtros», «Editar pipeline» quiet pill and the apricot «Nuevo prospecto».
-- Board: 260px columns on a 50% surface wash. Column header = name pill (won in a mint wash, lost milk-soft) + neutral count badge, value in micro and a quiet «+» that opens an inline input at the top of the column. Cards: surface, sm radius, company bold with value at the right in tabular, main contact in caption, next step in micro (butter when overdue).
-- Navigation: ← / → move one column, ⇧ jumps to the ends. Holding the pointer 500ms on the board background enables panning: grabbing cursor and a 1.5px apricot inset ring at 40% while it lasts.
-- List: the same data in fixed columns with sortable headers (arrow on the active one) and the stage as an inline pill select.
-- Editor modal: name field, rows that drag only from their grip handle, inline name, a three-pill kind rail (Abierta, Ganada in mint, Perdida), prospect count and delete. Deleting a column with prospects asks where they go in an apricot 10% notice; deleting the pipeline lives in a rose 10% band at the bottom.
-
 ### Workspace (Obsidian theme)
 
 The Consultora window puts `theme-obsidian` on `body` while it is open (since W6 for every section, not only the workspace). It redefines the app tokens, so shared components, dialogs and menus re-theme without their own code.
@@ -504,18 +479,18 @@ Values measured on Obsidian, see `.impeccable/.kiro/specs/canvas-improvement/res
 ### Tasks board (Consultora)
 
 - Section «Tareas» after Workspace. Two views, Tablero and Lista, in a segmented control; the choice, period, range, filters and sort are remembered.
-- Three columns: Pendiente, En curso, Hecha. Same KanbanColumn as the pipeline. Native drag between columns changes only the status; Hecha equals done, so the menubar shows it crossed out.
+- Three columns: Pendiente, En curso, Hecha. Native drag between columns changes only the status; Hecha equals done, so the menubar shows it crossed out.
 - Card: title, day in grey (yellow when late), effort, tags in link color, relation name, subtask progress.
 - Lista is a Bases style table. Click a header to sort, again to invert, a third time to clear. Status changes from the row.
-- Filters live in the right drawer: period, text, tags, effort, client, project, prospect.
+- Filters live in the right drawer: period, text, tags, effort, client, project.
 - Detail opens as a right panel: Properties with status and relations above the usual task detail.
-- Client, project and prospect records show a «Tareas» section: open first, a checkbox to close, «Nueva» creates it for today already related.
+- Client and project records show a «Tareas» section: open first, a checkbox to close, «Nueva» creates it for today already related.
 - The ceiling of eight per day still rules; when today is full the form suggests the next free day.
 
 ### Dashboard (Inicio)
 
 - First section of Consultora. Monitor mode: in five seconds, is the week going well, what is late, how much is at stake.
-- Header: period select (week, month, quarter, year, range), pipeline select (all or one) and «Editar dashboard». Every number compares with the previous period of the same length.
+- Header: period select (week, month, quarter, year, range) and «Editar dashboard». Every number compares with the previous period of the same length.
 - Grid of 4 columns that drops to 2 below 768px of panel. Sizes: quarter, half, full; one or two rows of at least 150px.
 - Widget card: `ob-alt` background, 1px border, 8px radius, no shadow. Title 13px muted; clicking it opens the source already filtered. Number 28px semibold tabular. Delta 12px: green when better, red when worse, with arrow and text, never color alone.
 - Charts are own SVG or plain divs: BarList with direct labels and values, Sparkline as decoration only. Every chart has a text summary for screen readers and a table one click away.
