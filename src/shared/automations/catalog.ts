@@ -43,7 +43,8 @@ export type RefKind = 'client' | 'project' | 'node'
 
 export type Names = (kind: RefKind, id: string) => string | undefined
 
-export type NodeGroup = 'control' | 'clientes' | 'email' | 'productividad' | 'integraciones' | 'contacto' | 'pipeline'
+export type NodeGroup =
+  'control' | 'clientes' | 'email' | 'productividad' | 'integraciones' | 'contacto' | 'pipeline'
 
 export const NODE_GROUPS: { id: Exclude<NodeGroup, 'contacto' | 'pipeline'>; label: string }[] = [
   { id: 'control', label: 'Control' },
@@ -506,7 +507,6 @@ const DOMAIN: NodeSpec[] = [
   })
 ]
 
-
 // Legacy/retired specs kept for stored automations and published migrations.
 // Not exported in ACTIVE_NODES/active UI lists; recognized for validation/graph compat.
 const RETIRED_MSG = 'Estos pasos se retiraron; no se puede ejecutar.'
@@ -543,10 +543,7 @@ const LEGACY_NODES: NodeSpec[] = [
   legacyAction('start_sequence')
 ]
 
-const legacyTrigger = (
-  type: TriggerType,
-  subject: SubjectType | 'any'
-): TriggerSpec => ({
+const legacyTrigger = (type: TriggerType, subject: SubjectType | 'any'): TriggerSpec => ({
   type,
   group: 'clientes',
   label: type,

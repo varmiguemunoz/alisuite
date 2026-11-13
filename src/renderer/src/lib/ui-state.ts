@@ -34,13 +34,7 @@ export const uiState = {
   flush: send
 }
 
-const LEGACY = [
-  'shell.sidebar.',
-  'ws.',
-  'settings.tab',
-  'today.expanded',
-  'props.collapsed.'
-]
+const LEGACY = ['shell.sidebar.', 'ws.', 'settings.tab', 'today.expanded', 'props.collapsed.']
 const MIGRATED = 'migrated.localStorage'
 
 function migrateLocalStorage(): void {

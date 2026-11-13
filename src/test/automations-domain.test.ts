@@ -52,9 +52,11 @@ const base = (): Definition => ({
 
 describe('catálogo', () => {
   it('cubre todos los tipos activos sin repetir', () => {
-    expect(NODES.filter((n) => !n.retired).map((n) => n.type).sort()).toEqual(
-      [...NODE_TYPES].sort()
-    )
+    expect(
+      NODES.filter((n) => !n.retired)
+        .map((n) => n.type)
+        .sort()
+    ).toEqual([...NODE_TYPES].sort())
     expect(
       TRIGGERS.filter((t) => (TRIGGER_TYPES as readonly string[]).includes(t.type))
         .map((t) => t.type)
@@ -104,15 +106,15 @@ describe('condiciones', () => {
     expect(
       testCondition({ field: 'task.title', operator: 'starts_with', value: 'Llamar' }, scope)
     ).toBe(true)
-    expect(testCondition({ field: 'task.tags', operator: 'includes', value: 'ventas' }, scope)).toBe(
-      true
-    )
+    expect(
+      testCondition({ field: 'task.tags', operator: 'includes', value: 'ventas' }, scope)
+    ).toBe(true)
     expect(
       testCondition({ field: 'task.tags', operator: 'excludes', value: 'cliente' }, scope)
     ).toBe(true)
-    expect(
-      testCondition({ field: 'meeting.date', operator: 'within_days', value: 7 }, scope)
-    ).toBe(true)
+    expect(testCondition({ field: 'meeting.date', operator: 'within_days', value: 7 }, scope)).toBe(
+      true
+    )
     expect(
       testCondition({ field: 'meeting.date', operator: 'older_than_days', value: 7 }, scope)
     ).toBe(false)
