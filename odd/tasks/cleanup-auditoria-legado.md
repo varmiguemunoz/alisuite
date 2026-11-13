@@ -19,10 +19,10 @@ S7: Keep published migrations untouched; typecheck/lint/test/build pass.
 T1 | S1 | route: inline | status: done | commit: n/a (removed gitignored dist/, out/, .eslintcache; ~1GB freed)
 T2 | S2 | route: inline | status: done | commit: 89b3e41 (dead unused files deleted)
 T3 | S3 | route: inline | status: done | commit: 590324d (active sync/activity/contracts aligned; tests/typecheck/lint pass for scope)
-T4 | S4 | route: inline | status: in-progress | commit: -
+T4 | S4 | route: inline | status: done | commit: (slices: f519c35,8b1e2e5,7730c39,b3c9179,9ce207e)
 T5 | S5 | route: inline | status: done | commit: 1833e99
 T6 | S6 | route: inline | status: done | commit: abdec3b
-T7 | S7 | route: inline | status: in-progress | commit: -
+T7 | S7 | route: inline | status: done | commit: 45b9cf1
 
 ## Log
 
@@ -40,4 +40,5 @@ L11: T4 slice: removed stale pipeline wording from App title, Settings help text
 L12: T4 slice: removed stale pipeline/contacto group entries from automation NodePicker/Canvas, dropped legacy `pipeline.` ui-state migration key, and removed unused `Overview.pipeline`/`Overview.nextSteps` from shared consultora types and context service. `tsc node/web` OK. Commit `9ce207e`.
 
 L13: T5 slice: removed dead newsletter/outreach config fields and wiring (`newsletterPaused`, `outreachDailyCap`, `outreachFooter`, `outreachCursor`/`saveOutreachCursor`) from `src/main/config.ts`, `src/shared/consultora.ts`, and `src/main/email.ts` (apollo no longer receives outreach footer). Kept email delivery/`email_owner` transactional path intact. `tsc node/web` OK. Commit `1833e99`.
-L14: T6: updated `README.md`, `PRODUCT.md`, `DESIGN.md` to remove stale CRM/marketing/outreach/newsletter/pipeline module references and align automations/dashboard/tasks/MCP docs with active functionality. Archived historical specs outside src: `.impeccable/.kiro/specs/{email-automations,outreach-editor-mcp-canvas,multi-pipeline}` -> `.impeccable/.kiro/specs-archive/`. Commit `abdec3b`. T7 final verification in progress.
+L14: T6: updated `README.md`, `PRODUCT.md`, `DESIGN.md` to remove stale CRM/marketing/outreach/newsletter/pipeline module references and align automations/dashboard/tasks/MCP docs with active functionality. Archived historical specs outside src: `.impeccable/.kiro/specs/{email-automations,outreach-editor-mcp-canvas,multi-pipeline}` -> `.impeccable/.kiro/specs-archive/`. Commit `abdec3b`.
+L15: T7 verification: `npm run typecheck` OK; `npm run lint` 0 errors (8 pre-existing prettier warnings in untouched files); `ELECTRON_RUN_AS_NODE=1 node node_modules/vitest/vitest.mjs run` **39 files / 278 tests passed** (`npm test` script unavailable here: Electron binary missing in `node_modules/electron/dist`); `npm run build` OK (electron-vite main/preload/renderer built). Lint fixes + tracker finalized in `45b9cf1`.
