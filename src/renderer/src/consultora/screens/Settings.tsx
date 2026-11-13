@@ -77,9 +77,6 @@ export function Settings(): React.JSX.Element {
                   </Button>
                 </SettingRow>
               </Section>
-              <p className="mt-8 text-[13px] text-ob-faint">
-                Las columnas del pipeline se editan en Pipeline, con «Editar pipeline».
-              </p>
             </>
           )}
           {tab === 'account' && <AccountSettings />}

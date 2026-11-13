@@ -63,7 +63,7 @@ export function Home({ go }: { go: Go }): React.JSX.Element {
     assignee: mine && me ? me : null
   }
 
-  // Una sola consulta para todos los componentes que usan el periodo y el pipeline de Inicio.
+  // Una sola consulta para todos los componentes que usan el periodo de Inicio.
   const sharedKinds = useMemo(
     () => [
       ...new Set(
@@ -174,8 +174,7 @@ export function Home({ go }: { go: Go }): React.JSX.Element {
       <ErrorNote message={error ?? dashboardError} />
       {editing && (
         <p className="mt-3 text-[13px] text-ob-muted">
-          Arrastra para mover. Ajustes cambia el tamaño, el periodo o el pipeline de cada
-          componente.
+          Arrastra para mover. Ajustes cambia el tamaño o el periodo de cada componente.
         </p>
       )}
       {layout && layout.widgets.length === 0 && (

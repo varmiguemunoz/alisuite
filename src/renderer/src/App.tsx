@@ -359,7 +359,7 @@ function App(): React.JSX.Element {
             type="button"
             onClick={() => window.api.openConsultora()}
             aria-label="Abrir Consultora"
-            title="Consultora: clientes, reuniones y pipeline"
+            title="Consultora: clientes, proyectos y reuniones"
             className="grid size-11 shrink-0 place-items-center rounded-full bg-surface text-milk-soft transition-colors hover:bg-surface-raised hover:text-milk [-webkit-app-region:no-drag]"
           >
             <Briefcase size={17} strokeWidth={2.5} />
