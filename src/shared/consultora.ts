@@ -55,7 +55,6 @@ export interface Meeting {
   title: string
   clientId: string | null
   projectId: string | null
-  prospectId: string | null
   assigneeId: string | null
   participants: string[]
   summaryMd: string
@@ -101,7 +100,7 @@ export type MeetingInput = Partial<
 
 export type MeetingBrief = Pick<
   Meeting,
-  'id' | 'date' | 'title' | 'clientId' | 'projectId' | 'prospectId' | 'status' | 'participants'
+  'id' | 'date' | 'title' | 'clientId' | 'projectId' | 'status' | 'participants'
 >
 
 export interface OpenActionItem extends ActionItem {
@@ -275,7 +274,6 @@ export interface StopInfo {
   participants: string[]
   clientId: string | null
   projectId: string | null
-  prospectId?: string | null
   durationSec: number
   language: Language
 }
@@ -338,7 +336,6 @@ export interface ConsultoraApi {
   suggestAssociation(title: string): Promise<{
     clientId: string | null
     projectId: string | null
-    prospectId: string | null
   }>
   listActionItems(filter: { client?: string; done?: boolean }): Promise<OpenActionItem[]>
 

@@ -7,7 +7,6 @@ export function brief(m: Meeting): MeetingBrief {
     title: m.title,
     clientId: m.clientId,
     projectId: m.projectId,
-    prospectId: m.prospectId,
     status: m.status,
     participants: m.participants
   }

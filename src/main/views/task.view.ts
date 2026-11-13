@@ -17,7 +17,6 @@ export function taskView(t: Task): Task {
     status: t.status ?? (t.done ? 'done' : 'todo'),
     clientId: t.clientId ?? null,
     projectId: t.projectId ?? null,
-    prospectId: t.prospectId ?? null,
     assigneeId: t.assigneeId ?? null,
     ...(t.subtasks ? { subtasks: t.subtasks } : {}),
     ...(t.links ? { links: t.links } : {})

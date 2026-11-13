@@ -63,7 +63,7 @@ export function register(server: McpServer): void {
       description:
         'Edita el título, la descripción (markdown; cadena vacía la borra), los tags (lista completa), ' +
         'el esfuerzo (null lo quita), el estado del tablero (todo, doing, done; done equivale a done: true) ' +
-        'y la relación con un cliente, proyecto o prospecto por id (cadena vacía la quita). ' +
+        'y la relación con un cliente o proyecto por id (cadena vacía la quita). ' +
         'Las subtareas no admiten relaciones.',
       inputSchema: {
         id: z.string(),
@@ -75,7 +75,6 @@ export function register(server: McpServer): void {
         status: z.enum(['todo', 'doing', 'done']).optional(),
         client: z.string().optional().describe('id del cliente, vacío quita la relación'),
         project: z.string().optional().describe('id del proyecto, vacío quita la relación'),
-        prospect: z.string().optional().describe('id del prospecto, vacío quita la relación'),
         assignee: z
           .string()
           .optional()
@@ -91,7 +90,7 @@ export function register(server: McpServer): void {
       description:
         'Tablero de tareas: lista tareas madre con estado, progreso y relaciones, más el conteo por estado. ' +
         'Usa period (today, week, overdue, upcoming, open, range con from y to) o solo from y to. Filtra por estado, texto, tags, esfuerzo, ' +
-        'cliente, proyecto o prospecto (ids).',
+        'cliente o proyecto (ids).',
       inputSchema: {
         period: z.enum(['today', 'week', 'overdue', 'upcoming', 'open', 'range']).optional(),
         from: day.optional(),
@@ -102,7 +101,6 @@ export function register(server: McpServer): void {
         effort: z.enum(['alto', 'medio', 'bajo']).optional(),
         client: z.string().optional(),
         project: z.string().optional(),
-        prospect: z.string().optional(),
         assignee: z.string().optional().describe('id de usuario del responsable')
       }
     },

@@ -119,7 +119,6 @@ export class TaskService implements TasksApi {
         status: 'todo',
         clientId: null,
         projectId: null,
-        prospectId: null,
         assigneeId: teamUserId()
       }
       await tasks.insert(task)
@@ -151,7 +150,6 @@ export class TaskService implements TasksApi {
         status: 'todo',
         clientId: null,
         projectId: null,
-        prospectId: null,
         assigneeId: null
       }
       await tasks.insert(task)
@@ -201,11 +199,7 @@ export class TaskService implements TasksApi {
       else if (patch.done !== undefined && patch.done !== task.done) {
         applyStatus(task, patch.done ? 'done' : 'todo')
       }
-      if (
-        patch.client !== undefined ||
-        patch.project !== undefined ||
-        patch.prospect !== undefined
-      ) {
+      if (patch.client !== undefined || patch.project !== undefined) {
         if (task.parentId) throw new AppError('invalid', 'Las relaciones van en la tarea madre.')
         Object.assign(task, await resolveLinks(manager, task, patch))
       }
@@ -450,7 +444,6 @@ function clean(task: Task): Task {
     status: TASK_STATUSES.includes(task.status) ? task.status : task.done ? 'done' : 'todo',
     clientId: task.clientId ?? null,
     projectId: task.projectId ?? null,
-    prospectId: task.prospectId ?? null,
     assigneeId: task.assigneeId ?? null
   }
 }
@@ -481,10 +474,9 @@ async function resolveLinks(
   manager: EntityManager,
   task: Task,
   patch: TaskPatch
-): Promise<Pick<Task, 'clientId' | 'projectId' | 'prospectId'>> {
+): Promise<Pick<Task, 'clientId' | 'projectId'>> {
   let clientId = task.clientId ?? null
   let projectId = task.projectId ?? null
-  const prospectId = task.prospectId ?? null
   if (patch.client !== undefined) {
     clientId = patch.client
       ? (await exists(manager, ClientModel, patch.client, 'ese cliente')).id
@@ -504,7 +496,7 @@ async function resolveLinks(
       clientId = project.clientId
     } else projectId = null
   }
-  return { clientId, projectId, prospectId }
+  return { clientId, projectId }
 }
 
 async function exists(
@@ -640,7 +632,6 @@ export interface AutomatedTaskInput {
   tags: string[]
   effort: Task['effort']
   clientId: string | null
-  prospectId?: string | null
 }
 
 const shiftDay = (day: DayKey, days: number): DayKey => {
@@ -679,7 +670,6 @@ export async function insertTaskWithRoom(
     status: 'todo',
     clientId: input.clientId,
     projectId: null,
-    prospectId: input.prospectId ?? null,
     assigneeId: me
   }
   await tasks.insert(task)

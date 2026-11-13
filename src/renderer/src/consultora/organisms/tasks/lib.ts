@@ -59,7 +59,7 @@ export async function nextFreeDay(from: DayKey): Promise<DayKey | null> {
 }
 
 export function linkName(t: Task): string | null {
-  return t.links?.project?.name ?? t.links?.client?.name ?? t.links?.prospect?.company ?? null
+  return t.links?.project?.name ?? t.links?.client?.name ?? null
 }
 
 export const isDayFull = (message: string | null): boolean =>

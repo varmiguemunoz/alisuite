@@ -12,12 +12,11 @@ const server = new McpServer(
   {
     instructions:
       'Alisuite es el sistema operativo del equipo de Ali Muñoz Advisory: el día (máximo 8 tareas; subtareas sin límite con create_task + parent), ' +
-      'notas relacionadas, clientes con proyectos y documentos, pipelines (uno por oferta), contactos con tags y email ' +
-      'marketing (solo a suscritos). Las referencias a clientes, proyectos, prospectos, pipelines y etapas aceptan id o nombre. ' +
+      'notas relacionadas, clientes con proyectos y documentos. Las referencias a clientes y proyectos aceptan id o nombre. ' +
       'Las herramientas que borran piden confirm: true; llámalas primero sin él para ver el impacto y confirma con Miguel. ' +
       'El workspace es una carpeta real estilo Obsidian (notas .md, boards .canvas, imágenes): las notas del día y de voz ' +
       'van a «Notas rápidas»; organiza con workspace_*, y edita boards con board_read y board_edit. ' +
-      'Las automatizaciones (estilo GoHighLevel) se arman con list_automation_catalog, save_automation_draft, ' +
+      'Las automatizaciones se arman con list_automation_catalog, save_automation_draft, ' +
       'test_automation y publish_automation.'
   }
 )

@@ -7,12 +7,11 @@ export function register(server: McpServer): void {
     'list_meetings',
     {
       description:
-        'Reuniones por día (más reciente primero), sin textos largos. Filtra por cliente, proyecto, prospecto o fechas. ' +
+        'Reuniones por día (más reciente primero), sin textos largos. Filtra por cliente, proyecto o fechas. ' +
         'Luego usa get_meeting para el detalle.',
       inputSchema: {
         client: z.string().optional(),
         project: z.string().optional(),
-        prospect: z.string().optional(),
         from: day.optional(),
         to: day.optional(),
         page: z.number().int().min(1).optional()
@@ -59,7 +58,6 @@ export function register(server: McpServer): void {
         date: z.string().optional().describe('ISO; por defecto ahora'),
         client: z.string().optional(),
         project: z.string().optional(),
-        prospect: z.string().optional(),
         participants: z.array(z.string()).optional(),
         summaryMd: z.string().optional(),
         decisionsMd: z.string().optional(),
@@ -87,14 +85,13 @@ export function register(server: McpServer): void {
     'update_meeting',
     {
       description:
-        'Edita una reunión: título, asociación (client/project/prospect; "" la quita), participantes, resumen, decisiones, ' +
+        'Edita una reunión: título, asociación (client/project; "" la quita), participantes, resumen, decisiones, ' +
         'action items (lista completa) o notas.',
       inputSchema: {
         id: z.string(),
         title: z.string().optional(),
         client: z.string().optional(),
         project: z.string().optional(),
-        prospect: z.string().optional(),
         participants: z.array(z.string()).optional(),
         summaryMd: z.string().optional(),
         decisionsMd: z.string().optional(),

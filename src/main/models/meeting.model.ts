@@ -11,7 +11,6 @@ export const MeetingModel = new EntitySchema<Meeting & SoftDeletable>({
     title: { type: 'text' },
     clientId: { name: 'client_id', type: 'text', nullable: true },
     projectId: { name: 'project_id', type: 'text', nullable: true },
-    prospectId: { name: 'prospect_id', type: 'text', nullable: true },
     assigneeId: { name: 'assignee_id', type: 'text', nullable: true },
     participants: { type: 'simple-json' },
     summaryMd: { name: 'summary_md', type: 'text', default: '' },

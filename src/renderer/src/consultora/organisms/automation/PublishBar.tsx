@@ -102,7 +102,7 @@ export function PublishBar(p: PublishBarProps): React.JSX.Element {
         }
       >
         <p className="text-[13px] text-ob-muted">
-          Algún paso borra contactos o prospectos. Lo borrado va a la papelera, pero corre solo,
+          Algún paso borra registros. Lo borrado va a la papelera, pero corre solo,
           sobre cada sujeto que entre.
         </p>
         <label className="mt-3 flex items-center gap-2 text-[13px] text-ob-text">

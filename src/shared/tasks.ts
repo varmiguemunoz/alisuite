@@ -23,7 +23,6 @@ export interface Task {
 
   clientId: string | null
   projectId: string | null
-  prospectId: string | null
   assigneeId: string | null
 
   subtasks?: SubtaskProgress
@@ -42,7 +41,6 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 export interface TaskLinkNames {
   client?: { id: string; name: string }
   project?: { id: string; name: string }
-  prospect?: { id: string; company: string }
 }
 
 export interface TaskBoardQuery {
@@ -56,7 +54,6 @@ export interface TaskBoardQuery {
   effort?: Effort
   client?: string
   project?: string
-  prospect?: string
   assignee?: string
 }
 
@@ -96,7 +93,6 @@ export interface TaskPatch {
 
   client?: string
   project?: string
-  prospect?: string
   assignee?: string
 
   description?: string

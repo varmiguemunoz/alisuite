@@ -8,7 +8,7 @@ export function register(server: McpServer): void {
     {
       description:
         'Panorama de la consultora en una llamada: clientes activos con proyectos y entregables pendientes, ' +
-        'action items abiertos, pipeline por etapa, próximos pasos de venta y últimas reuniones. ' +
+        'action items abiertos y últimas reuniones. ' +
         'Úsala primero para preguntas generales ("¿cómo vamos?", "¿qué tengo pendiente?").',
       inputSchema: {}
     },
@@ -73,7 +73,7 @@ export function register(server: McpServer): void {
     'search',
     {
       description:
-        'Busca un texto en clientes, proyectos, reuniones (incluidas transcripciones) y prospectos. ' +
+        'Busca un texto en clientes, proyectos y reuniones (incluidas transcripciones). ' +
         'Devuelve tipo, id, título y un fragmento.',
       inputSchema: { query: z.string().min(2) }
     },
@@ -147,7 +147,7 @@ export function register(server: McpServer): void {
     'get_client_impact',
     {
       description:
-        'Qué pasaría al borrar un cliente: proyectos que se borran; reuniones, contactos, prospectos y notas que se desvinculan; carpeta.',
+        'Qué pasaría al borrar un cliente: proyectos que se borran; reuniones y notas que se desvinculan; carpeta.',
       inputSchema: { client: ref('del cliente') }
     },
     ({ client }) => tool(() => api('GET', `/consultora/clients/${enc(client)}/impact`))
@@ -157,7 +157,7 @@ export function register(server: McpServer): void {
     'delete_client',
     {
       description:
-        'Borra un cliente y sus proyectos; reuniones, contactos y prospectos quedan sin cliente y las notas pierden la relación. ' +
+        'Borra un cliente y sus proyectos; reuniones quedan sin cliente y las notas pierden la relación. ' +
         'La carpeta se queda en el disco salvo trash_folder = true (va a la Papelera). Sin confirm devuelve el impacto y no borra.',
       inputSchema: {
         client: ref('del cliente'),
@@ -178,7 +178,7 @@ export function register(server: McpServer): void {
     'delete_project',
     {
       description:
-        'Borra un proyecto. Sus reuniones y contactos se quedan en el cliente, sin proyecto. Sin confirm no borra.',
+        'Borra un proyecto. Sus reuniones se quedan en el cliente, sin proyecto. Sin confirm no borra.',
       inputSchema: { project: ref('del proyecto'), confirm: z.literal(true).optional() }
     },
     ({ project, confirm }) =>

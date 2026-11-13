@@ -67,7 +67,6 @@ export class MeetingService {
         title: input.title ? requiredText(input.title, 'El título') : 'Reunión',
         clientId: null,
         projectId: null,
-        prospectId: null,
         assigneeId: optionalUserId(input.assigneeId),
         participants: checkParticipants(input.participants ?? []),
         summaryMd: markdown(input.summaryMd, 'El resumen'),
@@ -149,7 +148,6 @@ export class MeetingService {
   async suggestAssociation(title: string): Promise<{
     clientId: string | null
     projectId: string | null
-    prospectId: string | null
   }> {
     const text = normalizeName(title ?? '')
     const best = <T>(rows: T[], name: (row: T) => string): T | null =>
@@ -164,8 +162,7 @@ export class MeetingService {
 
     return {
       clientId: project?.clientId ?? client?.id ?? null,
-      projectId: project?.id ?? null,
-      prospectId: null
+      projectId: project?.id ?? null
     }
   }
 }
