@@ -4,13 +4,9 @@ import {
   nodeIssues,
   nodeSpec,
   str,
-  strings,
   triggerAllowed,
   triggerIssues,
-  triggerSpec,
-  visible,
-  type ParamSpec,
-  type RefKind
+  triggerSpec
 } from './catalog'
 import { fieldSpec, OPERATORS_BY_KIND, VALUELESS } from './fields'
 import { portsOf, reachable, upstream } from './graph'
@@ -19,37 +15,8 @@ import {
   type ConditionGroup,
   type Definition,
   type Issue,
-  type Params,
   type SubjectType
 } from './model'
-
-export type RefTarget = Exclude<RefKind, 'node'>
-
-export type Refs = Partial<Record<RefTarget, Set<string>>>
-
-const REF_KINDS: Record<string, Exclude<RefKind, 'node'>> = {
-  client: 'client',
-  project: 'project'
-}
-
-const REF_LABEL: Record<Exclude<RefKind, 'node'>, string> = {
-  client: 'El cliente',
-  project: 'El proyecto'
-}
-
-function refIssues(specs: ParamSpec[], params: Params, refs: Refs): string[] {
-  const out: string[] = []
-  for (const spec of specs) {
-    const kind = REF_KINDS[spec.kind]
-    if (!kind || !visible(spec, params)) continue
-    const known = refs[kind]
-    if (!known) continue
-    const values =
-      spec.kind === 'tags' ? strings(params, spec.key) : [str(params, spec.key)].filter(Boolean)
-    for (const value of values) if (!known.has(value)) out.push(`${REF_LABEL[kind]} ya no existe.`)
-  }
-  return out
-}
 
 export function conditionIssues(groups: ConditionGroup[], subject: SubjectType): string[] {
   const out: string[] = []
@@ -81,7 +48,7 @@ function groupsOf(value: unknown): ConditionGroup[] {
   return Array.isArray(value) ? (value as ConditionGroup[]) : []
 }
 
-export function validateDefinition(def: Definition, refs: Refs = {}): Issue[] {
+export function validateDefinition(def: Definition): Issue[] {
   const issues: Issue[] = []
   const push = (path: string, message: string, extra: Partial<Issue> = {}): void => {
     issues.push({ path, message, ...extra })
@@ -101,7 +68,6 @@ export function validateDefinition(def: Definition, refs: Refs = {}): Issue[] {
     if (!triggerAllowed(spec, def.subject))
       push(path, 'Este trigger es para otro tipo de sujeto.', extra)
     for (const m of triggerIssues(spec, trigger.params)) push(path, m, extra)
-    for (const m of refIssues(spec.params, trigger.params, refs)) push(path, m, extra)
     for (const m of conditionIssues(trigger.conditions ?? [], def.subject))
       push(`${path}.conditions`, m, extra)
   })
@@ -140,7 +106,6 @@ export function validateDefinition(def: Definition, refs: Refs = {}): Issue[] {
     if (!nodeAllowed(spec, def.subject))
       push(path, 'Este paso no aplica a este tipo de sujeto.', extra)
     for (const m of nodeIssues(spec, node.params)) push(path, m, extra)
-    for (const m of refIssues(spec.params, node.params, refs)) push(path, m, extra)
     const ports = portsOf(node)
     const keys = Object.keys(node.next)
     if (keys.length !== ports.length || ports.some((p) => !(p in node.next)))
@@ -172,17 +137,4 @@ export function issuesByNode(issues: Issue[]): Record<string, string[]> {
 
 export function isDestructive(def: Definition): boolean {
   return [...reachable(def)].some((id) => nodeSpec(def.nodes[id].type)?.destructive)
-}
-
-export function usesRef(def: Definition, kind: RefTarget, value: string): boolean {
-  const hit = (specs: ParamSpec[], params: Params): boolean =>
-    specs.some(
-      (spec) =>
-        REF_KINDS[spec.kind] === kind &&
-        (spec.kind === 'tags' ? strings(params, spec.key) : [str(params, spec.key)]).includes(value)
-    )
-  return (
-    def.triggers.some((t) => hit(triggerSpec(t.type)?.params ?? [], t.params)) ||
-    Object.values(def.nodes).some((n) => hit(nodeSpec(n.type)?.params ?? [], n.params))
-  )
 }

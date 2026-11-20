@@ -14,7 +14,7 @@ import {
 import { dirname, join } from 'path'
 import { baseName, extOf, isIgnored, kindOf, normalizePath, type ItemKind } from '@shared/workspace'
 import { AppError } from './app.error'
-import { isInside, safeFolderName } from './documents'
+import { isInside, safeFolderName } from './paths'
 import { moveToTrash } from './trash'
 
 export interface DiskEntry {

@@ -1026,7 +1026,6 @@ export function BoardCanvas({
             open={picking !== null}
             noteId=""
             exclude={[]}
-            notesOnly
             onClose={() => setPicking(null)}
             onPick={(target) => {
               const at = picking ?? center()

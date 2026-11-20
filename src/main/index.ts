@@ -1,6 +1,4 @@
-import type { DataSource } from 'typeorm'
 import { fromApp } from './vault-guard'
-import { moveClientFolders } from './services/client-folders.migration'
 import {
   app,
   BrowserWindow,
@@ -70,7 +68,7 @@ import { registerIpc } from './ipc'
 import { registerUiIpc } from './ipc.ui'
 import { initUiState } from './services/ui-state'
 import { registerConsultoraIpc } from './ipc.consultora'
-import { deliveryRouter } from './email'
+import { notificationSender } from './email'
 import { startServer } from './server'
 import { installMacMenu } from './app-menu'
 import { createMenubarWindow, createTray } from './window'
@@ -289,8 +287,6 @@ async function start(): Promise<void> {
     win.webContents.reload()
   })
 
-  await migrateClientFolders(db)
-
   // Workspace: bóveda en disco + índice. Se sincroniza al arrancar y vigila cambios de Finder o Claude.
   const workspace = new WorkspaceService(db, new Vault(config.workspacePath), notify)
   const watcher = new WorkspaceWatcher(workspace)
@@ -336,7 +332,7 @@ async function start(): Promise<void> {
   registerConsultoraIpc(consultora, notify, voice, workspaceShortcut)
   const automations = new AutomationEngine(db, {
     handlers: createHandlers(notes),
-    ports: createPorts(deliveryRouter),
+    ports: createPorts(notificationSender),
     onRunChange: runsChangedBroadcaster(),
     onAlert: (_id, message) => macNotifier.notify('Automatización', message)
   })
@@ -352,9 +348,9 @@ async function start(): Promise<void> {
   app.on('before-quit', () => automations.stop())
   allowScreenCapture()
   ipcMain.on('window:hide', () => win.hide())
-  ipcMain.on('window:openConsultora', (_e, target?: { client?: string; workspace?: boolean }) => {
+  ipcMain.on('window:openConsultora', (_e, target?: { workspace?: boolean }) => {
     win.hide()
-    if (target?.client || target?.workspace) openConsultoraAt(target)
+    if (target?.workspace) openConsultoraAt(target)
     else showConsultora()
   })
   app.on('second-instance', (_event, argv) => {
@@ -404,27 +400,3 @@ function serveVault(workspace: WorkspaceService): void {
 
 // La app vive en el menubar: cerrar la ventana no la termina.
 app.on('window-all-closed', () => {})
-
-async function migrateClientFolders(db: DataSource): Promise<void> {
-  const result = await moveClientFolders({
-    db,
-    docsRoot: config.docsPath(),
-    workspaceRoot: config.workspacePath()
-  }).catch((error) => {
-    console.error('[clientes] carpetas', error)
-    return null
-  })
-  if (!result) return
-  if (result.moved.length) console.log('[clientes] carpetas movidas al Workspace:', result.moved)
-  if (!result.failed.length) return
-  void dialog.showMessageBox({
-    type: 'warning',
-    message: 'Algunas carpetas de clientes no se pudieron mover al Workspace.',
-    detail: [
-      ...result.failed.map((f) => `${f.name}: ${f.error}`),
-      result.backup ? `Copia de seguridad: ${result.backup}` : ''
-    ]
-      .filter(Boolean)
-      .join('\n')
-  })
-}

@@ -17,8 +17,6 @@ import {
   type StopInfo
 } from '@shared/consultora'
 import { MeetingModel } from '../models/meeting.model'
-import { ClientModel } from '../models/client.model'
-import { ProjectModel } from '../models/project.model'
 import { transactionGuard } from '../guards/transaction.guard'
 import { config } from '../config'
 import { AppError } from './app.error'
@@ -61,8 +59,6 @@ export class RecordingService {
       id: randomUUID(),
       date: date.toISOString(),
       title: `Reunión ${fileStamp(date)}`,
-      clientId: null,
-      projectId: null,
       assigneeId: null,
       participants: [],
       summaryMd: '',
@@ -106,9 +102,7 @@ export class RecordingService {
 
     await this.meetings.update(meetingId, {
       title: info.title?.trim() || undefined,
-      participants: info.participants ?? [],
-      client: info.clientId ?? '',
-      project: info.projectId ?? ''
+      participants: info.participants ?? []
     })
     await this.patch(meetingId, {
       durationSec: Math.round(info.durationSec) || null,
@@ -137,8 +131,6 @@ export class RecordingService {
       id: randomUUID(),
       date: date.toISOString(),
       title: info.title?.trim() || basename(source, ext),
-      clientId: null,
-      projectId: null,
       assigneeId: null,
       participants: [],
       summaryMd: '',
@@ -158,12 +150,7 @@ export class RecordingService {
       manager.getRepository(MeetingModel).insert(meeting)
     )
 
-    // Asociación (mueve el archivo a la carpeta del cliente si hay cliente) y participantes
-    await this.meetings.update(meeting.id, {
-      participants: info.participants ?? [],
-      client: info.clientId ?? '',
-      project: info.projectId ?? ''
-    })
+    await this.meetings.update(meeting.id, { participants: info.participants ?? [] })
     this.onChange()
     return this.process(meeting.id)
   }
@@ -229,8 +216,7 @@ export class RecordingService {
         {
           title: meeting.title,
           date: meeting.date.slice(0, 10),
-          participants: meeting.participants,
-          about: await this.about(meeting)
+          participants: meeting.participants
         },
         source
       )
@@ -285,29 +271,11 @@ export class RecordingService {
     }
   }
 
-  private async about(meeting: Meeting): Promise<string> {
-    const client = meeting.clientId
-      ? await this.db.getRepository(ClientModel).findOneBy({ id: meeting.clientId })
-      : null
-    const project = meeting.projectId
-      ? await this.db.getRepository(ProjectModel).findOneBy({ id: meeting.projectId })
-      : null
-    return [client && `Cliente ${client.name}`, project && `Proyecto ${project.name}`]
-      .filter(Boolean)
-      .join(' · ')
-  }
-
   private async patch(id: string, fields: Partial<Meeting>): Promise<void> {
     await transactionGuard(this.db, async (manager) => {
       await manager.getRepository(MeetingModel).update({ id }, { ...fields, updatedAt: now() })
       if (fields.status !== 'ready') return
-      const meeting = await manager.getRepository(MeetingModel).findOneBy({ id })
-      await emit(
-        manager,
-        'meeting.ready',
-        { type: 'meeting', id },
-        { clientId: meeting?.clientId ?? null }
-      )
+      await emit(manager, 'meeting.ready', { type: 'meeting', id })
     })
     this.onChange()
   }

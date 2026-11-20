@@ -2,7 +2,6 @@ import { randomUUID } from 'crypto'
 import { emit } from '../automations/events'
 import {
   Between,
-  In,
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
@@ -27,7 +26,6 @@ import {
   type RemovedTask,
   type Task,
   type TaskBoardQuery,
-  type TaskRecordKind,
   type TaskStatus,
   type TaskTagSummary,
   type TaskPatch,
@@ -36,8 +34,6 @@ import {
   TASK_STATUSES
 } from '@shared/tasks'
 import { TaskModel } from '../models/task.model'
-import { ClientModel } from '../models/client.model'
-import { ProjectModel } from '../models/project.model'
 
 import { transactionGuard } from '../guards/transaction.guard'
 import { AppError } from './app.error'
@@ -117,8 +113,6 @@ export class TaskService implements TasksApi {
         effort: parsed.effort,
         parentId: null,
         status: 'todo',
-        clientId: null,
-        projectId: null,
         assigneeId: teamUserId()
       }
       await tasks.insert(task)
@@ -148,8 +142,6 @@ export class TaskService implements TasksApi {
         effort: parsed.effort,
         parentId: parent.id,
         status: 'todo',
-        clientId: null,
-        projectId: null,
         assigneeId: null
       }
       await tasks.insert(task)
@@ -199,10 +191,6 @@ export class TaskService implements TasksApi {
       else if (patch.done !== undefined && patch.done !== task.done) {
         applyStatus(task, patch.done ? 'done' : 'todo')
       }
-      if (patch.client !== undefined || patch.project !== undefined) {
-        if (task.parentId) throw new AppError('invalid', 'Las relaciones van en la tarea madre.')
-        Object.assign(task, await resolveLinks(manager, task, patch))
-      }
       if (patch.assignee !== undefined) task.assigneeId = optionalUserId(patch.assignee)
       const saved = await tasks.save(stripExtras(task))
       if (!wasDone && task.done)
@@ -222,8 +210,6 @@ export class TaskService implements TasksApi {
     }
     if (q.onlyOpen) where.status = Not('done')
     if (q.effort) where.effort = checkEffort(q.effort)!
-    if (q.client) where.clientId = String(q.client)
-    if (q.project) where.projectId = String(q.project)
 
     if (q.assignee) where.assigneeId = optionalUserId(q.assignee) ?? IsNull()
     const repo = this.tasks()
@@ -235,21 +221,7 @@ export class TaskService implements TasksApi {
     }
     const tags = Array.isArray(q.tags) ? q.tags.map((t) => cleanTag(String(t))).filter(Boolean) : []
     if (tags.length) list = list.filter((t) => tags.every((tag) => (t.tags ?? []).includes(tag)))
-    return withLinks(this.db.manager, await withProgress(repo, list))
-  }
-
-  async forRecord(kind: TaskRecordKind, id: string): Promise<Task[]> {
-    const field = { client: 'clientId', project: 'projectId' }[kind]
-    if (!field || typeof id !== 'string') throw new AppError('invalid', 'Relación desconocida.')
-    const repo = this.tasks()
-    const list = await repo.find({
-      where: { [field]: id, parentId: IsNull() } as FindOptionsWhere<Task>,
-      order: { date: 'DESC', position: 'ASC' },
-      take: 100
-    })
-    // Abiertas primero; dentro, las más recientes arriba.
-    list.sort((a, b) => Number(a.status === 'done') - Number(b.status === 'done'))
-    return withLinks(this.db.manager, await withProgress(repo, list))
+    return withProgress(repo, list)
   }
 
   async remove(id: string): Promise<RemovedTask> {
@@ -442,8 +414,6 @@ function clean(task: Task): Task {
     parentId: task.parentId ?? null,
     // Lo borrado antes de existir el estado solo trae `done`.
     status: TASK_STATUSES.includes(task.status) ? task.status : task.done ? 'done' : 'todo',
-    clientId: task.clientId ?? null,
-    projectId: task.projectId ?? null,
     assigneeId: task.assigneeId ?? null
   }
 }
@@ -466,84 +436,7 @@ function checkStatus(value: unknown): TaskStatus {
 function stripExtras(task: Task): Task {
   const copy = { ...task }
   delete copy.subtasks
-  delete copy.links
   return copy
-}
-
-async function resolveLinks(
-  manager: EntityManager,
-  task: Task,
-  patch: TaskPatch
-): Promise<Pick<Task, 'clientId' | 'projectId'>> {
-  let clientId = task.clientId ?? null
-  let projectId = task.projectId ?? null
-  if (patch.client !== undefined) {
-    clientId = patch.client
-      ? (await exists(manager, ClientModel, patch.client, 'ese cliente')).id
-      : null
-    if (projectId) {
-      const project = await manager.getRepository(ProjectModel).findOneBy({ id: projectId })
-      if (!project || project.clientId !== clientId) projectId = null
-    }
-  }
-  if (patch.project !== undefined) {
-    if (patch.project) {
-      const project = await manager
-        .getRepository(ProjectModel)
-        .findOneBy({ id: String(patch.project) })
-      if (!project) throw new AppError('not_found', 'No existe ese proyecto.')
-      projectId = project.id
-      clientId = project.clientId
-    } else projectId = null
-  }
-  return { clientId, projectId }
-}
-
-async function exists(
-  manager: EntityManager,
-  model: typeof ClientModel | typeof ProjectModel,
-  id: unknown,
-  what: string
-): Promise<{ id: string }> {
-  const row = (await manager.getRepository(model).findOneBy({ id: String(id) })) as {
-    id: string
-  } | null
-  if (!row) throw new AppError('not_found', `No existe ${what}.`)
-  return row
-}
-
-async function withLinks(manager: EntityManager, list: Task[]): Promise<Task[]> {
-  const ids = (key: 'clientId' | 'projectId'): string[] => [
-    ...new Set(list.map((t) => t[key]).filter((v): v is string => !!v))
-  ]
-  const [clients, projects] = await Promise.all([
-    ids('clientId').length
-      ? manager.getRepository(ClientModel).findBy({ id: In(ids('clientId')) })
-      : [],
-    ids('projectId').length
-      ? manager.getRepository(ProjectModel).findBy({ id: In(ids('projectId')) })
-      : []
-  ])
-  const client = new Map<string, string>(clients.map((c): [string, string] => [c.id, c.name]))
-  const project = new Map<string, string>(projects.map((p): [string, string] => [p.id, p.name]))
-  return list.map((t) => {
-    const links: Task['links'] = {}
-    if (t.clientId && client.has(t.clientId))
-      links.client = { id: t.clientId, name: client.get(t.clientId)! }
-    if (t.projectId && project.has(t.projectId))
-      links.project = { id: t.projectId, name: project.get(t.projectId)! }
-    return Object.keys(links).length ? { ...t, links } : t
-  })
-}
-
-export async function unlinkTasks(
-  manager: EntityManager,
-  kind: TaskRecordKind,
-  id: string
-): Promise<void> {
-  const repo = manager.getRepository(TaskModel)
-  if (kind === 'client') await repo.update({ clientId: id }, { clientId: null, projectId: null })
-  else if (kind === 'project') await repo.update({ projectId: id }, { projectId: null })
 }
 
 async function findOrFail(tasks: Tasks, id: unknown): Promise<Task> {
@@ -631,7 +524,6 @@ export interface AutomatedTaskInput {
   description: string | null
   tags: string[]
   effort: Task['effort']
-  clientId: string | null
 }
 
 const shiftDay = (day: DayKey, days: number): DayKey => {
@@ -668,8 +560,6 @@ export async function insertTaskWithRoom(
     effort: input.effort,
     parentId: null,
     status: 'todo',
-    clientId: input.clientId,
-    projectId: null,
     assigneeId: me
   }
   await tasks.insert(task)

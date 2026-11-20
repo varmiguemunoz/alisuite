@@ -59,10 +59,8 @@ export class TaskController {
     if (typeof body.title === 'string') patch.title = body.title
     if (typeof body.done === 'boolean') patch.done = body.done
     if (typeof body.status === 'string') patch.status = body.status
-    for (const key of ['client', 'project', 'assignee'] as const) {
-      if (typeof body[key] === 'string') patch[key] = body[key]
-      else if (body[key] === null) patch[key] = ''
-    }
+    if (typeof body.assignee === 'string') patch.assignee = body.assignee
+    else if (body.assignee === null) patch.assignee = ''
     if (typeof body.description === 'string') patch.description = body.description
     if (Array.isArray(body.tags)) patch.tags = body.tags
     if (body.effort !== undefined) patch.effort = body.effort
@@ -122,8 +120,6 @@ export class TaskController {
       query: text(q.query),
       tags: text(q.tags)?.split(',').filter(Boolean),
       effort: text(q.effort) as TaskBoardQuery['effort'],
-      client: text(q.client),
-      project: text(q.project),
       assignee: text(q.assignee)
     })
     if (status) tasks = tasks.filter((t) => t.status === status)

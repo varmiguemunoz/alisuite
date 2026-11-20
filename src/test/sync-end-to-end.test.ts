@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { DataSource } from 'typeorm'
 import { isolatedConfig, memoryDb } from '../main/test/helpers'
-import { ClientService } from '../main/services/client.service'
+import { MeetingService } from '../main/services/meeting.service'
 import { TaskService } from '../main/services/task.service'
 import { SyncEngine } from '../main/cloud/sync/engine'
 import { SyncMutations } from '../../services/cloud/src/application/sync'
@@ -26,8 +26,6 @@ describe('sincronización de punta a punta con dos copias', () => {
       markerFile: '/nonexistent/sync-init.json',
       notify: () => undefined,
       subscribe: () => () => undefined,
-      fill: async (table, row) =>
-        table === 'clients' && !row.folder_path ? { folder_path: '/tmp/cliente' } : {},
       onStatus: () => undefined
     })
 
@@ -58,52 +56,53 @@ describe('sincronización de punta a punta con dos copias', () => {
     await engineA.syncNow()
   }
 
-  it('un cliente creado en A aparece en B', async () => {
-    const created = await new ClientService(a).create({ name: 'Acme' })
+  it('una reunión creada en A aparece en B', async () => {
+    const created = await new MeetingService(a).create({ title: 'Acme' })
     await both()
-    const found = await new ClientService(b).get(created.id)
-    expect(found.name).toBe('Acme')
+    const found = await new MeetingService(b).get(created.id)
+    expect(found.title).toBe('Acme')
     expect(engineA.current().phase).toBe('synced')
   })
 
   it('campos distintos del mismo registro se conservan los dos', async () => {
-    const created = await new ClientService(a).create({ name: 'Acme' })
+    const created = await new MeetingService(a).create({ title: 'Acme' })
     await both()
-    await new ClientService(a).update(created.id, { name: 'Acme SAS' })
-    await new ClientService(b).update(created.id, { sector: 'Energía' })
+    await new MeetingService(a).update(created.id, { title: 'Acme SAS' })
+    await new MeetingService(b).update(created.id, { summaryMd: 'Energía' })
     await both()
     for (const db of [a, b]) {
-      const c = await new ClientService(db).get(created.id)
-      expect(c.name).toBe('Acme SAS')
-      expect(c.sector).toBe('Energía')
+      const c = await new MeetingService(db).get(created.id)
+      expect(c.title).toBe('Acme SAS')
+      expect(c.summaryMd).toBe('Energía')
     }
   })
 
   it('el mismo campo: gana el cambio más reciente en las dos copias', async () => {
-    const created = await new ClientService(a).create({ name: 'Acme' })
+    const created = await new MeetingService(a).create({ title: 'Acme' })
     await both()
-    await new ClientService(a).update(created.id, { sector: 'Primero' })
+    await new MeetingService(a).update(created.id, { summaryMd: 'Primero' })
     await sleep(5)
-    await new ClientService(b).update(created.id, { sector: 'Segundo' })
+    await new MeetingService(b).update(created.id, { summaryMd: 'Segundo' })
     await both()
-    expect((await new ClientService(a).get(created.id)).sector).toBe('Segundo')
-    expect((await new ClientService(b).get(created.id)).sector).toBe('Segundo')
+    expect((await new MeetingService(a).get(created.id)).summaryMd).toBe('Segundo')
+    expect((await new MeetingService(b).get(created.id)).summaryMd).toBe('Segundo')
   })
 
   it('sin conexión los cambios esperan y llegan todos al volver', async () => {
-    const clients = new ClientService(a)
-    for (const name of ['Uno', 'Dos', 'Tres']) await clients.create({ name })
+    const meetings = new MeetingService(a)
+    for (const title of ['Uno', 'Dos', 'Tres']) await meetings.create({ title })
     await both()
-    const names = (await new ClientService(b).list()).map((c) => c.name).sort()
+    const page = await new MeetingService(b).list({ pageSize: 50 })
+    const names = page.days.flatMap((d) => d.meetings.map((m) => m.title)).sort()
     expect(names).toEqual(['Dos', 'Tres', 'Uno'])
   })
 
   it('un borrado llega como borrado y avisa a quien no lo hizo', async () => {
-    const created = await new ClientService(a).create({ name: 'Acme' })
+    const created = await new MeetingService(a).create({ title: 'Acme' })
     await both()
-    await new ClientService(a).remove(created.id)
+    await new MeetingService(a).remove(created.id)
     await both()
-    await expect(new ClientService(b).get(created.id)).rejects.toThrow()
+    await expect(new MeetingService(b).get(created.id)).rejects.toThrow()
     expect(engineB.current().deletedByOthers.map((d) => d.id)).toContain(created.id)
   })
 
@@ -130,7 +129,7 @@ describe('sincronización de punta a punta con dos copias', () => {
       { changes: async () => undefined },
       { now: () => Date.now() }
     )
-    await new ClientService(a).create({ name: 'Acme' })
+    await new MeetingService(a).create({ title: 'Acme' })
     await engineA.syncNow()
     const first = store.mutations.length
     await a.query(`UPDATE sync_state SET value = '0' WHERE key = 'last_pushed'`)

@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { In, Raw, type DataSource, type EntityManager } from 'typeorm'
+import { In, type DataSource, type EntityManager } from 'typeorm'
 import { toDayKey } from '@shared/tasks'
 import { normalizeName } from '@shared/consultora'
 import { QUICK_NOTES } from '@shared/workspace'
@@ -8,7 +8,6 @@ import {
   noteBrief,
   noteFileName,
   type Note,
-  type ClientNote,
   type NoteBrief,
   type NoteLinks,
   type NoteTarget,
@@ -18,7 +17,6 @@ import {
   type NotesPage
 } from '@shared/notes'
 import { NoteRelationModel } from '../models/note-relation.model'
-import { ClientModel } from '../models/client.model'
 import { WorkspaceItemModel, type WorkspaceRow } from '../models/workspace.model'
 import { transactionGuard } from '../guards/transaction.guard'
 import { AppError } from './app.error'
@@ -77,11 +75,9 @@ export class NoteService implements NotesApi {
     const text = checkBody(body)
     await this.workspace.quickNotesFolder()
     const row = await this.workspace.createNoteAt(QUICK_NOTES, noteFileName(text), text)
-    if (links.notes?.length || links.clients?.length) {
+    if (links.notes?.length) {
       await transactionGuard(this.db, async (manager) => {
         for (const id of links.notes ?? []) await linkNotes(manager, row.id, { type: 'note', id })
-        for (const id of links.clients ?? [])
-          await linkNotes(manager, row.id, { type: 'client', id })
       })
     }
     return toNote(row)
@@ -118,7 +114,7 @@ export class NoteService implements NotesApi {
     const note = toNote(await this.workspace.noteRow(id))
     return transactionGuard(this.db, async (manager) => {
       const t = checkTarget(target)
-      const [noteId, targetId] = t.type === 'note' ? ordered(note.id, t.id) : [note.id, t.id]
+      const [noteId, targetId] = ordered(note.id, t.id)
       await manager
         .getRepository(NoteRelationModel)
         .delete({ noteId, targetType: t.type, targetId })
@@ -137,38 +133,6 @@ async function notesByIds(manager: EntityManager, ids: string[]): Promise<Note[]
   return rows.map(toNote)
 }
 
-export async function notesOfClient(
-  manager: EntityManager,
-  clientId: string,
-  folder: string | null = null
-): Promise<ClientNote[]> {
-  const links = await manager
-    .getRepository(NoteRelationModel)
-    .findBy({ targetType: 'client', targetId: clientId })
-  const manual = (
-    await notesByIds(
-      manager,
-      links.map((l) => l.noteId)
-    )
-  ).map(noteBrief)
-  const inFolder = folder
-    ? await manager.getRepository(WorkspaceItemModel).find({
-        where: {
-          kind: 'note',
-          path: Raw((p) => `${p} >= :lo AND ${p} < :hi`, { lo: `${folder}/`, hi: `${folder}0` })
-        },
-        order: { updatedAt: 'DESC' }
-      })
-    : []
-  const linked = new Set(manual.map((n) => n.id))
-  return [
-    ...manual.map((n) => ({ ...n, origin: 'manual' as const })),
-    ...inFolder
-      .filter((row) => !linked.has(row.id))
-      .map((row) => ({ ...noteBrief(toNote(row)), origin: 'folder' as const }))
-  ]
-}
-
 export async function removeRelationsOf(
   manager: EntityManager,
   type: NoteTargetType,
@@ -183,15 +147,11 @@ async function linkNotes(
   target: NoteTarget
 ): Promise<void> {
   const t = checkTarget(target)
-  if (t.type === 'note') {
-    if (t.id === noteId) throw new AppError('invalid', 'Una nota no se relaciona consigo misma.')
-    if (!(await manager.getRepository(WorkspaceItemModel).findOneBy({ id: t.id, kind: 'note' }))) {
-      throw new AppError('not_found', 'No existe esa nota.')
-    }
-  } else if (!(await manager.getRepository(ClientModel).findOneBy({ id: t.id }))) {
-    throw new AppError('not_found', 'No existe ese cliente.')
+  if (t.id === noteId) throw new AppError('invalid', 'Una nota no se relaciona consigo misma.')
+  if (!(await manager.getRepository(WorkspaceItemModel).findOneBy({ id: t.id, kind: 'note' }))) {
+    throw new AppError('not_found', 'No existe esa nota.')
   }
-  const [a, b] = t.type === 'note' ? ordered(noteId, t.id) : [noteId, t.id]
+  const [a, b] = ordered(noteId, t.id)
   const repo = manager.getRepository(NoteRelationModel)
   if (await repo.findOneBy({ noteId: a, targetType: t.type, targetId: b })) return
   await repo.insert({
@@ -211,26 +171,16 @@ async function viewOf(manager: EntityManager, note: Note): Promise<NoteView> {
     ...asNote.filter((r) => r.targetType === 'note').map((r) => r.targetId),
     ...asTarget.map((r) => r.noteId)
   ]
-  const clientIds = asNote.filter((r) => r.targetType === 'client').map((r) => r.targetId)
   const related = await notesByIds(manager, relatedIds)
-  const clients = clientIds.length
-    ? await manager
-        .getRepository(ClientModel)
-        .find({ where: { id: In(clientIds) }, order: { name: 'ASC' } })
-    : []
-  return {
-    note,
-    related: related.map(noteBrief),
-    clients: clients.map((c) => ({ id: c.id, name: c.name }))
-  }
+  return { note, related: related.map(noteBrief) }
 }
 
 const ordered = (a: string, b: string): [string, string] => (a < b ? [a, b] : [b, a])
 
 function checkTarget(value: unknown): NoteTarget {
   const t = value as NoteTarget
-  if (!t || (t.type !== 'note' && t.type !== 'client') || typeof t.id !== 'string' || !t.id) {
-    throw new AppError('invalid', 'La relación debe ser { type: "note" | "client", id }.')
+  if (!t || t.type !== 'note' || typeof t.id !== 'string' || !t.id) {
+    throw new AppError('invalid', 'La relación debe ser { type: "note", id }.')
   }
   return t
 }

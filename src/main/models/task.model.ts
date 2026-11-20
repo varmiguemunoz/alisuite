@@ -19,8 +19,6 @@ export const TaskModel = new EntitySchema<Task & SoftDeletable>({
     effort: { type: 'text', nullable: true },
     parentId: { name: 'parent_id', type: 'text', nullable: true },
     status: { type: 'text', default: 'todo' },
-    clientId: { name: 'client_id', type: 'text', nullable: true },
-    projectId: { name: 'project_id', type: 'text', nullable: true },
     assigneeId: { name: 'assignee_id', type: 'text', nullable: true },
     deletedAt: DELETED_AT
   },
@@ -28,8 +26,6 @@ export const TaskModel = new EntitySchema<Task & SoftDeletable>({
     { name: 'idx_tasks_date', columns: ['date', 'position'] },
     { name: 'idx_tasks_parent', columns: ['parentId', 'position'] },
     { name: 'idx_tasks_status', columns: ['status', 'date'] },
-    { name: 'idx_tasks_client', columns: ['clientId'] },
-    { name: 'idx_tasks_project', columns: ['projectId'] },
     { name: 'idx_tasks_assignee', columns: ['assigneeId', 'status'] }
   ]
 })

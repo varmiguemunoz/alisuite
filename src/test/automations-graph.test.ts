@@ -37,15 +37,15 @@ const branches = (...ids: string[]): NodeDef['params'] => ({
     id,
     name: id,
     groups: [
-      { join: 'and', conditions: [{ field: 'client.name', operator: 'contains', value: id }] }
+      { join: 'and', conditions: [{ field: 'task.title', operator: 'contains', value: id }] }
     ]
   }))
 })
 
 const chain = (...ids: string[]): Definition => {
   let def: Definition = {
-    ...emptyDefinition('client'),
-    triggers: [{ id: 't1', type: 'client.created', params: {}, conditions: [] }]
+    ...emptyDefinition('task'),
+    triggers: [{ id: 't1', type: 'task.completed', params: {}, conditions: [] }]
   }
   let slot = ROOT_SLOT
   for (const id of ids) {

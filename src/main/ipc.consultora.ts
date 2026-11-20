@@ -1,7 +1,7 @@
 import { BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { homedir } from 'os'
 import { resolve } from 'path'
-import { isInside } from './services/documents'
+import { isInside } from './services/paths'
 import { config, publicSettings, saveSettings } from './config'
 import type { Consultora } from './consultora'
 import { checkPermissions, openPrivacy, restartApp, type Privacy } from './permissions'
@@ -26,7 +26,6 @@ export function registerConsultoraIpc(
   }
 
   read('consultora:overview', () => c.context.overview())
-  read('consultora:refs', () => c.context.refs())
   read('consultora:search', (q: string) => c.context.search(q))
   read('consultora:settings', () => publicSettings())
   write('consultora:saveSettings', async (input) => {
@@ -51,18 +50,6 @@ export function registerConsultoraIpc(
       : await dialog.showOpenDialog(options)
     return result.canceled ? null : (result.filePaths[0] ?? null)
   })
-
-  read('consultora:listClients', (status) => c.clients.list(status))
-  read('consultora:getClient', (ref: string) => c.clients.get(ref))
-  write('consultora:createClient', (input) => c.clients.create(input))
-  write('consultora:updateClient', (ref: string, patch) => c.clients.update(ref, patch))
-  read('consultora:clientImpact', (ref: string) => c.clients.impact(ref))
-  write('consultora:removeClient', (ref: string, opts) => c.clients.remove(ref, opts ?? {}))
-
-  read('consultora:getProject', (ref: string) => c.projects.get(ref))
-  write('consultora:createProject', (input) => c.projects.create(input))
-  write('consultora:updateProject', (ref: string, patch) => c.projects.update(ref, patch))
-  write('consultora:removeProject', (ref: string) => c.projects.remove(ref))
 
   read('dashboard:metrics', (query) => c.metrics.query(query))
   read('dashboard:get', () => c.dashboards.get())
@@ -97,27 +84,8 @@ export function registerConsultoraIpc(
     c.meetings.updateActionItem(id, index, patch)
   )
   write('consultora:processMeeting', (id: string) => c.recordings.process(id))
-  read('consultora:suggestAssociation', (title: string) => c.meetings.suggestAssociation(title))
   read('consultora:listActionItems', (filter) => c.meetings.listActionItems(filter))
 
-  read('consultora:listDocuments', (client: string) => c.context.listDocuments(client))
-  read('consultora:openDocument', (client: string, path: string) =>
-    c.context.openDocument(client, path)
-  )
-  write(
-    'consultora:writeDocument',
-    (client: string, path: string, content: string, expected?: string) =>
-      c.context.writeDocument(client, path, content, expected)
-  )
-  write('consultora:renameDocument', (client: string, path: string, name: string) =>
-    c.context.renameDocument(client, path, name)
-  )
-  write('consultora:trashDocument', (client: string, path: string) =>
-    c.context.trashDocument(client, path)
-  )
-  read('consultora:readDocument', (client: string, path: string) =>
-    c.context.readDocument(client, path)
-  )
   write('consultora:appendNote', (entity, ref: string, text: string) =>
     c.context.appendNote(entity, ref, text)
   )

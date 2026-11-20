@@ -52,12 +52,12 @@ describe('/automations (API que usa Claude)', () => {
   }
 
   it('crea, guarda borrador, publica, pausa, lista ejecuciones y borra', async () => {
-    const created = await call('POST', '', { name: 'Bienvenida', subject: 'client' })
+    const created = await call('POST', '', { name: 'Bienvenida', subject: 'task' })
     expect(created.status).toBe(201)
     const id = created.data.automation.id
     const draft = {
       ...created.data.automation.draft,
-      triggers: [{ id: 't', type: 'client.created', params: {}, conditions: [] }],
+      triggers: [{ id: 't', type: 'task.completed', params: {}, conditions: [] }],
       root: 'a',
       nodes: {
         a: {

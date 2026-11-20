@@ -1,22 +1,15 @@
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react'
-import {
-  newBranch,
-  type AutomationOptions,
-  type Branch,
-  type SubjectType
-} from '@shared/automations'
+import { newBranch, type Branch, type SubjectType } from '@shared/automations'
 import { INPUT } from '../../ui'
 import { ConditionsEditor } from './ConditionsEditor'
 
 export function BranchesEditor({
   branches,
   subject,
-  options,
   onChange
 }: {
   branches: Branch[]
   subject: SubjectType
-  options: AutomationOptions | null
   onChange: (branches: Branch[]) => void
 }): React.JSX.Element {
   const set = (i: number, branch: Branch): void =>
@@ -74,7 +67,6 @@ export function BranchesEditor({
           <ConditionsEditor
             groups={branch.groups}
             subject={subject}
-            options={options}
             onChange={(groups) => set(i, { ...branch, groups })}
           />
         </div>

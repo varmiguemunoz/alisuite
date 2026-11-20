@@ -1,9 +1,8 @@
 import { randomUUID } from 'crypto'
-import type { DataSource, EntityManager, FindOptionsWhere } from 'typeorm'
+import type { DataSource } from 'typeorm'
 import { toDayKey } from '@shared/tasks'
 import {
   LANGUAGES,
-  normalizeName,
   type ActionItem,
   type Meeting,
   type MeetingFilter,
@@ -12,15 +11,11 @@ import {
   type OpenActionItem
 } from '@shared/consultora'
 import { MeetingModel } from '../models/meeting.model'
-import { ClientModel } from '../models/client.model'
-import { ProjectModel } from '../models/project.model'
 
 import { transactionGuard } from '../guards/transaction.guard'
 import { AppError } from './app.error'
-import { findByRef } from './ref'
 import { markdown, now, oneOf, optionalText, optionalUserId, requiredText } from './fields'
 import { actionItems, brief } from './meeting.helpers'
-import { moveInto } from './documents'
 import { pageByDay } from './page-by-day'
 
 export class MeetingService {
@@ -34,18 +29,7 @@ export class MeetingService {
   }
 
   async list(filter: MeetingFilter): Promise<MeetingsPage> {
-    const where: FindOptionsWhere<Meeting> = {}
-    if (filter.client)
-      where.clientId = (
-        await findByRef(this.db.getRepository(ClientModel), filter.client, 'name', 'el cliente')
-      ).id
-    if (filter.project)
-      where.projectId = (
-        await findByRef(this.db.getRepository(ProjectModel), filter.project, 'name', 'el proyecto')
-      ).id
-    const meetings = await this.db
-      .getRepository(MeetingModel)
-      .find({ where, order: { date: 'DESC' } })
+    const meetings = await this.db.getRepository(MeetingModel).find({ order: { date: 'DESC' } })
     // Filtro de fechas por día local (la fecha se guarda en ISO UTC).
     const items = meetings
       .map((m) => ({ date: toDayKey(new Date(m.date)), meeting: brief(m) }))
@@ -65,8 +49,6 @@ export class MeetingService {
         id: randomUUID(),
         date: input.date ? checkDate(input.date) : stamp,
         title: input.title ? requiredText(input.title, 'El título') : 'Reunión',
-        clientId: null,
-        projectId: null,
         assigneeId: optionalUserId(input.assigneeId),
         participants: checkParticipants(input.participants ?? []),
         summaryMd: markdown(input.summaryMd, 'El resumen'),
@@ -82,7 +64,6 @@ export class MeetingService {
         createdAt: stamp,
         updatedAt: stamp
       }
-      await associate(manager, meeting, input)
       await manager.getRepository(MeetingModel).insert(meeting)
       return meeting
     })
@@ -110,7 +91,6 @@ export class MeetingService {
         if (language !== meeting.language && meeting.recordingPath) meeting.transcriptMd = ''
         meeting.language = language
       }
-      await associate(manager, meeting, patch)
       meeting.updatedAt = now()
       return meetings.save(meeting)
     })
@@ -134,60 +114,10 @@ export class MeetingService {
     })
   }
 
-  async listActionItems(filter: { client?: string; done?: boolean }): Promise<OpenActionItem[]> {
-    const where: FindOptionsWhere<Meeting> = {}
-    if (filter.client)
-      where.clientId = (
-        await findByRef(this.db.getRepository(ClientModel), filter.client, 'name', 'el cliente')
-      ).id
-    const meetings = await this.db.getRepository(MeetingModel).findBy(where)
+  async listActionItems(filter: { done?: boolean }): Promise<OpenActionItem[]> {
+    const meetings = await this.db.getRepository(MeetingModel).find()
     const done = filter.done ?? false
     return actionItems(meetings).filter((item) => item.done === done)
-  }
-
-  async suggestAssociation(title: string): Promise<{
-    clientId: string | null
-    projectId: string | null
-  }> {
-    const text = normalizeName(title ?? '')
-    const best = <T>(rows: T[], name: (row: T) => string): T | null =>
-      rows
-        .filter(
-          (row) => normalizeName(name(row)).length >= 3 && text.includes(normalizeName(name(row)))
-        )
-        .sort((a, b) => name(b).length - name(a).length)[0] ?? null
-
-    const project = best(await this.db.getRepository(ProjectModel).find(), (p) => p.name)
-    const client = best(await this.db.getRepository(ClientModel).find(), (c) => c.name)
-
-    return {
-      clientId: project?.clientId ?? client?.id ?? null,
-      projectId: project?.id ?? null
-    }
-  }
-}
-
-export async function associate(
-  manager: EntityManager,
-  meeting: Meeting,
-  input: MeetingInput
-): Promise<void> {
-  if (input.client !== undefined) {
-    meeting.clientId = input.client
-      ? (await findByRef(manager.getRepository(ClientModel), input.client, 'name', 'el cliente')).id
-      : null
-  }
-  if (input.project !== undefined) {
-    const project = input.project
-      ? await findByRef(manager.getRepository(ProjectModel), input.project, 'name', 'el proyecto')
-      : null
-    meeting.projectId = project?.id ?? null
-    if (project && !meeting.clientId) meeting.clientId = project.clientId
-  }
-  if (meeting.clientId && meeting.recordingPath) {
-    const client = await manager.getRepository(ClientModel).findOneBy({ id: meeting.clientId })
-    if (client)
-      meeting.recordingPath = await moveInto(meeting.recordingPath, client.folderPath, 'Reuniones')
   }
 }
 

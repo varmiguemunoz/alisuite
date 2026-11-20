@@ -31,9 +31,8 @@ import {
 const scope: Scope = {
   now: '2026-10-14T12:00:00.000Z',
   today: '2026-10-14',
-  client: { name: 'Acme', status: 'activo' },
   task: { title: 'Llamar a Acme', tags: ['ventas', 'urgente'] },
-  meeting: { title: 'Kickoff', date: '2026-10-10T12:00:00.000Z' },
+  meeting: { title: 'Kickoff', date: '2026-10-10T12:00:00.000Z', status: 'ready' },
   steps: { n1: { status: 200, body: '{"ok":true}' } }
 }
 
@@ -88,7 +87,7 @@ describe('catálogo', () => {
     const event: AutomationEvent = {
       id: 'e',
       type: 'manual',
-      subject: { type: 'client', id: 'c1' },
+      subject: { type: 'task', id: 't1' },
       payload: { automationId: 'a1' },
       createdAt: ''
     }
@@ -100,18 +99,18 @@ describe('catálogo', () => {
 
 describe('condiciones', () => {
   it('operadores de texto, fecha y lista', () => {
-    expect(testCondition({ field: 'client.name', operator: 'contains', value: 'ac' }, scope)).toBe(
-      true
-    )
+    expect(
+      testCondition({ field: 'meeting.title', operator: 'contains', value: 'kick' }, scope)
+    ).toBe(true)
     expect(
       testCondition({ field: 'task.title', operator: 'starts_with', value: 'Llamar' }, scope)
     ).toBe(true)
     expect(
       testCondition({ field: 'task.tags', operator: 'includes', value: 'ventas' }, scope)
     ).toBe(true)
-    expect(
-      testCondition({ field: 'task.tags', operator: 'excludes', value: 'cliente' }, scope)
-    ).toBe(true)
+    expect(testCondition({ field: 'task.tags', operator: 'excludes', value: 'otro' }, scope)).toBe(
+      true
+    )
     expect(testCondition({ field: 'meeting.date', operator: 'within_days', value: 7 }, scope)).toBe(
       true
     )
@@ -121,7 +120,7 @@ describe('condiciones', () => {
   })
 
   it('un campo que falta cuenta como vacío y no rompe', () => {
-    expect(testCondition({ field: 'client.status', operator: 'is_not_empty' }, scope)).toBe(true)
+    expect(testCondition({ field: 'meeting.status', operator: 'is_not_empty' }, scope)).toBe(true)
     expect(testCondition({ field: 'nada.de.nada', operator: 'is_empty' }, scope)).toBe(true)
     expect(testCondition({ field: 'nada.de.nada', operator: 'contains', value: 'x' }, scope)).toBe(
       false
@@ -130,7 +129,7 @@ describe('condiciones', () => {
 
   it('AND dentro del grupo, OR dentro del grupo y AND entre grupos', () => {
     const yes = { field: 'task.tags', operator: 'includes' as const, value: 'ventas' }
-    const no = { field: 'task.tags', operator: 'includes' as const, value: 'cliente' }
+    const no = { field: 'task.tags', operator: 'includes' as const, value: 'otro' }
     expect(evaluate([{ join: 'and', conditions: [yes, no] }], scope)).toBe(false)
     expect(evaluate([{ join: 'or', conditions: [yes, no] }], scope)).toBe(true)
     expect(
@@ -151,7 +150,7 @@ describe('condiciones', () => {
     }
     const later = {
       join: 'and' as const,
-      conditions: [{ field: 'client.name', operator: 'is' as const, value: 'Acme' }]
+      conditions: [{ field: 'meeting.title', operator: 'is' as const, value: 'Kickoff' }]
     }
     const never = {
       join: 'and' as const,
@@ -172,11 +171,11 @@ describe('condiciones', () => {
 
 describe('plantillas', () => {
   it('resuelve sujeto, salidas de pasos y deja vacío lo desconocido', () => {
-    expect(render('Cliente {{client.name}} · {{task.title}}', scope)).toBe(
-      'Cliente Acme · Llamar a Acme'
+    expect(render('Reunión {{meeting.title}} · {{task.title}}', scope)).toBe(
+      'Reunión Kickoff · Llamar a Acme'
     )
     expect(render('Código {{steps.n1.status}}', scope)).toBe('Código 200')
-    expect(render('[{{client.nada}}]', scope)).toBe('[]')
+    expect(render('[{{meeting.nada}}]', scope)).toBe('[]')
     expect(render('{{task.tags}}', scope)).toBe('ventas, urgente')
   })
 
@@ -221,26 +220,14 @@ describe('validación', () => {
     )
   })
 
-  it('exige trigger, parámetros requeridos y sujeto compatible', () => {
+  it('exige trigger, parámetros requeridos y rechaza pasos retirados', () => {
     let def: Definition = { ...emptyDefinition('task') }
-    def = insert(def, ROOT_SLOT, node('n1', 'create_project', {}))
+    def = insert(def, ROOT_SLOT, node('n1', 'create_task', {}))
+    def = insert(def, { parent: 'n1', port: 'next' }, node('n2', 'create_project', {}))
     const messages = validateDefinition(def).map((i) => i.message)
     expect(messages).toContain('Añade al menos un trigger.')
-    expect(messages).toContain('Falta nombre.')
-    expect(messages).toContain('Este paso no aplica a este tipo de sujeto.')
-  })
-
-  it('valida referencias contra los datos actuales', () => {
-    let def = base()
-    def.triggers[0] = {
-      id: 't1',
-      type: 'meeting.ready',
-      params: { client: 'borrado' },
-      conditions: []
-    }
-    def = { ...def, subject: 'meeting' }
-    const issues = validateDefinition(def, { client: new Set(['acme']) })
-    expect(issues.map((i) => i.message)).toContain('El cliente ya no existe.')
+    expect(messages).toContain('Falta título.')
+    expect(messages).toContain('Estos pasos se retiraron; no se puede ejecutar.')
   })
 
   it('ramas sin condiciones y espera por condición sin máximo son errores', () => {
@@ -263,10 +250,10 @@ describe('validación', () => {
   it('una condición con operador que no corresponde al campo es error', () => {
     const def = base()
     def.triggers[0].conditions = [
-      { join: 'and', conditions: [{ field: 'client.name', operator: 'gt', value: 1 }] }
+      { join: 'and', conditions: [{ field: 'task.title', operator: 'gt', value: 1 }] }
     ]
     expect(validateDefinition(def).map((i) => i.message)).toContain(
-      'El operador no sirve para cliente.'
+      'El operador no sirve para título de la tarea.'
     )
   })
 

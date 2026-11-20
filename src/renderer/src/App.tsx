@@ -319,7 +319,6 @@ function App(): React.JSX.Element {
               backLabel={screen.trail?.length ? 'Nota anterior' : 'Notas'}
               onBack={() => backFromNote(screen.trail)}
               onOpenNote={(id) => void openRelatedNote(id, screen.note, screen.trail)}
-              onOpenClient={(id) => window.api.openConsultora({ client: id })}
               scrollKey={`scroll.note:${screen.note.id}`}
             />
           </div>
@@ -359,7 +358,7 @@ function App(): React.JSX.Element {
             type="button"
             onClick={() => window.api.openConsultora()}
             aria-label="Abrir Consultora"
-            title="Consultora: clientes, proyectos y reuniones"
+            title="Consultora: tareas, reuniones y workspace"
             className="grid size-11 shrink-0 place-items-center rounded-full bg-surface text-milk-soft transition-colors hover:bg-surface-raised hover:text-milk [-webkit-app-region:no-drag]"
           >
             <Briefcase size={17} strokeWidth={2.5} />

@@ -8,8 +8,6 @@ export interface SummaryContext {
   title: string
   date: string
   participants: string[]
-
-  about: string
 }
 
 export interface Summary {
@@ -156,7 +154,6 @@ export class AiService {
           role: 'user',
           content:
             `Reunión: ${context.title}\nFecha: ${context.date}\n` +
-            `${context.about ? `Sobre: ${context.about}\n` : ''}` +
             `Participantes: ${context.participants.join(', ') || 'sin indicar'}\n\n` +
             `Transcripción / notas:\n\n${text}`
         }

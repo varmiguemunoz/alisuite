@@ -5,7 +5,6 @@ import {
   OPERATOR_LABELS,
   OPERATORS_BY_KIND,
   VALUELESS,
-  type AutomationOptions,
   type Condition,
   type ConditionValue,
   type FieldSpec,
@@ -15,25 +14,18 @@ import { INPUT } from '../../ui'
 
 const SELECT = `${INPUT} cursor-pointer pr-1.5`
 
-function sourceOptions(
-  field: FieldSpec,
-  options: AutomationOptions | null
-): { value: string; label: string }[] {
+function sourceOptions(field: FieldSpec): { value: string; label: string }[] {
   if (field.source === 'status') return []
-  if (field.source === 'client')
-    return (options?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))
   return field.options ?? []
 }
 
 function ValueInput({
   field,
   condition,
-  options,
   onChange
 }: {
   field: FieldSpec
   condition: Condition
-  options: AutomationOptions | null
   onChange: (value: ConditionValue) => void
 }): React.JSX.Element | null {
   const op = condition.operator
@@ -88,7 +80,7 @@ function ValueInput({
       </select>
     )
   if (field.kind === 'select' || field.kind === 'list') {
-    const list = sourceOptions(field, options)
+    const list = sourceOptions(field)
     return (
       <select
         aria-label="Valor"
@@ -120,13 +112,11 @@ function ValueInput({
 export function ConditionRow({
   condition,
   subject,
-  options,
   onChange,
   onRemove
 }: {
   condition: Condition
   subject: SubjectType
-  options: AutomationOptions | null
   onChange: (condition: Condition) => void
   onRemove: () => void
 }): React.JSX.Element {
@@ -187,7 +177,6 @@ export function ConditionRow({
           <ValueInput
             field={field}
             condition={condition}
-            options={options}
             onChange={(value) => onChange({ ...condition, value })}
           />
         </div>

@@ -4,14 +4,48 @@ import { api, tool, day, query, enc } from '../client'
 
 export function register(server: McpServer): void {
   server.registerTool(
+    'get_overview',
+    {
+      description:
+        'Panorama en una llamada: action items abiertos y últimas reuniones. ' +
+        'Úsala primero para preguntas generales ("¿qué tengo pendiente?").',
+      inputSchema: {}
+    },
+    () => tool(() => api('GET', '/consultora/overview'))
+  )
+
+  server.registerTool(
+    'search',
+    {
+      description:
+        'Busca un texto en reuniones, incluidas transcripciones. Devuelve tipo, id, título y un fragmento.',
+      inputSchema: { query: z.string().min(2) }
+    },
+    ({ query: q }) => tool(() => api('GET', `/consultora/search${query({ q })}`))
+  )
+
+  server.registerTool(
+    'append_note',
+    {
+      description:
+        'Añade una nota fechada al final de las notas de una reunión. ' +
+        'La forma más rápida de guardar contexto que el dueño te cuenta.',
+      inputSchema: {
+        entity: z.literal('meeting'),
+        ref: z.string().describe('id de la reunión'),
+        text: z.string().min(1)
+      }
+    },
+    (args) => tool(() => api('POST', '/consultora/notes/append', args))
+  )
+
+  server.registerTool(
     'list_meetings',
     {
       description:
-        'Reuniones por día (más reciente primero), sin textos largos. Filtra por cliente, proyecto o fechas. ' +
+        'Reuniones por día (más reciente primero), sin textos largos. Filtra por fechas. ' +
         'Luego usa get_meeting para el detalle.',
       inputSchema: {
-        client: z.string().optional(),
-        project: z.string().optional(),
         from: day.optional(),
         to: day.optional(),
         page: z.number().int().min(1).optional()
@@ -37,13 +71,12 @@ export function register(server: McpServer): void {
   server.registerTool(
     'list_action_items',
     {
-      description:
-        'Action items de todas las reuniones (o de un cliente). Por defecto solo los abiertos.',
-      inputSchema: { client: z.string().optional(), done: z.boolean().optional() }
+      description: 'Action items de todas las reuniones. Por defecto solo los abiertos.',
+      inputSchema: { done: z.boolean().optional() }
     },
-    ({ client, done }) =>
+    ({ done }) =>
       tool(() =>
-        api('GET', `/consultora/action-items${query({ client, done: done ? 'true' : undefined })}`)
+        api('GET', `/consultora/action-items${query({ done: done ? 'true' : undefined })}`)
       )
   )
 
@@ -56,8 +89,6 @@ export function register(server: McpServer): void {
       inputSchema: {
         title: z.string(),
         date: z.string().optional().describe('ISO; por defecto ahora'),
-        client: z.string().optional(),
-        project: z.string().optional(),
         participants: z.array(z.string()).optional(),
         summaryMd: z.string().optional(),
         decisionsMd: z.string().optional(),
@@ -85,13 +116,11 @@ export function register(server: McpServer): void {
     'update_meeting',
     {
       description:
-        'Edita una reunión: título, asociación (client/project; "" la quita), participantes, resumen, decisiones, ' +
+        'Edita una reunión: título, participantes, resumen, decisiones, ' +
         'action items (lista completa) o notas.',
       inputSchema: {
         id: z.string(),
         title: z.string().optional(),
-        client: z.string().optional(),
-        project: z.string().optional(),
         participants: z.array(z.string()).optional(),
         summaryMd: z.string().optional(),
         decisionsMd: z.string().optional(),
@@ -143,9 +172,7 @@ export function register(server: McpServer): void {
         path: z.string().describe('Ruta absoluta del archivo'),
         language: z.enum(['es', 'en']),
         title: z.string().optional(),
-        participants: z.array(z.string()).optional(),
-        clientId: z.string().optional(),
-        projectId: z.string().optional()
+        participants: z.array(z.string()).optional()
       }
     },
     (args) => tool(() => api('POST', '/consultora/meetings/import', args))
@@ -166,7 +193,7 @@ export function register(server: McpServer): void {
     'delete_meeting',
     {
       description:
-        'Borra una reunión de la app (la grabación se queda en la carpeta del cliente). Sin confirm no borra.',
+        'Borra una reunión de la app (la grabación se queda en el disco). Sin confirm no borra.',
       inputSchema: { id: z.string(), confirm: z.literal(true).optional() }
     },
     ({ id, confirm }) =>

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { normalizeName } from '@shared/consultora'
 import type { NoteBrief, NoteTarget } from '@shared/notes'
 import { notesApi } from '../lib/api'
-import { Modal, SearchField, SegmentedToggle } from '../ui'
+import { Modal, SearchField } from '../ui'
 
 interface NotePickerProps {
   open: boolean
@@ -12,28 +11,20 @@ interface NotePickerProps {
   exclude: string[]
   onPick: (target: NoteTarget) => void
   onClose: () => void
-
-  notesOnly?: boolean
 }
-
-type Kind = 'note' | 'client'
 
 export function NotePicker({
   open,
   noteId,
   exclude,
   onPick,
-  onClose,
-  notesOnly = false
+  onClose
 }: NotePickerProps): React.JSX.Element | null {
-  const [chosen, setKind] = useState<Kind>('note')
-  const kind: Kind = notesOnly ? 'note' : chosen
   const [query, setQuery] = useState('')
   const [notes, setNotes] = useState<NoteBrief[]>([])
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
-    if (!open || kind !== 'note') return
+    if (!open) return
     const t = setTimeout(() => {
       notesApi
         .search(query, 30)
@@ -41,67 +32,33 @@ export function NotePicker({
         .catch(() => setNotes([]))
     }, 150)
     return () => clearTimeout(t)
-  }, [open, kind, query])
-
-  useEffect(() => {
-    if (!open || kind !== 'client') return
-    window.api.consultora
-      .refs()
-      .then((r) => setClients(r.clients.map((c) => ({ id: c.id, name: c.name }))))
-      .catch(() => setClients([]))
-  }, [open, kind])
+  }, [open, query])
 
   const skip = useMemo(() => new Set([noteId, ...exclude]), [noteId, exclude])
-  const items =
-    kind === 'note'
-      ? notes
-          .filter((n) => !skip.has(n.id))
-          .map((n) => ({ id: n.id, title: n.title, hint: n.excerpt }))
-      : clients
-          .filter(
-            (c) =>
-              !skip.has(c.id) && (!query || normalizeName(c.name).includes(normalizeName(query)))
-          )
-          .map((c) => ({ id: c.id, title: c.name, hint: '' }))
+  const items = notes
+    .filter((n) => !skip.has(n.id))
+    .map((n) => ({ id: n.id, title: n.title, hint: n.excerpt }))
 
   const pick = (id: string): void => {
-    onPick({ type: kind, id })
+    onPick({ type: 'note', id })
     setQuery('')
   }
 
   return (
-    <Modal
-      open={open}
-      title={notesOnly ? 'Relacionar nota' : 'Relacionar'}
-      onClose={onClose}
-      size="sm"
-    >
+    <Modal open={open} title="Relacionar nota" onClose={onClose} size="sm">
       <div className="flex flex-col gap-3">
-        {!notesOnly && (
-          <SegmentedToggle
-            label="Relacionar con"
-            value={kind}
-            options={[
-              { id: 'note', label: 'Nota' },
-              { id: 'client', label: 'Cliente' }
-            ]}
-            onChange={setKind}
-          />
-        )}
         <div className="flex">
           <SearchField
             value={query}
             onChange={setQuery}
             autoFocus
-            placeholder={kind === 'note' ? 'Título o texto de la nota' : 'Nombre del cliente'}
+            placeholder="Título o texto de la nota"
             onEnter={() => items[0] && pick(items[0].id)}
           />
         </div>
         <ul className="ui-list overflow-hidden rounded-md bg-night/40 [&>li+li]:shadow-[inset_0_1px_0_var(--color-hairline)]">
           {items.length === 0 && (
-            <li className="px-4 py-3 text-caption text-milk-soft">
-              {kind === 'note' ? 'Ninguna nota coincide.' : 'Ningún cliente coincide.'}
-            </li>
+            <li className="px-4 py-3 text-caption text-milk-soft">Ninguna nota coincide.</li>
           )}
           {items.slice(0, 30).map((item) => (
             <li key={item.id}>

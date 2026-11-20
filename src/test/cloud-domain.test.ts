@@ -35,10 +35,10 @@ describe('roles y permisos', () => {
 describe('mutaciones', () => {
   const now = 1_000_000
   const ok = {
-    entity: 'clients',
-    id: 'c1',
+    entity: 'meetings',
+    id: 'm1',
     op: 'upsert' as const,
-    fields: { name: 'Acme' },
+    fields: { title: 'Acme' },
     rev: encodeHlc({ ms: now, counter: 0, node: 'mac' })
   }
 
@@ -48,7 +48,7 @@ describe('mutaciones', () => {
 
   it('rechaza tablas y columnas que nunca se sincronizan', () => {
     expect(rejectReason({ ...ok, entity: 'resend_outbox' }, now)).toMatch(/no sincronizable/)
-    expect(rejectReason({ ...ok, fields: { folder_path: '/tmp/x' } }, now)).toMatch(
+    expect(rejectReason({ ...ok, fields: { recording_path: '/tmp/x' } }, now)).toMatch(
       /no se sincroniza/
     )
     expect(rejectReason({ ...ok, fields: { org_id: 'otra' } }, now)).toMatch(/org_id/)

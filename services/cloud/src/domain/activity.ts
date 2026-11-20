@@ -10,18 +10,9 @@ export interface ActivityDraft {
   targetId: string | null
 }
 
-export type StageLookup = (id: string) => Promise<{ name: string; kind: string } | null>
-
 type Row = Record<string, unknown>
 
-const TRACKED = new Set<ActivityEntity>([
-  'clients',
-  'projects',
-  'meetings',
-  'tasks',
-  'file_manifest',
-  'automations'
-])
+const TRACKED = new Set<ActivityEntity>(['meetings', 'tasks', 'file_manifest', 'automations'])
 
 const NOISE = new Set([
   'id',
@@ -60,10 +51,8 @@ const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.str
 export async function describeChange(
   m: Mutation,
   before: RecordState | null,
-  after: RecordState,
-  _stage: StageLookup
+  after: RecordState
 ): Promise<ActivityDraft[]> {
-  void _stage
   const entity = m.entity as ActivityEntity
   if (!TRACKED.has(entity)) return []
   const prev = visible(before)

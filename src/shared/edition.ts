@@ -67,10 +67,7 @@ export const SYNC_TABLES = [
 export type SyncTable = (typeof SYNC_TABLES)[number]
 
 export const ACTIVE_SYNC_TABLES = [
-  'clients',
-  'projects',
   'meetings',
-  'tags',
   'tasks',
   'note_relations',
   'workspace_items',
@@ -98,10 +95,7 @@ export const SOFT_DELETE_TABLES: SyncTable[] = [
 ]
 
 export const ACTIVE_SOFT_DELETE_TABLES: ActiveSyncTable[] = [
-  'clients',
-  'projects',
   'meetings',
-  'tags',
   'tasks',
   'file_manifest',
   'automations'
@@ -127,7 +121,6 @@ export const NEVER_SYNC = {
     'automation_trigger_log'
   ],
   columns: {
-    clients: ['folder_path'],
     meetings: ['recording_path']
   } as Partial<Record<SyncTable, string[]>>,
 

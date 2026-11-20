@@ -5,11 +5,6 @@ import type { RemoteDeletion } from '@shared/sync-protocol'
 import type { EntityManager } from 'typeorm'
 import { ROW_FIELD, isSyncTable, quoteIdent as q, type LocalSyncStore } from './local-store'
 
-export type LocalFill = (
-  table: ActiveSyncTable,
-  row: Record<string, unknown>
-) => Promise<Record<string, unknown>>
-
 export interface Incoming {
   touched: Set<string>
   deletions: RemoteDeletion[]
@@ -35,8 +30,7 @@ const fallback = (type: string): unknown => (/int|real|num|bool/i.test(type) ? 0
 export async function applyIncoming(
   manager: EntityManager,
   store: LocalSyncStore,
-  mutations: Mutation[],
-  fill: LocalFill
+  mutations: Mutation[]
 ): Promise<Incoming> {
   const result: Incoming = { touched: new Set(), deletions: [], skipped: 0 }
   for (const m of mutations) {
@@ -84,7 +78,7 @@ export async function applyIncoming(
         result.deletions.push({ entity: table, id: m.id, at: new Date().toISOString() })
       }
     } else {
-      const ok = await insertRow(manager, store, table, m.id, Object.fromEntries(accepted), fill)
+      const ok = await insertRow(manager, store, table, m.id, Object.fromEntries(accepted))
       if (!ok) {
         result.skipped++
         continue
@@ -107,8 +101,7 @@ async function insertRow(
   store: LocalSyncStore,
   table: ActiveSyncTable,
   id: string,
-  fields: Record<string, unknown>,
-  fill: LocalFill
+  fields: Record<string, unknown>
 ): Promise<boolean> {
   const columns: ColumnInfo[] = await manager.query(`PRAGMA table_info(${q(table)})`)
   const keys = await store.keys(table, manager)
@@ -117,7 +110,6 @@ async function insertRow(
   keys.forEach((k, i) => {
     if (k !== 'rowid') row[k] = parts[i]
   })
-  Object.assign(row, await fill(table, row))
   for (const c of columns) {
     if (c.notnull && row[c.name] === undefined && c.dflt_value === null && c.pk === 0) {
       row[c.name] = fallback(c.type)

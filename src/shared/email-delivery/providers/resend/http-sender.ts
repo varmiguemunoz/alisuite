@@ -3,11 +3,15 @@ import { resendError } from './errors'
 
 export function resendHttpSender(apiKey: string, fetchImpl: typeof fetch = fetch): EmailSender {
   return {
-    async send({ from, to, replyTo, subject, html, text }) {
+    async send({ from, to, replyTo, subject, html, text, idempotencyKey }) {
       if (!from) throw resendError('Falta el remitente.', 'missing_from', 422)
       const res = await fetchImpl('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
+        },
         body: JSON.stringify({
           from,
           to: [to],

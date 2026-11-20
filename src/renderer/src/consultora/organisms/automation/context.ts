@@ -1,12 +1,5 @@
 import { createContext, useContext } from 'react'
-import type {
-  AutomationOptions,
-  Definition,
-  Fragment,
-  Names,
-  NodeStats,
-  Slot
-} from '@shared/automations'
+import type { Definition, Fragment, Names, NodeStats, Slot } from '@shared/automations'
 import type { TreeDrag } from '../../hooks/useTreeDrag'
 
 export type Selection =
@@ -18,7 +11,6 @@ export type Selection =
 export interface Editor {
   def: Definition
   apply: (change: (def: Definition) => Definition) => string | null
-  options: AutomationOptions | null
   names: Names
   issues: Record<string, string[]>
   selection: Selection | null
@@ -39,12 +31,6 @@ export function useEditor(): Editor {
   return editor
 }
 
-export function namesFrom(options: AutomationOptions | null, def: Definition): Names {
-  const find = (list: { id: string; name: string }[] | undefined, id: string): string | undefined =>
-    list?.find((x) => x.id === id)?.name
-  return (kind, id) => {
-    if (kind === 'node') return def.nodes[id]?.name
-    if (kind === 'client') return find(options?.clients, id)
-    return find(options?.projects, id)
-  }
+export function namesFrom(def: Definition): Names {
+  return (kind, id) => (kind === 'node' ? def.nodes[id]?.name : undefined)
 }

@@ -21,13 +21,9 @@ export interface Task {
 
   status: TaskStatus
 
-  clientId: string | null
-  projectId: string | null
   assigneeId: string | null
 
   subtasks?: SubtaskProgress
-
-  links?: TaskLinkNames
 }
 
 export type TaskStatus = 'todo' | 'doing' | 'done'
@@ -36,11 +32,6 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
   todo: 'Pendiente',
   doing: 'En curso',
   done: 'Hecha'
-}
-
-export interface TaskLinkNames {
-  client?: { id: string; name: string }
-  project?: { id: string; name: string }
 }
 
 export interface TaskBoardQuery {
@@ -52,12 +43,8 @@ export interface TaskBoardQuery {
   query?: string
   tags?: string[]
   effort?: Effort
-  client?: string
-  project?: string
   assignee?: string
 }
-
-export type TaskRecordKind = 'client' | 'project'
 
 export interface SubtaskProgress {
   total: number
@@ -91,8 +78,6 @@ export interface TaskPatch {
 
   status?: TaskStatus
 
-  client?: string
-  project?: string
   assignee?: string
 
   description?: string
@@ -171,8 +156,6 @@ export interface TasksApi {
   history(query: HistoryQuery): Promise<HistoryPage>
 
   board(query: TaskBoardQuery): Promise<Task[]>
-
-  forRecord(kind: TaskRecordKind, id: string): Promise<Task[]>
 }
 
 export function cleanTag(raw: string): string {

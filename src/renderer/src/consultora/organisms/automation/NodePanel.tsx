@@ -6,7 +6,6 @@ import {
   portsOf,
   PORT_LABELS,
   visible,
-  type AutomationOptions,
   type Branch,
   type ConditionGroup,
   type Definition,
@@ -25,7 +24,6 @@ import { upstreamNodes, variablesFor } from './variables'
 export interface NodePanelProps {
   def: Definition
   node: NodeDef
-  options: AutomationOptions | null
   issues: string[]
   onSave: (params: Params, name: string) => void
   onDelete: (keep: string | null) => void
@@ -41,7 +39,6 @@ function portName(node: NodeDef, port: string): string {
 export function NodePanel({
   def,
   node,
-  options,
   issues,
   onSave,
   onDelete,
@@ -60,7 +57,6 @@ export function NodePanel({
   }
   const ctx = {
     subject: def.subject,
-    options,
     variables: variablesFor(def, node.id),
     nodes: upstreamNodes(def, node.id)
   }
@@ -157,14 +153,12 @@ export function NodePanel({
                 <BranchesEditor
                   branches={branchesOf(params)}
                   subject={def.subject}
-                  options={options}
                   onChange={(b: Branch[]) => set(p.key, b)}
                 />
               ) : p.kind === 'conditions' ? (
                 <ConditionsEditor
                   groups={Array.isArray(params[p.key]) ? (params[p.key] as ConditionGroup[]) : []}
                   subject={def.subject}
-                  options={options}
                   onChange={(g) => set(p.key, g)}
                 />
               ) : (

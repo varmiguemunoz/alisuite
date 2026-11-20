@@ -1,14 +1,11 @@
-import { useEffect, useState } from 'react'
-import type { Language, Refs } from '@shared/consultora'
+import { useState } from 'react'
+import type { Language } from '@shared/consultora'
 import { errorMessage } from '../lib/api'
-import { api } from './lib'
-import { Field, Select } from './ui'
+import { Field } from './ui'
 
 export interface SheetInfo {
   title: string
   participants: string[]
-  clientId: string | null
-  projectId: string | null
   language: Language
 }
 
@@ -31,22 +28,9 @@ export function MeetingSheet({
 }): React.JSX.Element {
   const [title, setTitle] = useState(defaultTitle)
   const [participants, setParticipants] = useState('')
-  const [clientId, setClientId] = useState('')
-  const [projectId, setProjectId] = useState('')
   const [language, setLanguage] = useState<Language>('es')
-  const [refs, setRefs] = useState<Refs | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    void api.refs().then(setRefs)
-  }, [])
-
-  const suggest = async (): Promise<void> => {
-    const s = await api.suggestAssociation(title)
-    if (!clientId && s.clientId) setClientId(s.clientId)
-    if (!projectId && s.projectId) setProjectId(s.projectId)
-  }
 
   const names = participants
     .split(',')
@@ -59,8 +43,6 @@ export function MeetingSheet({
       await onSubmit({
         title,
         participants: names,
-        clientId: clientId || null,
-        projectId: projectId || null,
         language
       })
     } catch (e) {
@@ -69,7 +51,6 @@ export function MeetingSheet({
     }
   }
 
-  const projects = refs?.projects.filter((p) => !clientId || p.clientId === clientId) ?? []
   const input = 'bg-transparent text-[14px] text-ob-text outline-none placeholder:text-ob-faint'
 
   return (
@@ -90,7 +71,6 @@ export function MeetingSheet({
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => void suggest()}
               className={input}
             />
           </Field>
@@ -102,32 +82,6 @@ export function MeetingSheet({
               className={input}
             />
           </Field>
-
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Select
-            label="Cliente"
-            value={clientId}
-            options={[
-              { value: '', label: 'Sin cliente' },
-              ...(refs?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))
-            ]}
-            onChange={(id) => {
-              setClientId(id)
-              setProjectId('')
-            }}
-          />
-          <Select
-            label="Proyecto"
-            value={projectId}
-            options={[
-              { value: '', label: 'Sin proyecto' },
-              ...projects.map((p) => ({ value: p.id, label: p.name }))
-            ]}
-            onChange={setProjectId}
-          />
-
         </div>
 
         <div role="radiogroup" aria-label="Idioma hablado" className="mt-4 flex items-center gap-3">
@@ -180,4 +134,3 @@ export function MeetingSheet({
     </div>
   )
 }
-

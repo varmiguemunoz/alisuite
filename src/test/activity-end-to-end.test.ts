@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { DataSource } from 'typeorm'
 import type { ActivityEntry } from '../shared/activity'
 import { isolatedConfig, memoryDb } from '../main/test/helpers'
-import { ClientService } from '../main/services/client.service'
+import { MeetingService } from '../main/services/meeting.service'
 import { TaskService } from '../main/services/task.service'
 import { SyncEngine } from '../main/cloud/sync/engine'
 import { ActivityFeed } from '../main/cloud/activity/feed'
@@ -42,7 +42,6 @@ describe('actividad de punta a punta', () => {
       markerFile: '/nonexistent/sync-init.json',
       notify: () => undefined,
       subscribe: () => () => undefined,
-      fill: async () => ({}),
       onStatus: () => undefined
     })
     await a.query(`INSERT INTO sync_state (key, value) VALUES ('bootstrapped', '1')`)
@@ -65,7 +64,7 @@ describe('actividad de punta a punta', () => {
   })
 
   it('lo de antes de unirse no avisa ni cuenta como novedad', async () => {
-    await new ClientService(a).create({ name: 'Acme' })
+    await new MeetingService(a).create({ title: 'Acme' })
     await syncA.syncNow()
     await feedB.pull()
     expect((await feedB.list()).map((e) => e.verb)).toEqual(['created'])
@@ -74,12 +73,12 @@ describe('actividad de punta a punta', () => {
   })
 
   it('varias ediciones seguidas son una sola entrada con su cuenta', async () => {
-    const clients = new ClientService(a)
-    const c = await clients.create({ name: 'Acme' })
+    const meetings = new MeetingService(a)
+    const c = await meetings.create({ title: 'Acme' })
     await syncA.syncNow()
     await feedB.pull()
-    for (const sector of ['Uno', 'Dos', 'Tres']) {
-      await clients.update(c.id, { sector })
+    for (const summaryMd of ['Uno', 'Dos', 'Tres']) {
+      await meetings.update(c.id, { summaryMd })
       await syncA.syncNow()
     }
     await feedB.pull()
@@ -122,10 +121,10 @@ describe('actividad de punta a punta', () => {
       mutations: [
         {
           mutationId: 'seed-0000001',
-          entity: 'clients',
-          id: 'c-seed',
+          entity: 'meetings',
+          id: 'm-seed',
           op: 'upsert',
-          fields: { name: 'Viejo' },
+          fields: { title: 'Viejo' },
           rev: `${String(Date.now()).padStart(15, '0')}:0000:device-a`
         }
       ]

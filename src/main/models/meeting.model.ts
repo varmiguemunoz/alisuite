@@ -9,8 +9,6 @@ export const MeetingModel = new EntitySchema<Meeting & SoftDeletable>({
     id: { type: 'text', primary: true },
     date: { type: 'text' },
     title: { type: 'text' },
-    clientId: { name: 'client_id', type: 'text', nullable: true },
-    projectId: { name: 'project_id', type: 'text', nullable: true },
     assigneeId: { name: 'assignee_id', type: 'text', nullable: true },
     participants: { type: 'simple-json' },
     summaryMd: { name: 'summary_md', type: 'text', default: '' },
@@ -27,9 +25,5 @@ export const MeetingModel = new EntitySchema<Meeting & SoftDeletable>({
     updatedAt: { name: 'updated_at', type: 'text' },
     deletedAt: DELETED_AT
   },
-  indices: [
-    { name: 'idx_meetings_date', columns: ['date'] },
-    { name: 'idx_meetings_client', columns: ['clientId'] },
-    { name: 'idx_meetings_project', columns: ['projectId'] }
-  ]
+  indices: [{ name: 'idx_meetings_date', columns: ['date'] }]
 })

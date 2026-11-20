@@ -20,7 +20,7 @@ import {
 import { transactionGuard } from '../../guards/transaction.guard'
 import { withoutChangeLog } from '../../db/author'
 import type { CloudApi } from '../cloud-api'
-import { applyIncoming, type LocalFill } from './incoming'
+import { applyIncoming } from './incoming'
 import { LocalSyncStore, quoteIdent as q } from './local-store'
 import { buildOutgoing, snapshotPage, type OutgoingRev } from './outgoing'
 
@@ -34,7 +34,6 @@ export interface EngineDeps {
   markerFile: string
   notify: (changes?: RemoteChange[]) => void
   subscribe: (topic: string, event: string, cb: (payload: unknown) => void) => () => void
-  fill: LocalFill
   onStatus: (status: SyncStatus) => void
 }
 
@@ -294,7 +293,7 @@ export class SyncEngine {
     if (!mutations.length && cursor === undefined) return
     const result = await transactionGuard(this.deps.db, (manager) =>
       withoutChangeLog(async () => {
-        const applied = await applyIncoming(manager, this.store, mutations, this.deps.fill)
+        const applied = await applyIncoming(manager, this.store, mutations)
         if (cursor !== undefined) await this.store.set('cursor', String(cursor), manager)
         return applied
       })
@@ -320,9 +319,6 @@ export class SyncEngine {
     if (mode === 'join') {
       await transactionGuard(this.deps.db, (m) =>
         withoutChangeLog(async () => {
-          for (const t of ['pipeline_stages', 'pipelines']) {
-            await m.query(`DELETE FROM ${t}`).catch(() => {})
-          }
           await m.query(`DELETE FROM dashboards`)
         })
       )

@@ -1,5 +1,4 @@
 import {
-  Briefcase,
   House,
   CalendarClock,
   Library,
@@ -11,7 +10,7 @@ import {
 import type { Screen } from './lib'
 
 export type Section =
-  'home' | 'workspace' | 'tasks' | 'clients' | 'meetings' | 'tags' | 'automations' | 'settings'
+  'home' | 'workspace' | 'tasks' | 'meetings' | 'tags' | 'automations' | 'settings'
 
 export interface SectionLink {
   id: Section
@@ -23,7 +22,6 @@ export const SECTIONS: SectionLink[] = [
   { id: 'home', label: 'Inicio', icon: House },
   { id: 'workspace', label: 'Workspace', icon: Library },
   { id: 'tasks', label: 'Tareas', icon: ListChecks },
-  { id: 'clients', label: 'Clientes', icon: Briefcase },
   { id: 'meetings', label: 'Reuniones', icon: CalendarClock },
   { id: 'tags', label: 'Tags', icon: TagsIcon },
   { id: 'automations', label: 'Automatizaciones', icon: Workflow }

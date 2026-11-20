@@ -2,10 +2,10 @@ import { markdownToHtml } from '@shared/automations'
 import type { DayKey, Effort } from '@shared/tasks'
 import { insertTaskWithRoom } from '../../services/task.service'
 import { NotConfigured, type Handlers, type NodeContext } from '../ports'
-import { clientIdOf, done, guarded, manager, numberParam, param, Skip, today } from './shared'
+import { done, guarded, manager, numberParam, param, Skip, today } from './shared'
 
 export interface NoteWriter {
-  create(body: string, links: { clients?: string[] }): Promise<{ id: string }>
+  create(body: string): Promise<{ id: string }>
 }
 
 const EFFORTS: Effort[] = ['bajo', 'medio', 'alto']
@@ -15,28 +15,8 @@ function emailPort(ctx: NodeContext): NonNullable<NodeContext['ports']['email']>
   return ctx.ports.email
 }
 
-const contactRef = (ctx: NodeContext): { id?: string; email?: string | null; status?: string } =>
-  (ctx.scope.contact as { id?: string; email?: string | null; status?: string } | undefined) ?? {}
-
 export function communicationHandlers(notes: NoteWriter): Handlers {
   return {
-    send_email: {
-      run: guarded(async (ctx) => {
-        const contact = contactRef(ctx)
-        if (!contact.email) throw new Skip('El contacto no tiene email.')
-        if (contact.status !== 'subscribed') throw new Skip('El contacto no está suscrito.')
-        const subject = ctx.render(param(ctx, 'subject')).trim()
-        const html = markdownToHtml(ctx.render(param(ctx, 'body')))
-        if (ctx.dryRun) return done({ to: contact.email, subject })
-        await emailPort(ctx).send({
-          to: contact.email,
-          subject,
-          html,
-          idempotencyKey: ctx.idempotencyKey
-        })
-        return done({ to: contact.email })
-      })
-    },
     email_owner: {
       run: guarded(async (ctx) => {
         const port = emailPort(ctx)
@@ -49,15 +29,9 @@ export function communicationHandlers(notes: NoteWriter): Handlers {
           to: owner,
           subject,
           html,
-          idempotencyKey: ctx.idempotencyKey,
-          role: 'transactional'
+          idempotencyKey: ctx.idempotencyKey
         })
         return done({ to: owner })
-      })
-    },
-    start_sequence: {
-      run: guarded(async () => {
-        throw new Skip('Las secuencias de Resend se retiraron.')
       })
     },
     create_task: {
@@ -69,8 +43,7 @@ export function communicationHandlers(notes: NoteWriter): Handlers {
           date: today(ctx, Math.max(0, Math.floor(numberParam(ctx, 'inDays') ?? 0))) as DayKey,
           description: ctx.render(param(ctx, 'description')).trim() || null,
           tags,
-          effort: EFFORTS.includes(effort) ? effort : null,
-          clientId: clientIdOf(ctx)
+          effort: EFFORTS.includes(effort) ? effort : null
         })
         return done({ taskId: task.id, date: task.date })
       })
@@ -81,8 +54,7 @@ export function communicationHandlers(notes: NoteWriter): Handlers {
         const title = ctx.render(param(ctx, 'title')).trim()
         const body = ctx.render(param(ctx, 'body')).trim()
         const text = body ? `# ${title}\n\n${body}` : `# ${title}`
-        const clientId = clientIdOf(ctx)
-        const note = await notes.create(text, clientId ? { clients: [clientId] } : {})
+        const note = await notes.create(text)
         return done({ noteId: note.id })
       })
     },

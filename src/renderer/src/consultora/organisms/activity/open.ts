@@ -8,10 +8,6 @@ const KIND_SCREEN = { note: 'ws-note', board: 'ws-board', image: 'ws-image' } as
 
 export async function screensFor(entity: string, id: string): Promise<Screen[] | null> {
   switch (entity as ActivityEntity) {
-    case 'clients':
-      return [{ name: 'clients' }, { name: 'client', id }]
-    case 'projects':
-      return [{ name: 'clients' }, { name: 'project', id }]
     case 'meetings':
       return [{ name: 'meetings' }, { name: 'meeting', id }]
     case 'tasks':

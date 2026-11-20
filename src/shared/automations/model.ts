@@ -1,7 +1,7 @@
 // Active subjects/triggers/nodes exposed in UI. Legacy values kept for stored/published
 // automations and migration compatibility (see ALL_* and catalog retired specs).
-export const SUBJECT_TYPES = ['client', 'task', 'meeting', 'none'] as const
-export const LEGACY_SUBJECT_TYPES = ['contact', 'prospect'] as const
+export const SUBJECT_TYPES = ['task', 'meeting', 'none'] as const
+export const LEGACY_SUBJECT_TYPES = ['contact', 'prospect', 'client'] as const
 export const ALL_SUBJECT_TYPES = [...SUBJECT_TYPES, ...LEGACY_SUBJECT_TYPES] as const
 export type SubjectType = (typeof ALL_SUBJECT_TYPES)[number]
 
@@ -17,13 +17,7 @@ export const SUBJECT_LABELS: Record<SubjectType, string> = {
 export const AUTOMATION_STATUSES = ['draft', 'active', 'paused', 'locked'] as const
 export type AutomationStatus = (typeof AUTOMATION_STATUSES)[number]
 
-export const TRIGGER_TYPES = [
-  'client.created',
-  'task.completed',
-  'meeting.ready',
-  'schedule',
-  'manual'
-] as const
+export const TRIGGER_TYPES = ['task.completed', 'meeting.ready', 'schedule', 'manual'] as const
 export const LEGACY_TRIGGER_TYPES = [
   'contact.created',
   'contact.tag_added',
@@ -35,7 +29,8 @@ export const LEGACY_TRIGGER_TYPES = [
   'prospect.created',
   'prospect.stage_changed',
   'prospect.won',
-  'prospect.lost'
+  'prospect.lost',
+  'client.created'
 ] as const
 export const ALL_TRIGGER_TYPES = [...TRIGGER_TYPES, ...LEGACY_TRIGGER_TYPES] as const
 export type TriggerType = (typeof ALL_TRIGGER_TYPES)[number]
@@ -45,8 +40,6 @@ export const NODE_TYPES = [
   'wait',
   'go_to',
   'finish',
-  'create_client',
-  'create_project',
   'email_owner',
   'create_task',
   'create_note',
@@ -69,7 +62,9 @@ export const LEGACY_NODE_TYPES = [
   'update_prospect',
   'delete_prospect',
   'send_email',
-  'start_sequence'
+  'start_sequence',
+  'create_client',
+  'create_project'
 ] as const
 export const ALL_NODE_TYPES = [...NODE_TYPES, ...LEGACY_NODE_TYPES] as const
 export type NodeType = (typeof ALL_NODE_TYPES)[number]

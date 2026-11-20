@@ -8,7 +8,7 @@ const apply = (list: Mutation[], start: RecordState | null = null): RecordState 
 const at = (ms: number, node: string, counter = 0): string => encodeHlc({ ms, counter, node })
 
 const base: Mutation = {
-  entity: 'clients',
+  entity: 'meetings',
   id: 'c1',
   op: 'upsert',
   fields: { name: 'Acme', sector: 'Construcción', status: 'active' },

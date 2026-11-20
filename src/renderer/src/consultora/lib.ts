@@ -12,16 +12,12 @@ export type Screen =
   | { name: 'ws-image'; id: string }
   | { name: 'home' }
   | { name: 'tasks'; task?: string }
-  | { name: 'clients' }
-  | { name: 'client'; id: string }
-  | { name: 'project'; id: string }
   | { name: 'meetings' }
   | { name: 'meeting'; id: string }
   | { name: 'tags' }
   | { name: 'automations' }
   | { name: 'automation'; id: string }
   | { name: 'note'; id: string }
-  | { name: 'document'; client: string; path: string }
   | { name: 'settings' }
   | { name: 'search'; query: string }
 

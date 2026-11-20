@@ -1,5 +1,5 @@
 import { Notification } from 'electron'
-import { DeliveryUsageError, EmailProviderError, type DeliveryRouter } from '@shared/email-delivery'
+import { EmailProviderError, type EmailSender } from '@shared/email-delivery'
 import { config } from '../config'
 import {
   ExternalError,
@@ -45,20 +45,15 @@ export const macNotifier: NotifierPort = {
   }
 }
 
-export function deliveryEmail(router: DeliveryRouter): EmailPort {
+export function notificationEmail(sender: () => EmailSender | null): EmailPort {
   return {
-    async send({ to, subject, html, idempotencyKey, role }) {
+    async send({ to, subject, html, idempotencyKey }) {
+      const resend = sender()
+      if (!resend) throw new NotConfigured('Falta la API key de Resend en Ajustes, Email.')
       const from = config.from()
-      let sender
-      try {
-        sender = router.sender(role ?? 'marketing')
-      } catch (err) {
-        if (err instanceof DeliveryUsageError) throw new NotConfigured(err.message)
-        throw err
-      }
       if (!from) throw new NotConfigured('Falta el remitente en Ajustes, Email.')
       try {
-        await sender.send({
+        await resend.send({
           from,
           to,
           replyTo: config.replyTo() || undefined,
@@ -75,9 +70,9 @@ export function deliveryEmail(router: DeliveryRouter): EmailPort {
   }
 }
 
-export function createPorts(router: DeliveryRouter): Ports {
+export function createPorts(sender: () => EmailSender | null): Ports {
   return {
-    email: deliveryEmail(router),
+    email: notificationEmail(sender),
     http: fetchHttp,
     notifier: macNotifier,
     clock: systemClock

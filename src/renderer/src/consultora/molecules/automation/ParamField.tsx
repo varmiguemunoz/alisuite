@@ -1,20 +1,13 @@
 import { useRef } from 'react'
-import {
-  FIELDS,
-  type AutomationOptions,
-  type ParamSpec,
-  type Params,
-  type SubjectType
-} from '@shared/automations'
-import { slugify } from '@shared/marketing'
+import { FIELDS, type ParamSpec, type Params, type SubjectType } from '@shared/automations'
+import { slugify } from '@shared/slug'
 import { EFFORTS } from '@shared/tasks'
 import { INPUT } from '../../ui'
-import { TagEditor } from '../../marketing-ui'
+import { TagEditor } from '../TagEditor'
 import { insertVariable, VariableMenu, type Variable } from './VariableMenu'
 
 export interface FieldContext {
   subject: SubjectType
-  options: AutomationOptions | null
   variables: Variable[]
   nodes: { id: string; name: string }[]
 }
@@ -108,7 +101,6 @@ export function ParamField({ spec, params, ctx, onChange }: ParamFieldProps): Re
   const value = params[spec.key]
   const text =
     typeof value === 'string' ? value : value === undefined || value === null ? '' : String(value)
-  const o = ctx.options
   const label = spec.label
 
   switch (spec.kind) {
@@ -201,34 +193,8 @@ export function ParamField({ spec, params, ctx, onChange }: ParamFieldProps): Re
       return (
         <TagEditor
           tags={tags.map((t) => ({ slug: t, name: t }))}
-          suggestions={[]}
           onAdd={(t) => onChange([...new Set([...tags, slugify(t)])])}
           onRemove={(slug) => onChange(tags.filter((t) => t !== slug))}
-        />
-      )
-    }
-    case 'client':
-      return (
-        <Choice
-          label={label}
-          value={text}
-          required={spec.required}
-          options={(o?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))}
-          onChange={onChange}
-        />
-      )
-    case 'project': {
-      const clients = new Map((o?.clients ?? []).map((c) => [c.id, c.name]))
-      return (
-        <Choice
-          label={label}
-          value={text}
-          required={spec.required}
-          options={(o?.projects ?? []).map((p) => ({
-            value: p.id,
-            label: `${clients.get(p.clientId) ?? ''} · ${p.name}`
-          }))}
-          onChange={onChange}
         />
       )
     }

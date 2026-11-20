@@ -1,44 +1,7 @@
-import type { DeliveryRole, RoleAssignment } from './email-delivery'
-
-import type { ClientNote } from './notes'
-
-export type ClientStatus = 'activo' | 'historico'
-export type ProjectStatus = 'activo' | 'pausa' | 'cerrado'
 export type Language = 'es' | 'en'
 export const LANGUAGES: Language[] = ['es', 'en']
 
 export type MeetingStatus = 'recording' | 'transcribing' | 'summarizing' | 'ready' | 'error'
-
-export const CLIENT_STATUSES: ClientStatus[] = ['activo', 'historico']
-export const PROJECT_STATUSES: ProjectStatus[] = ['activo', 'pausa', 'cerrado']
-export interface Client {
-  id: string
-  name: string
-  sector: string | null
-  status: ClientStatus
-  contactsMd: string
-  notesMd: string
-
-  signedAt: string | null
-
-  folderPath: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Project {
-  id: string
-  clientId: string
-  name: string
-  status: ProjectStatus
-  objectiveMd: string
-
-  deliverablesMd: string
-  notesMd: string
-  assigneeId: string | null
-  createdAt: string
-  updatedAt: string
-}
 
 export interface ActionItem {
   text: string
@@ -53,8 +16,6 @@ export interface Meeting {
 
   date: string
   title: string
-  clientId: string | null
-  projectId: string | null
   assigneeId: string | null
   participants: string[]
   summaryMd: string
@@ -72,12 +33,6 @@ export interface Meeting {
   updatedAt: string
 }
 
-export type ClientInput = Partial<
-  Pick<Client, 'name' | 'sector' | 'status' | 'contactsMd' | 'notesMd' | 'signedAt' | 'folderPath'>
->
-export type ProjectInput = Partial<
-  Pick<Project, 'name' | 'status' | 'objectiveMd' | 'deliverablesMd' | 'notesMd' | 'assigneeId'>
-> & { client?: string }
 export type MeetingInput = Partial<
   Pick<
     Meeting,
@@ -91,17 +46,11 @@ export type MeetingInput = Partial<
     | 'language'
     | 'assigneeId'
   >
-> & {
-  client?: string
-  project?: string
-}
+>
 
 // ---- Respuestas compuestas ----
 
-export type MeetingBrief = Pick<
-  Meeting,
-  'id' | 'date' | 'title' | 'clientId' | 'projectId' | 'status' | 'participants'
->
+export type MeetingBrief = Pick<Meeting, 'id' | 'date' | 'title' | 'status' | 'participants'>
 
 export interface OpenActionItem extends ActionItem {
   meetingId: string
@@ -109,46 +58,6 @@ export interface OpenActionItem extends ActionItem {
   meetingDate: string
 
   index: number
-  clientId: string | null
-}
-
-export interface DocFile {
-  path: string
-  name: string
-  folder: string
-  size: number
-  modifiedAt: string
-}
-
-export interface ClientDetail extends Client {
-  projects: (Project & { openDeliverables: string[] })[]
-  meetings: MeetingBrief[]
-  openActionItems: OpenActionItem[]
-  documents: DocFile[]
-
-  notes: ClientNote[]
-
-  folder: string | null
-}
-
-export interface ClientImpact {
-  projects: number
-  meetings: number
-  notes: number
-  folderPath: string
-}
-
-export interface DocContent {
-  path: string
-  name: string
-  content: string
-  modifiedAt: string
-}
-
-export interface ProjectDetail extends Project {
-  client: Pick<Client, 'id' | 'name'>
-  openDeliverables: string[]
-  meetings: MeetingBrief[]
 }
 
 export interface MeetingsPage {
@@ -159,9 +68,6 @@ export interface MeetingsPage {
 }
 
 export interface MeetingFilter {
-  client?: string
-  project?: string
-
   from?: string
   to?: string
   page?: number
@@ -169,26 +75,15 @@ export interface MeetingFilter {
 }
 
 export interface Overview {
-  activeClients: {
-    id: string
-    name: string
-    projects: { id: string; name: string; status: ProjectStatus; openDeliverables: number }[]
-    lastMeeting: { id: string; date: string; title: string } | null
-  }[]
   openActionItems: OpenActionItem[]
   recentMeetings: MeetingBrief[]
 }
 
 export interface SearchHit {
-  type: 'client' | 'project' | 'meeting'
+  type: 'meeting'
   id: string
   title: string
   snippet: string
-}
-
-export interface Refs {
-  clients: { id: string; name: string; status: ClientStatus }[]
-  projects: { id: string; name: string; clientId: string; status: ProjectStatus }[]
 }
 
 export interface Settings {
@@ -213,12 +108,6 @@ export interface Settings {
   fromName: string
   replyTo: string
   ownerEmail: string
-  hubUrl: string
-  hasHubToken: boolean
-  hubTokenHint: string
-  emailRoles: RoleAssignment
-  hasApolloKey: boolean
-  apolloKeyHint: string
 }
 
 export interface VoiceStatus {
@@ -252,20 +141,13 @@ export interface SettingsInput {
   fromName?: string
   replyTo?: string
   ownerEmail?: string
-  hubUrl?: string
-
-  hubAdminToken?: string
-  emailRoles?: Partial<Record<DeliveryRole, string | null>>
-  apolloApiKey?: string
 }
 
-export type NoteEntity = 'client' | 'project' | 'meeting'
+export type NoteEntity = 'meeting'
 
 export interface StopInfo {
   title: string
   participants: string[]
-  clientId: string | null
-  projectId: string | null
   durationSec: number
   language: Language
 }
@@ -273,14 +155,11 @@ export interface StopInfo {
 export interface ImportInfo {
   title: string
   participants: string[]
-  clientId: string | null
-  projectId: string | null
   language: Language
 }
 
 export interface ConsultoraApi {
   overview(): Promise<Overview>
-  refs(): Promise<Refs>
   search(query: string): Promise<SearchHit[]>
   settings(): Promise<Settings>
   saveSettings(input: SettingsInput): Promise<Settings>
@@ -296,22 +175,6 @@ export interface ConsultoraApi {
 
   workspaceShortcutStatus(): Promise<{ shortcut: string; registered: boolean }>
 
-  listClients(
-    status?: ClientStatus
-  ): Promise<(Client & { activeProjects: number; lastMeetingDate: string | null })[]>
-  getClient(ref: string): Promise<ClientDetail>
-  createClient(input: ClientInput): Promise<Client>
-  updateClient(ref: string, patch: ClientInput): Promise<Client>
-  clientImpact(ref: string): Promise<ClientImpact>
-
-  removeClient(ref: string, opts: { trashFolder: boolean }): Promise<void>
-
-  getProject(ref: string): Promise<ProjectDetail>
-  createProject(input: ProjectInput): Promise<Project>
-  updateProject(ref: string, patch: ProjectInput): Promise<Project>
-
-  removeProject(ref: string): Promise<void>
-
   pickRecording(): Promise<string | null>
 
   importRecording(path: string, info: ImportInfo): Promise<Meeting>
@@ -325,26 +188,8 @@ export interface ConsultoraApi {
 
   processMeeting(id: string): Promise<Meeting>
 
-  suggestAssociation(title: string): Promise<{
-    clientId: string | null
-    projectId: string | null
-  }>
-  listActionItems(filter: { client?: string; done?: boolean }): Promise<OpenActionItem[]>
+  listActionItems(filter: { done?: boolean }): Promise<OpenActionItem[]>
 
-  listDocuments(client: string): Promise<DocFile[]>
-  readDocument(client: string, path: string): Promise<{ path: string; content: string }>
-
-  openDocument(client: string, path: string): Promise<DocContent>
-  writeDocument(
-    client: string,
-    path: string,
-    content: string,
-    expectedModifiedAt?: string
-  ): Promise<{ path: string; modifiedAt: string }>
-
-  renameDocument(client: string, path: string, name: string): Promise<{ path: string }>
-
-  trashDocument(client: string, path: string): Promise<void>
   appendNote(entity: NoteEntity, ref: string, text: string): Promise<void>
 }
 
@@ -352,10 +197,6 @@ export interface ConsultoraApi {
 
 export function normalizeName(value: string): string {
   return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
-}
-
-export function openChecklist(md: string): string[] {
-  return [...md.matchAll(/^\s*[-*+]\s+\[ \]\s+(.+)$/gm)].map((m) => m[1].trim())
 }
 
 export function toggleTaskLine(md: string, line: number): string {

@@ -376,8 +376,8 @@ Both windows reopen as they were left, like Obsidian's `workspace.json`. State l
 
 Since W6 the whole Consultora window uses the Obsidian theme described under Workspace. The DayliOS look above (night, pastels, Nunito, pills) now belongs to the menubar only.
 
-- **Shell:** one frame for every section. A 38px draggable strip with back and forward, the route in the center («Clientes › Acme»), the record control and the «…» menu. A 44px ribbon: sidebar toggle, global search (⌘K), new note, new board, Ajustes at the bottom. A docked sidebar, 180 to 480px, with two tabs: Secciones (Consultora and Email groups, 30px rows) and Archivos (the vault explorer, mounted once). Each context remembers its tab.
-- **Shortcuts:** ⌘K global switcher over clients, projects, meetings and vault files; ⌘O vault switcher; ⌘F searches the current context; ⌘N new note; ⌘\ sidebar; ⌘[ and ⌘] back and forward; ⌘, Ajustes; Esc goes back outside the workspace.
+- **Shell:** one frame for every section. A 38px draggable strip with back and forward, the route in the center («Reuniones › Kickoff»), the record control and the «…» menu. A 44px ribbon: sidebar toggle, global search (⌘K), new note, new board, Ajustes at the bottom. A docked sidebar, 180 to 480px, with two tabs: Secciones (Consultora group, 30px rows) and Archivos (the vault explorer, mounted once). Each context remembers its tab.
+- **Shortcuts:** ⌘K global switcher over meetings and vault files; ⌘O vault switcher; ⌘F searches the current context; ⌘N new note; ⌘\ sidebar; ⌘[ and ⌘] back and forward; ⌘, Ajustes; Esc goes back outside the workspace.
 - **Pages:** three variants. Table pages use the full width with 24px gutters, a 20px semibold title and Obsidian Bases style tables: 28px muted header, 32px rows, 1px dividers, hover row. Document pages are a 760px reading column with a 28px bold inline title, a collapsible Properties block (icon, 140px muted name, value edited in place, links in the accent) and sections as 16px semibold headings over a 1px line. Board pages give the content the whole pane.
 - **Controls:** buttons 30px, 4px radius, weight 500: accent solid for the screen's main action, `#363636` for the rest, red text for danger. Inputs 32px with a 1px border on the document background and an accent border on focus. Selects are grey 30px. Tags and states are round 20px labels tinted 15% with the color's text, using the Obsidian palette.
 - **Feedback:** callouts with a 2px left border in the color over a 10% tint (accent info, green success, yellow warning, red error). Empty states are centered faint text, no cards.
@@ -421,7 +421,7 @@ All motion uses the expo ease-out curve and runs only in response to a state cha
 
 - **Drawer:** right-side panel, 360px, full height, surface with xl radius on its left edge, toast float shadow (the same allowed use as the recording sheet), slides 16px in (320ms expo). Night at 40% behind. Esc, outside click or the X close it; focus returns to the opener. Holds filters (Contacts, Pipeline); a «Limpiar filtros» quiet pill sits in its footer above a hairline.
 - **Modal:** centered surface, xl radius, toast float shadow, focus trapped, night at 60% behind. Sizes sm, md, lg. Only one overlay at a time; Esc closes the top one.
-- **Segmented toggle:** the tab-switcher rail at 32px items (Columnas | Lista, Nota | Cliente). Active = surface-raised, milk text, apricot icon.
+- **Segmented toggle:** the tab-switcher rail at 32px items (Columnas | Lista). Active = surface-raised, milk text, apricot icon.
 - **Filter button:** 44px quiet pill «Filtros» with a sliders icon; with active filters the icon turns apricot and an apricot count badge with ink text appears.
 - **Confirm button:** the two-step delete («¿Borrar?» rose pill with ink text). Its second label states the consequence when it matters («¿Quitar de 34?», «¿A la Papelera?»).
 - **Action row:** a List row whose main area is a button and whose actions (icon buttons, confirm) fade in on hover or focus. No buttons inside buttons.
@@ -437,7 +437,7 @@ All motion uses the expo ease-out curve and runs only in response to a state cha
 
 ### Related notes
 
-- Top index: one caption line «Relacionadas:» with 28px surface chips (file icon for notes, briefcase for clients). Nothing when empty.
+- Top index: one caption line «Relacionadas:» with 28px surface chips (file icon for notes). Nothing when empty.
 - Bottom index: «Notas relacionadas» caption heading over a surface list (bold title, caption excerpt), remove X in rose on hover, and a quiet «Relacionar» pill with an apricot link icon. The picker is a small modal with a segmented toggle and a search field.
 
 ### Tags screen
@@ -482,9 +482,8 @@ Values measured on Obsidian, see `.impeccable/.kiro/specs/canvas-improvement/res
 - Three columns: Pendiente, En curso, Hecha. Native drag between columns changes only the status; Hecha equals done, so the menubar shows it crossed out.
 - Card: title, day in grey (yellow when late), effort, tags in link color, relation name, subtask progress.
 - Lista is a Bases style table. Click a header to sort, again to invert, a third time to clear. Status changes from the row.
-- Filters live in the right drawer: period, text, tags, effort, client, project.
+- Filters live in the right drawer: period, text, tags, effort.
 - Detail opens as a right panel: Properties with status and relations above the usual task detail.
-- Client and project records show a «Tareas» section: open first, a checkbox to close, «Nueva» creates it for today already related.
 - The ceiling of eight per day still rules; when today is full the form suggests the next free day.
 
 ### Dashboard (Inicio)

@@ -44,7 +44,6 @@ export function Note({
         scrollKey={`scroll.note:${note.id}`}
         onBack={back}
         onOpenNote={(noteId) => go({ name: 'note', id: noteId })}
-        onOpenClient={(clientId) => go({ name: 'client', id: clientId })}
       />
     </div>
   )

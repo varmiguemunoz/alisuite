@@ -14,8 +14,8 @@ describe('lo que nunca se sincroniza', () => {
   })
 
   it('los secretos y las claves nunca viajan', () => {
-    expect(isNeverSynced('clients', 'name')).toBe(false)
-    expect(isNeverSynced('clients', 'folder_path')).toBe(true)
+    expect(isNeverSynced('meetings', 'title')).toBe(false)
+    expect(isNeverSynced('meetings', 'recording_path')).toBe(true)
     expect(NEVER_SYNC.settings).toEqual(expect.arrayContaining(['openaiApiKey']))
     expect(NEVER_SYNC.files).toEqual(expect.arrayContaining(['settings.json', 'ui-state.json']))
   })

@@ -105,7 +105,6 @@ export function resetConsultoraBounds(): void {
 export const consultoraWindow = (): BrowserWindow | null => win
 
 export function openConsultoraAt(target: {
-  client?: string
   workspace?: boolean
   account?: boolean
   open?: { entity: string; id: string }

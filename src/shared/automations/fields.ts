@@ -7,7 +7,7 @@ export interface FieldSpec {
   label: string
   kind: FieldKind
   options?: { value: string; label: string }[]
-  source?: 'client' | 'status'
+  source?: 'status'
 }
 
 export const OPERATORS_BY_KIND: Record<FieldKind, Operator[]> = {
@@ -52,11 +52,6 @@ export const OPERATOR_LABELS: Record<Operator, string> = {
 
 export const VALUELESS: Operator[] = ['is_empty', 'is_not_empty']
 
-const CLIENT: FieldSpec[] = [
-  { key: 'client.name', label: 'Cliente', kind: 'text' },
-  { key: 'client.status', label: 'Estado del cliente', kind: 'text' }
-]
-
 const TASK: FieldSpec[] = [
   { key: 'task.title', label: 'Título de la tarea', kind: 'text' },
   { key: 'task.tags', label: 'Tags de la tarea', kind: 'list' }
@@ -72,9 +67,9 @@ const COMMON: FieldSpec[] = [{ key: 'now', label: 'Ahora', kind: 'date' }]
 export const FIELDS: Record<SubjectType, FieldSpec[]> = {
   contact: [...COMMON],
   prospect: [...COMMON],
-  client: [...CLIENT, ...COMMON],
-  task: [...TASK, ...CLIENT, ...COMMON],
-  meeting: [...MEETING, ...CLIENT, ...COMMON],
+  client: [...COMMON],
+  task: [...TASK, ...COMMON],
+  meeting: [...MEETING, ...COMMON],
   none: COMMON
 }
 
@@ -90,15 +85,9 @@ export interface VariableSpec {
 const SUBJECT_VARIABLES: Record<SubjectType, VariableSpec[]> = {
   contact: [],
   prospect: [],
-  client: [{ key: 'client.name', label: 'Cliente' }],
-  task: [
-    { key: 'task.title', label: 'Tarea' },
-    { key: 'client.name', label: 'Cliente' }
-  ],
-  meeting: [
-    { key: 'meeting.title', label: 'Reunión' },
-    { key: 'client.name', label: 'Cliente' }
-  ],
+  client: [],
+  task: [{ key: 'task.title', label: 'Tarea' }],
+  meeting: [{ key: 'meeting.title', label: 'Reunión' }],
   none: []
 }
 

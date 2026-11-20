@@ -5,8 +5,6 @@ export function brief(m: Meeting): MeetingBrief {
     id: m.id,
     date: m.date,
     title: m.title,
-    clientId: m.clientId,
-    projectId: m.projectId,
     status: m.status,
     participants: m.participants
   }
@@ -25,8 +23,7 @@ export function actionItems(meetings: Meeting[]): OpenActionItem[] {
         index,
         meetingId: m.id,
         meetingTitle: m.title,
-        meetingDate: m.date,
-        clientId: m.clientId
+        meetingDate: m.date
       }))
     )
 }

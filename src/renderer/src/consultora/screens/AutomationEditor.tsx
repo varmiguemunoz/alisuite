@@ -69,8 +69,6 @@ function EditorBody({
   const id = detail.automation.id
   const draft = useAutomationDraft(id, detail.automation.draft)
   const { def, apply } = draft
-  const optionsLoad = useCallback(() => automations.options(), [])
-  const { data: options } = useLiveLoad(optionsLoad)
   const [tab, setTab] = useState<Tab>('canvas')
   const [selection, setSelection] = useState<Selection | null>(null)
   const [clipboard, setClipboard] = useState<Editor['clipboard']>(null)
@@ -89,19 +87,9 @@ function EditorBody({
   )
   const { data: stats } = useLiveLoad(statsLoad)
 
-  const refs = useMemo(
-    () =>
-      options
-        ? {
-            client: new Set(options.clients.map((c) => c.id)),
-            project: new Set(options.projects.map((p) => p.id))
-          }
-        : {},
-    [options]
-  )
-  const issueList = useMemo(() => validateDefinition(def, refs), [def, refs])
+  const issueList = useMemo(() => validateDefinition(def), [def])
   const issues = useMemo(() => issuesByNode(issueList), [issueList])
-  const names = useMemo(() => namesFrom(options, def), [options, def])
+  const names = useMemo(() => namesFrom(def), [def])
 
   useEffect(() => {
     if (!message) return
@@ -114,7 +102,6 @@ function EditorBody({
   const editor: Editor = {
     def,
     apply,
-    options,
     names,
     issues,
     selection,
@@ -245,7 +232,6 @@ function EditorBody({
           key={trigger.id}
           def={def}
           trigger={trigger}
-          options={options}
           issues={issues[trigger.id] ?? []}
           onSave={(params, conditions) =>
             apply((d) => ({
@@ -270,7 +256,6 @@ function EditorBody({
         key={node.id}
         def={def}
         node={node}
-        options={options}
         issues={issues[node.id] ?? []}
         onSave={(params, name) => setMessage(apply((d) => setParams(d, node.id, params, name)))}
         onDelete={(keep) => {

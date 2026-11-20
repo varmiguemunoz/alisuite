@@ -17,8 +17,6 @@ export type ParamKind =
   | 'select'
   | 'boolean'
   | 'tags'
-  | 'client'
-  | 'project'
   | 'field'
   | 'url'
   | 'datetime'
@@ -39,16 +37,14 @@ export interface ParamSpec {
   min?: number
 }
 
-export type RefKind = 'client' | 'project' | 'node'
+export type RefKind = 'node'
 
 export type Names = (kind: RefKind, id: string) => string | undefined
 
-export type NodeGroup =
-  'control' | 'clientes' | 'email' | 'productividad' | 'integraciones' | 'contacto' | 'pipeline'
+export type NodeGroup = 'control' | 'email' | 'productividad' | 'integraciones' | 'retirado'
 
-export const NODE_GROUPS: { id: Exclude<NodeGroup, 'contacto' | 'pipeline'>; label: string }[] = [
+export const NODE_GROUPS: { id: Exclude<NodeGroup, 'retirado'>; label: string }[] = [
   { id: 'control', label: 'Control' },
-  { id: 'clientes', label: 'Clientes' },
   { id: 'email', label: 'Email' },
   { id: 'productividad', label: 'Productividad' },
   { id: 'integraciones', label: 'Integraciones' }
@@ -74,7 +70,7 @@ export interface NodeSpec {
   sentence(params: Params, names: Names): string
 }
 
-export type TriggerGroup = 'clientes' | 'productividad' | 'tiempo'
+export type TriggerGroup = 'productividad' | 'tiempo' | 'retirado'
 
 export interface TriggerSpec {
   type: TriggerType
@@ -393,28 +389,6 @@ const CONTROL: NodeSpec[] = [
 
 const DOMAIN: NodeSpec[] = [
   action({
-    type: 'create_client',
-    group: 'clientes',
-    label: 'Crear cliente',
-    description: 'Crea un cliente.',
-    icon: 'Building',
-    subjects: ['client', 'task', 'meeting', 'none'],
-    outputs: [{ key: 'clientId', label: 'Id del cliente' }],
-    params: [{ key: 'name', label: 'Nombre', kind: 'text', required: true, vars: true }],
-    sentence: (p) => `Crear el cliente ${quote(str(p, 'name'))}`
-  }),
-  action({
-    type: 'create_project',
-    group: 'clientes',
-    label: 'Crear proyecto',
-    description: 'Crea un proyecto en el cliente del sujeto.',
-    icon: 'FolderPlus',
-    subjects: ['client'],
-    outputs: [{ key: 'projectId', label: 'Id del proyecto' }],
-    params: [{ key: 'name', label: 'Nombre', kind: 'text', required: true, vars: true }],
-    sentence: (p) => `Crear el proyecto ${quote(str(p, 'name'))}`
-  }),
-  action({
     type: 'email_owner',
     group: 'email',
     label: 'Avisarme por email',
@@ -450,7 +424,7 @@ const DOMAIN: NodeSpec[] = [
     type: 'create_note',
     group: 'productividad',
     label: 'Crear nota',
-    description: 'Crea una nota, relacionada con el cliente del sujeto si tiene.',
+    description: 'Crea una nota.',
     icon: 'StickyNote',
     subjects: 'any',
     outputs: [{ key: 'noteId', label: 'Id de la nota' }],
@@ -514,7 +488,7 @@ const RETIRED_MSG = 'Estos pasos se retiraron; no se puede ejecutar.'
 const legacyAction = (type: NodeType, subjects: SubjectType[] | 'any' = 'any'): NodeSpec =>
   action({
     type,
-    group: 'contacto',
+    group: 'retirado',
     label: type,
     description: '',
     icon: 'Circle',
@@ -540,12 +514,14 @@ const LEGACY_NODES: NodeSpec[] = [
   legacyAction('update_prospect'),
   legacyAction('delete_prospect'),
   legacyAction('send_email'),
-  legacyAction('start_sequence')
+  legacyAction('start_sequence'),
+  legacyAction('create_client'),
+  legacyAction('create_project')
 ]
 
 const legacyTrigger = (type: TriggerType, subject: SubjectType | 'any'): TriggerSpec => ({
   type,
-  group: 'clientes',
+  group: 'retirado',
   label: type,
   description: '',
   icon: 'Circle',
@@ -566,7 +542,8 @@ const LEGACY_TRIGGERS: TriggerSpec[] = [
   legacyTrigger('prospect.created', 'prospect'),
   legacyTrigger('prospect.stage_changed', 'prospect'),
   legacyTrigger('prospect.won', 'prospect'),
-  legacyTrigger('prospect.lost', 'prospect')
+  legacyTrigger('prospect.lost', 'prospect'),
+  legacyTrigger('client.created', 'client')
 ]
 
 export const NODES: NodeSpec[] = [...CONTROL, ...DOMAIN, ...LEGACY_NODES]
@@ -588,24 +565,12 @@ export function nodeIssues(spec: NodeSpec, params: Params): string[] {
 }
 
 const payload = (event: AutomationEvent, key: string): unknown => event.payload[key]
-const same = (wanted: string, actual: unknown): boolean => !wanted || wanted === actual
 const optional = (key: string, label: string, kind: ParamKind): ParamSpec => ({ key, label, kind })
 
 export const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export const TRIGGERS: TriggerSpec[] = [
   ...LEGACY_TRIGGERS,
-  {
-    type: 'client.created',
-    group: 'clientes',
-    label: 'Se crea un cliente',
-    description: 'Se crea un cliente nuevo.',
-    icon: 'Building',
-    subject: 'client',
-    params: [],
-    matches: (_, e) => e.type === 'client.created',
-    sentence: () => 'Se crea un cliente'
-  },
   {
     type: 'task.completed',
     group: 'productividad',
@@ -629,13 +594,9 @@ export const TRIGGERS: TriggerSpec[] = [
     description: 'Una reunión termina de transcribirse y resumirse.',
     icon: 'AudioLines',
     subject: 'meeting',
-    params: [optional('client', 'Cliente', 'client')],
-    matches: (t, e) =>
-      e.type === 'meeting.ready' && same(str(t.params, 'client'), payload(e, 'clientId')),
-    sentence: (p, n) =>
-      str(p, 'client')
-        ? `Reunión lista con ${quote(ref(n, 'client', str(p, 'client'), '…'))}`
-        : 'Reunión lista'
+    params: [],
+    matches: (_, e) => e.type === 'meeting.ready',
+    sentence: () => 'Reunión lista'
   },
   {
     type: 'schedule',

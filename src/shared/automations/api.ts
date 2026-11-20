@@ -11,7 +11,6 @@ import type {
   SubjectType,
   TriggerLogEntry
 } from './model'
-import type { RefTarget } from './validate'
 
 export interface AutomationSummary {
   id: string
@@ -99,12 +98,6 @@ export interface Option {
   name: string
 }
 
-export interface AutomationOptions {
-  tags: Option[]
-  clients: Option[]
-  projects: (Option & { clientId: string })[]
-}
-
 export interface SubjectOption {
   id: string
   label: string
@@ -137,8 +130,6 @@ export interface AutomationsApi {
     subjectId: string | null
   }): Promise<TestResult>
   runManual(id: string, subjectId: string | null): Promise<void>
-  references(kind: RefTarget, value: string): Promise<{ id: string; name: string }[]>
-  options(): Promise<AutomationOptions>
   subjects(type: SubjectType, query: string): Promise<SubjectOption[]>
 }
 
@@ -154,8 +145,6 @@ const WRITE: Record<keyof AutomationsApi, boolean> = {
   triggerLog: false,
   stats: false,
   test: false,
-  references: false,
-  options: false,
   subjects: false,
   create: true,
   rename: true,

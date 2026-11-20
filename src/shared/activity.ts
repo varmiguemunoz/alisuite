@@ -18,8 +18,6 @@ export const ACTIVITY_VERBS = [
 export type ActivityVerb = (typeof ACTIVITY_VERBS)[number]
 
 export const ACTIVITY_ENTITIES = [
-  'clients',
-  'projects',
   'meetings',
   'tasks',
   'file_manifest',
@@ -102,8 +100,6 @@ export const VERB_LABEL: Record<ActivityVerb, string> = {
 }
 
 export const ENTITY_LABEL: Record<ActivityEntity, string> = {
-  clients: 'Clientes',
-  projects: 'Proyectos',
   meetings: 'Reuniones',
   tasks: 'Tareas',
   file_manifest: 'Archivos',
@@ -112,8 +108,6 @@ export const ENTITY_LABEL: Record<ActivityEntity, string> = {
 }
 
 const NOUN: Record<ActivityEntity, string> = {
-  clients: 'el cliente',
-  projects: 'el proyecto',
   meetings: 'la reunión',
   tasks: 'la tarea',
   file_manifest: 'el archivo',

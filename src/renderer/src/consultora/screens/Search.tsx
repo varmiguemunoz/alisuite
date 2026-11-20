@@ -4,8 +4,6 @@ import { api, useLoad, type Go, type Screen } from '../lib'
 import { Empty, ErrorNote, List, Page, Pill, Row } from '../ui'
 
 const TYPE: Record<SearchHit['type'], string> = {
-  client: 'Cliente',
-  project: 'Proyecto',
   meeting: 'Reunión'
 }
 

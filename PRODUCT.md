@@ -40,15 +40,15 @@ A single-day ledger with a hard ceiling of eight, designed to be read by an AI a
 - Add / complete / edit / delete must be very fast (keyboard-first).
 - Visible day counter against the ceiling of 8.
 - Local SQLite storage; files/MCP server readable by Claude.
-- Consultora window (separate): clients with document folders, projects (objective, deliverables, notes), and meetings (screen + mic + system audio recording, OpenAI transcription and structured summary). Its purpose is giving Claude real, current context of Ali Muñoz Advisory via MCP.
+- Consultora window (separate): tasks board, workspace and meetings (screen + mic + system audio recording, OpenAI transcription and structured summary). Its purpose is giving Claude real, current context of Ali Muñoz Advisory via MCP.
 
 - Subtasks (v3): one level, unlimited, inside a task's detail; they never count toward the ceiling of eight and travel with their parent.
-- Notes can relate to other notes and to clients; each note shows an index of its relations at the top and the bottom. A minimal note search exists only to pick a relation.
+- Notes can relate to other notes; each note shows an index of its relations at the top and the bottom. A minimal note search exists only to pick a relation.
 
 - Tags for tasks (rename/delete) used across the app.
 - Workspace (v4, inside Consultora): a real folder on disk, Obsidian-style. Folders, notes (`.md`), boards (`.canvas`, JSON Canvas, Miro-style diagrams via React Flow), images and files, all indexed in SQLite with stable ids. Menubar and voice notes live in its «Notas rápidas» folder. Only the owner and Claude use it; no accounts or sync. It looks and behaves like Obsidian: own theme, file explorer, quick switcher, a global ⌥⌘W shortcut, notes named after their first heading, and an Obsidian style canvas with groups that carry their content. Since W6 the whole Consultora window shares that Obsidian look and frame; the menubar keeps the DayliOS look.
-- Tasks board (A2, inside Consultora): the same tasks as the menubar with a status of pending, in progress or done, shown as a Kanban board or a sortable list, filterable by period, tags, effort and relation. A task can relate to one client or project and appears in that record. Done and the menubar checkbox are the same thing.
-- Automations (inside Consultora): triggers on clients, tasks, meetings or a schedule enroll a subject (client, task, meeting or none) into a top to bottom tree of steps edited on a canvas with drag and drop. Drafts, immutable published versions, test runs that write nothing, runs that survive closing the app, and full logs. Claude builds and publishes them through MCP.
+- Tasks board (A2, inside Consultora): the same tasks as the menubar with a status of pending, in progress or done, shown as a Kanban board or a sortable list, filterable by period, tags, effort and assignee. Done and the menubar checkbox are the same thing.
+- Automations (inside Consultora): triggers on tasks, meetings or a schedule enroll a subject (task, meeting or none) into a top to bottom tree of steps edited on a canvas with drag and drop. Drafts, immutable published versions, test runs that write nothing, runs that survive closing the app, and full logs. Claude builds and publishes them through MCP.
 - Dashboard (A3, «Inicio» in Consultora): configurable widgets for base task/meeting/action-item metrics (open/closed tasks, status, overdue, meetings, open action items), each compared with the previous period where applicable. Claude reads the same numbers through `get_metrics`.
 - Explicitly out of scope: sprints, task views beyond Today, History and Notes; real-time multi-user editing, comments, templates or board export; Zoom/Meet/Teams, invoicing or multi-user integrations; SMS or WhatsApp.
 - UI language: Spanish (inferred from the owner's brief; confirm).

@@ -17,11 +17,8 @@ import { WorkspacePane } from './workspace/WorkspacePane'
 import { useWorkspace } from './workspace/context'
 import { FileExplorer } from './workspace/organisms/FileExplorer'
 import { Recorder } from './Recorder'
-import { Clients } from './screens/Clients'
 import { Tasks } from './screens/Tasks'
 import { Home } from './screens/Home'
-import { Client } from './screens/Client'
-import { Project } from './screens/Project'
 import { Meetings } from './screens/Meetings'
 import { Meeting } from './screens/Meeting'
 import { Settings, rememberSettingsTab } from './screens/Settings'
@@ -39,7 +36,6 @@ import { Automations } from './screens/Automations'
 import { AutomationEditor } from './screens/AutomationEditor'
 import { Tags } from './screens/Tags'
 import { Note } from './screens/Note'
-import { Document } from './screens/Document'
 
 const LABEL: Record<Screen['name'], string> = {
   workspace: 'Workspace',
@@ -48,16 +44,12 @@ const LABEL: Record<Screen['name'], string> = {
   'ws-image': 'Imagen',
   home: 'Inicio',
   tasks: 'Tareas',
-  clients: 'Clientes',
-  client: 'Cliente',
-  project: 'Proyecto',
   meetings: 'Reuniones',
   meeting: 'Reunión',
   tags: 'Tags',
   automations: 'Automatizaciones',
   automation: 'Automatización',
   note: 'Nota',
-  document: 'Documento',
   settings: 'Ajustes',
   search: 'Búsqueda'
 }
@@ -69,16 +61,12 @@ const SECTION_OF: Record<Screen['name'], Section | null> = {
   'ws-image': 'workspace',
   home: 'home',
   tasks: 'tasks',
-  clients: 'clients',
-  client: 'clients',
-  project: 'clients',
   meetings: 'meetings',
   meeting: 'meetings',
   tags: 'tags',
   automations: 'automations',
   automation: 'automations',
   note: null,
-  document: 'clients',
   settings: 'settings',
   search: null
 }
@@ -105,9 +93,7 @@ const isScreen = (v: unknown): v is Screen => {
   const s = v as Record<string, unknown>
   if (typeof s.name !== 'string' || !(s.name in LABEL)) return false
   return (
-    ['id', 'query', 'client', 'path'].every(
-      (k) => s[k] === undefined || typeof s[k] === 'string'
-    ) &&
+    ['id', 'query'].every((k) => s[k] === undefined || typeof s[k] === 'string') &&
     (s.folder === undefined || s.folder === null || typeof s.folder === 'string')
   )
 }
@@ -144,7 +130,7 @@ const compactNav = (n: Nav): Nav => ({
 })
 
 const scrollKeyOf = (s: Screen): string =>
-  `scroll.${s.name}:${'id' in s ? s.id : 'query' in s ? s.query : 'path' in s ? s.path : ''}`
+  `scroll.${s.name}:${'id' in s ? s.id : 'query' in s ? s.query : ''}`
 
 const keyOf = (depth: number, s: Screen): string =>
   `${depth}:${s.name}:${'id' in s ? s.id : 'query' in s ? s.query : ''}`
@@ -239,7 +225,6 @@ export function ConsultoraApp(): React.JSX.Element {
           rememberSettingsTab('account')
           reset([{ name: 'settings' }])
         } else if (target.workspace) reset([lastWorkspaceScreen()])
-        else if (target.client) reset([{ name: 'clients' }, { name: 'client', id: target.client }])
       }),
     [reset]
   )
@@ -442,12 +427,6 @@ function ScreenView({
       return <Home go={go} />
     case 'tasks':
       return <Tasks openId={screen.task} />
-    case 'clients':
-      return <Clients go={go} />
-    case 'client':
-      return <Client id={screen.id} go={go} back={back} />
-    case 'project':
-      return <Project id={screen.id} go={go} back={back} />
     case 'meetings':
       return <Meetings go={go} />
     case 'meeting':
@@ -460,8 +439,6 @@ function ScreenView({
       return <AutomationEditor id={screen.id} back={back} />
     case 'note':
       return <Note id={screen.id} go={go} back={back} />
-    case 'document':
-      return <Document client={screen.client} path={screen.path} back={back} />
     case 'settings':
       return <Settings />
     case 'search':

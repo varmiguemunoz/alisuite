@@ -1,6 +1,5 @@
 import { type EntityManager } from 'typeorm'
 import type { AutomationEvent, Scope, SubjectType } from '@shared/automations'
-import { ClientModel } from '../models/client.model'
 import { TaskModel } from '../models/task.model'
 import { MeetingModel } from '../models/meeting.model'
 
@@ -32,23 +31,12 @@ export async function loadScope(
   const id = source.subjectId
   if (!id) return scope
 
-  let clientId: string | null = null
-
-  if (source.subjectType === 'client') {
-    clientId = id
-  } else if (source.subjectType === 'task') {
+  if (source.subjectType === 'task') {
     const task = await manager.getRepository(TaskModel).findOneBy({ id })
     if (task) scope.task = task
-    clientId = task?.clientId ?? null
   } else if (source.subjectType === 'meeting') {
     const meeting = await manager.getRepository(MeetingModel).findOneBy({ id })
     if (meeting) scope.meeting = meeting
-    clientId = meeting?.clientId ?? null
-  }
-
-  if (clientId) {
-    const client = await manager.getRepository(ClientModel).findOneBy({ id: clientId })
-    if (client) scope.client = client
   }
   return scope
 }

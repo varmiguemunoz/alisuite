@@ -39,40 +39,36 @@ jobs:
             [ -n "${!name}" ] || { echo "Falta el secreto $name"; exit 1; }
           done
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            services/cloud/package-lock.json
-            workers/leads-hub/package-lock.json
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: npm ci --prefix services/cloud
-      - run: npm ci --prefix workers/leads-hub
-      - run: npm run check
-      - run: npm test
-      - run: npm run release:mac
+      - run: pnpm run check
+      - run: pnpm test
+      - run: pnpm run release:mac
 
   windows:
     needs: draft
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            services/cloud/package-lock.json
-            workers/leads-hub/package-lock.json
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: npm ci --prefix services/cloud
-      - run: npm ci --prefix workers/leads-hub
-      - run: npm run check
-      - run: npm test
-      - run: npm run release:win
+      - run: pnpm run check
+      - run: pnpm test
+      - run: pnpm run release:win
 
   publish:
     needs: [mac, windows]

@@ -1,11 +1,5 @@
 import { randomUUID } from 'crypto'
-import {
-  In,
-  type DataSource,
-  type EntityManager,
-  type EntityTarget,
-  type ObjectLiteral
-} from 'typeorm'
+import { In, type DataSource, type EntityManager } from 'typeorm'
 import {
   ALL_NODE_TYPES,
   ALL_TRIGGER_TYPES,
@@ -24,10 +18,8 @@ import {
   render,
   str,
   upstream,
-  usesRef,
   validateDefinition,
   type AutomationDetail,
-  type AutomationOptions,
   type AutomationRun,
   type AutomationSummary,
   type AutomationsApi,
@@ -36,8 +28,6 @@ import {
   type Names,
   type NodeStats,
   type Origin,
-  type RefTarget,
-  type Refs,
   type RunDetail,
   type RunFilter,
   type RunStep,
@@ -61,11 +51,8 @@ import {
   TriggerLogModel,
   type AutomationRow
 } from '../models/automation.model'
-import { ClientModel } from '../models/client.model'
 import { MeetingModel } from '../models/meeting.model'
-import { ProjectModel } from '../models/project.model'
 import { TaskModel } from '../models/task.model'
-import { TagModel } from '../models/marketing.model'
 import { AppError } from '../services/app.error'
 import { requiredText } from '../services/fields'
 import { emit } from './events'
@@ -119,29 +106,8 @@ export class AutomationService implements AutomationsApi {
     return row
   }
 
-  async refs(manager: EntityManager = this.db.manager): Promise<Refs> {
-    const ids = async (model: EntityTarget<ObjectLiteral>): Promise<Set<string>> =>
-      new Set(((await manager.getRepository(model).find()) as { id: string }[]).map((r) => r.id))
-    return {
-      client: await ids(ClientModel),
-      project: await ids(ProjectModel)
-    }
-  }
-
-  async names(def?: Definition, manager: EntityManager = this.db.manager): Promise<Names> {
-    const map = async (
-      model: EntityTarget<ObjectLiteral>,
-      key = 'id'
-    ): Promise<Map<string, string>> => {
-      const rows = (await manager.getRepository(model).find()) as Record<string, string>[]
-      return new Map(rows.map((r) => [r[key], r.name]))
-    }
-    const tables = {
-      tag: await map(TagModel, 'slug'),
-      client: await map(ClientModel),
-      project: await map(ProjectModel)
-    }
-    return (kind, id) => (kind === 'node' ? def?.nodes[id]?.name : tables[kind].get(id))
+  async names(def?: Definition): Promise<Names> {
+    return (kind, id) => (kind === 'node' ? def?.nodes[id]?.name : undefined)
   }
 
   private async detail(manager: EntityManager, row: AutomationRow): Promise<AutomationDetail> {
@@ -160,7 +126,7 @@ export class AutomationService implements AutomationsApi {
         createdAt: row.createdAt,
         updatedAt: row.updatedAt
       },
-      issues: validateDefinition(row.draft, await this.refs(manager)),
+      issues: validateDefinition(row.draft),
       hasDraftChanges: !version || JSON.stringify(version.definition) !== JSON.stringify(row.draft)
     }
   }
@@ -180,7 +146,6 @@ export class AutomationService implements AutomationsApi {
       .getRepository(AutomationVersionModel)
       .findBy({ id: In(rows.map((r) => r.versionId).filter((v): v is string => !!v)) })
     const byVersion = new Map(versions.map((v) => [v.id, v.definition]))
-    const refs = await this.refs()
     const base = await this.names()
     const out: AutomationSummary[] = []
     for (const row of rows) {
@@ -197,7 +162,7 @@ export class AutomationService implements AutomationsApi {
         versionNumber: row.versionNumber ?? null,
         destructive: row.destructive,
         sentence: describeDefinition(published ?? row.draft, names),
-        issues: validateDefinition(row.draft, refs).length,
+        issues: validateDefinition(row.draft).length,
         hasDraftChanges: !published || JSON.stringify(published) !== JSON.stringify(row.draft),
         counts: {
           active: of('active'),
@@ -270,7 +235,7 @@ export class AutomationService implements AutomationsApi {
   ): Promise<AutomationDetail> {
     const detail = await transactionGuard(this.db, async (manager) => {
       const row = await this.find(manager, id)
-      const issues = validateDefinition(row.draft, await this.refs(manager))
+      const issues = validateDefinition(row.draft)
       if (issues.length)
         throw new AppError(
           'invalid',
@@ -400,12 +365,6 @@ export class AutomationService implements AutomationsApi {
         runs.filter((r) => r.subjectType === type && r.subjectId).map((r) => r.subjectId as string)
       )
     ]
-    const clients = group('client')
-    if (clients.length)
-      for (const c of await this.db
-        .getRepository(ClientModel)
-        .find({ where: { id: In(clients) }, withDeleted: true }))
-        out.set(c.id, c.name)
     const tasks = group('task')
     if (tasks.length)
       for (const t of await this.db.getRepository(TaskModel).findBy({ id: In(tasks) }))
@@ -728,52 +687,19 @@ export class AutomationService implements AutomationsApi {
     this.deps.kick()
   }
 
-  async references(kind: RefTarget, value: string): Promise<{ id: string; name: string }[]> {
-    const rows = await this.db.getRepository(AutomationModel).find()
-    return rows
-      .filter((r) => usesRef(r.draft, kind, value))
-      .map((r) => ({ id: r.id, name: r.name }))
-  }
-
-  async options(): Promise<AutomationOptions> {
-    const m = this.db.manager
-    const byName = <T extends { name: string }>(rows: T[]): T[] =>
-      [...rows].sort((a, b) => a.name.localeCompare(b.name, 'es'))
-    const tags = await m.getRepository(TagModel).find()
-    const clients = await m.getRepository(ClientModel).find()
-    const projects = await m.getRepository(ProjectModel).find()
-    return {
-      tags: byName(tags.map((t) => ({ id: t.slug, name: t.name }))),
-      clients: byName(clients.map((c) => ({ id: c.id, name: c.name }))),
-      projects: byName(projects.map((p) => ({ id: p.id, name: p.name, clientId: p.clientId })))
-    }
-  }
-
   async subjects(type: SubjectType, query: string): Promise<SubjectOption[]> {
     const q = normalizeName(typeof query === 'string' ? query : '')
     const m = this.db.manager
     const rows: SubjectOption[] =
-      type === 'client'
-        ? (await m.getRepository(ClientModel).find()).map((c) => ({
-            id: c.id,
-            label: c.name,
-            hint: null
-          }))
-        : type === 'task'
-          ? (await m.getRepository(TaskModel).find({ order: { date: 'DESC' }, take: 2000 })).map(
-              (t) => ({
-                id: t.id,
-                label: t.title,
-                hint: t.date
-              })
-            )
-          : type === 'meeting'
-            ? (
-                await m
-                  .getRepository(MeetingModel)
-                  .find({ order: { createdAt: 'DESC' }, take: 2000 })
-              ).map((x) => ({ id: x.id, label: x.title, hint: null }))
-            : []
+      type === 'task'
+        ? (await m.getRepository(TaskModel).find({ order: { date: 'DESC' }, take: 2000 })).map(
+            (t) => ({ id: t.id, label: t.title, hint: t.date })
+          )
+        : type === 'meeting'
+          ? (
+              await m.getRepository(MeetingModel).find({ order: { createdAt: 'DESC' }, take: 2000 })
+            ).map((x) => ({ id: x.id, label: x.title, hint: null }))
+          : []
     return rows
       .filter((r) => !q || normalizeName(`${r.label} ${r.hint ?? ''}`).includes(q))
       .slice(0, 20)

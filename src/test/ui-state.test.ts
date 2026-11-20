@@ -32,13 +32,13 @@ describe('ui-state', () => {
 
   it('recorta el scroll a los más recientes y no toca el resto', () => {
     const values: Record<string, unknown> = { 'menubar.screen': 'today' }
-    for (let i = 0; i < 10; i++) values[`scroll.client:${i}`] = i
+    for (let i = 0; i < 10; i++) values[`scroll.meeting:${i}`] = i
     const next = trimValues(values, 3)
     expect(Object.keys(next)).toEqual([
       'menubar.screen',
-      'scroll.client:7',
-      'scroll.client:8',
-      'scroll.client:9'
+      'scroll.meeting:7',
+      'scroll.meeting:8',
+      'scroll.meeting:9'
     ])
   })
 

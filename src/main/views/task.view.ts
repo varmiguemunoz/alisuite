@@ -15,11 +15,8 @@ export function taskView(t: Task): Task {
     effort: t.effort ?? null,
     parentId: t.parentId ?? null,
     status: t.status ?? (t.done ? 'done' : 'todo'),
-    clientId: t.clientId ?? null,
-    projectId: t.projectId ?? null,
     assigneeId: t.assigneeId ?? null,
-    ...(t.subtasks ? { subtasks: t.subtasks } : {}),
-    ...(t.links ? { links: t.links } : {})
+    ...(t.subtasks ? { subtasks: t.subtasks } : {})
   }
 }
 

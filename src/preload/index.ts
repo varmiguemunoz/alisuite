@@ -38,8 +38,7 @@ const tasks: TasksApi = {
   tagSummaries: () => ipcRenderer.invoke('tasks:tagSummaries'),
   renameTag: (from, to) => ipcRenderer.invoke('tasks:renameTag', from, to),
   removeTag: (tag) => ipcRenderer.invoke('tasks:removeTag', tag),
-  board: (query) => ipcRenderer.invoke('tasks:board', query),
-  forRecord: (kind, id) => ipcRenderer.invoke('tasks:forRecord', kind, id)
+  board: (query) => ipcRenderer.invoke('tasks:board', query)
 }
 
 const dashboard: DashboardApi = {
@@ -211,7 +210,6 @@ const call =
 
 const consultora: ConsultoraApi = {
   overview: call('overview'),
-  refs: call('refs'),
   search: call('search'),
   settings: call('settings'),
   saveSettings: call('saveSettings'),
@@ -221,16 +219,6 @@ const consultora: ConsultoraApi = {
   retryVoiceNotes: call('retryVoiceNotes'),
   refreshVoice: call('refreshVoice'),
   workspaceShortcutStatus: call('workspaceShortcutStatus'),
-  listClients: call('listClients'),
-  getClient: call('getClient'),
-  createClient: call('createClient'),
-  updateClient: call('updateClient'),
-  clientImpact: call('clientImpact'),
-  removeClient: call('removeClient'),
-  getProject: call('getProject'),
-  createProject: call('createProject'),
-  updateProject: call('updateProject'),
-  removeProject: call('removeProject'),
   pickRecording: call('pickRecording'),
   importRecording: call('importRecording'),
   listMeetings: call('listMeetings'),
@@ -240,14 +228,7 @@ const consultora: ConsultoraApi = {
   removeMeeting: call('removeMeeting'),
   updateActionItem: call('updateActionItem'),
   processMeeting: call('processMeeting'),
-  suggestAssociation: call('suggestAssociation'),
   listActionItems: call('listActionItems'),
-  listDocuments: call('listDocuments'),
-  readDocument: call('readDocument'),
-  openDocument: call('openDocument'),
-  writeDocument: call('writeDocument'),
-  renameDocument: call('renameDocument'),
-  trashDocument: call('trashDocument'),
   appendNote: call('appendNote')
 }
 
@@ -278,7 +259,6 @@ const permissions = {
 }
 
 interface ConsultoraTarget {
-  client?: string
   workspace?: boolean
   account?: boolean
   open?: { entity: string; id: string }
@@ -332,7 +312,7 @@ contextBridge.exposeInMainWorld('api', {
   onNotesOpen,
   hideWindow: () => ipcRenderer.send('window:hide'),
   setWorkspaceActive: (on: boolean) => ipcRenderer.send('workspace:active', on),
-  openConsultora: (target?: { client?: string; workspace?: boolean }) =>
+  openConsultora: (target?: { workspace?: boolean }) =>
     ipcRenderer.send('window:openConsultora', target),
   onConsultoraNavigate: (cb: (target: ConsultoraTarget) => void) => {
     const listener = (_e: unknown, target: ConsultoraTarget): void => cb(target)

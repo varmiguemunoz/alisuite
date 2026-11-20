@@ -50,7 +50,7 @@ src/main/
   views/               V: forma del JSON
   controllers/         C: petición → servicio → vista
   routes/              rutas → controlador
-  services/            reglas: tareas, notas y consultora (clientes, proyectos, reuniones, AI, grabación)
+  services/            reglas: tareas, notas y consultora (reuniones, AI, grabación)
   consultora.ts        crea los servicios de la consultora
   consultora-window.ts ventana grande + captura de pantalla con audio del sistema
   config.ts            ajustes (settings.json), editables desde la ventana
@@ -79,7 +79,7 @@ de nube. La edición Equipo, en construcción, suma cuenta, organización y sinc
   vacíos; el código de nube (`src/main/cloud`) solo se carga en Equipo.
 - Cada cambio en las tablas sincronizables deja una fila en `change_log` por triggers de SQLite.
   En Local se queda en las últimas 10 000.
-- Borrar clientes, proyectos, reuniones, tags, automatizaciones o tareas marca `deleted_at`. Se purgan a los 30 días.
+- Borrar reuniones, automatizaciones o tareas marca `deleted_at`. Se purgan a los 30 días.
 - Nunca salen del Mac: `settings.json`, claves de API, tokens, `ui-state.json`, secretos de las
   la cola de voz y grabaciones en curso (`NEVER_SYNC`).
 - Microservicio en `services/cloud`, NestJS hexagonal sobre Supabase. Ver su README.
@@ -98,7 +98,7 @@ Con sesión, el botón de abajo en la cinta cambia entre Local y tus organizacio
 Cada organización tiene su propia base y su bóveda en `Organizaciones` dentro de tu carpeta de
 documentos; Local queda intacto. Cambiar de espacio reinicia la app. En «Cuenta y equipo» se ven
 los miembros con su rol, las invitaciones por email o por enlace, salir, transferir y borrar. Las
-tareas, proyectos y reuniones ganan «Responsable», y Tareas e Inicio tienen «Mis
+tareas y reuniones ganan «Responsable», y Tareas e Inicio tienen «Mis
 tareas».
 
 ### Sincronización
@@ -119,7 +119,7 @@ o borrar archivos, invitar y unirse. Se filtra por persona, tipo y elemento, mue
 novedades no has visto y un clic abre el elemento. Cada ficha muestra su propia actividad al final.
 Cuando te asignan una tarea o una reunión llega un aviso del sistema. En Ajustes,
 Cuenta, Equipo se apagan los avisos por tipo y se puede ocultar la propia presencia. Lo que otra
-persona acaba de cambiar se resalta un momento en tareas y clientes.
+persona acaba de cambiar se resalta un momento en tareas y reuniones.
 
 ### Archivos
 
@@ -136,7 +136,7 @@ bajando o en conflicto.
 ## Workspace (notas, boards y archivos)
 
 Primera sección de Consultora, con el aspecto de Obsidian. Es una carpeta real: por defecto
-`<carpeta de clientes>/Workspace`, se cambia en Ajustes. Lo que hay dentro se ve igual en Finder, en Obsidian y en la
+`<carpeta de documentos>/Workspace`, se cambia en Ajustes. Lo que hay dentro se ve igual en Finder, en Obsidian y en la
 app; si cambias algo fuera, la app lo ve en menos de 2 s.
 
 - **Atajo global**: ⌥⌘W abre el workspace en la última nota desde cualquier app; otra vez lo oculta. Se cambia en
@@ -153,7 +153,7 @@ app; si cambias algo fuera, la app lo ve en menos de 2 s.
   para mover, ⌥ para colocar sin rejilla.
 - Mover o renombrar actualiza los enlaces de notas e imágenes de boards que apuntan a lo movido.
 
-## Consultora (clientes, proyectos y reuniones)
+## Consultora (tareas, reuniones y workspace)
 
 Ventana aparte para el contexto de la consultora: clic derecho en el icono del menubar → **Abrir Consultora**, o el botón del maletín junto a las pestañas.
 
@@ -161,8 +161,6 @@ Toda la ventana tiene el aspecto de Obsidian: franja superior con atrás, adelan
 lateral con las pestañas **Secciones** y **Archivos**. Atajos: ⌘K buscar en todo, ⌘O abrir un archivo de la bóveda,
 ⌘N nota nueva, ⌘\ barra lateral, ⌘[ y ⌘] atrás y adelante, ⌘, Ajustes.
 
-- **Clientes**: crear uno crea su carpeta en `CLIENTS_DOCS_PATH/<Nombre>/` con `Contratos/`, `Entregables/`, `Documentación técnica/`, `Reuniones/`. Los documentos se leen en vivo de esa carpeta.
-- **Proyectos**: objetivo, entregables (casillas `- [ ]` marcables), notas y reuniones.
 - **Reuniones**: «Grabar reunión» graba pantalla + micrófono + audio del sistema. Al detener se transcribe (OpenAI Whisper) y se resume: resumen ejecutivo, decisiones y action items. También se pueden crear sin grabar.
 
 ### Ajustes
@@ -170,7 +168,8 @@ lateral con las pestañas **Secciones** y **Archivos**. Atajos: ⌘K buscar en t
 Todo se configura desde la app: **Consultora → Ajustes**.
 
 - **API key de OpenAI**: pégala y pulsa Guardar (se prueba sola). La ventana nunca vuelve a mostrarla completa.
-- **Carpeta de clientes**: por defecto `~/Desktop/alimunozadvisory`; «Cambiar…» abre el selector de macOS.
+- **Carpeta de documentos**: por defecto `~/Desktop/alimunozadvisory`; «Cambiar…» abre el selector de macOS.
+- **Email**: API key de Resend, remitente y tu email. Solo para avisos internos, como el paso «Avisarme por email» de las automatizaciones.
 - **Modelos e idioma del resumen**: `whisper-1`, `gpt-4o-mini`, español por defecto.
 
 Se guardan en `~/Library/Application Support/daily-os/settings.json` (permisos 600) y aplican al momento, sin reiniciar.
@@ -179,7 +178,7 @@ Se guardan en `~/Library/Application Support/daily-os/settings.json` (permisos 6
 
 La primera grabación pide **Micrófono** y **Grabación de pantalla y audio del sistema** (Ajustes del Sistema → Privacidad). La carpeta raíz en el Escritorio también puede pedir acceso. La app lleva firma local (ad-hoc): tras reinstalar, macOS puede volver a pedirlos.
 
-Grabaciones: `CLIENTS_DOCS_PATH/_reuniones/` hasta que se asocian a un cliente; entonces se mueven a `<Cliente>/Reuniones/`. Coste orientativo: 1 h ≈ 0,36 USD de transcripción.
+Grabaciones: `<carpeta de documentos>/_reuniones/`. Coste orientativo: 1 h ≈ 0,36 USD de transcripción.
 
 ### MCP y boards
 
@@ -191,7 +190,7 @@ Grabaciones: `CLIENTS_DOCS_PATH/_reuniones/` hasta que se asocian a un cliente; 
 
 Motor de flujos dentro de la Consultora. Spec e investigación: `.kiro/specs/automations/`.
 
-- **Qué es**: triggers (cliente creado, tarea completada, reunión lista, una hora fija o a mano) que inscriben a un sujeto (cliente, tarea, reunión o ninguno) en un árbol de pasos: control, clientes/proyectos, email al responsable, tareas, notas, notificaciones del Mac, webhooks y esperas.
+- **Qué es**: triggers (tarea completada, reunión lista, una hora fija o a mano) que inscriben a un sujeto (tarea, reunión o ninguno) en un árbol de pasos: control, email al responsable, tareas, notas, notificaciones del Mac, webhooks y esperas.
 - **Editor**: lienzo en árbol de arriba abajo. «+» entre pasos y al final de cada rama. Se arrastra un paso, o con ⌥ el paso con lo que cuelga, a cualquier «+». ⌘Z y ⇧⌘Z, ⌘C y ⇧⌘C para copiar con lo que cuelga, ⌘V en un «+».
 - **Borrador y versiones**: el borrador se guarda solo. Publicar crea una versión inmutable y la activa. Las ejecuciones en curso siguen con su versión. Se guardan las últimas 10 y se puede restaurar cualquiera.
 - **Probar** simula sobre un sujeto real sin escribir nada. **Ejecutar** corre la versión publicada a mano.
@@ -209,7 +208,7 @@ Primera sección de Consultora. Dashboard con componentes base de tareas, reunio
 
 ## Tablero de tareas
 
-En Consultora, sección Tareas. Las mismas tareas del menubar con tres estados: Pendiente, En curso y Hecha. Se ven como tablero o como lista ordenable, con filtros por periodo, texto, tags, esfuerzo y relación. Arrastrar una tarjeta cambia su estado; Hecha equivale a marcarla en el menubar. Cada tarea puede relacionarse con un cliente o un proyecto y aparece en su ficha. El límite de ocho por día se mantiene.
+En Consultora, sección Tareas. Las mismas tareas del menubar con tres estados: Pendiente, En curso y Hecha. Se ven como tablero o como lista ordenable, con filtros por periodo, texto, tags, esfuerzo y responsable. Arrastrar una tarjeta cambia su estado; Hecha equivale a marcarla en el menubar. El límite de ocho por día se mantiene.
 
 ## Nota de voz
 
@@ -258,23 +257,18 @@ App instalada en `/Applications`:
 
 ### Herramientas
 
-Las herramientas que borran piden `confirm: true`: sin él devuelven el impacto y no borran. Las referencias a
-clientes y proyectos aceptan id o nombre. Excepciones a propósito: claves y secretos,
+Las herramientas que borran piden `confirm: true`: sin él devuelven el impacto y no borran. Excepciones a propósito: claves y secretos,
 permisos de macOS y empezar o detener una grabación en vivo.
 
 | Dominio          | Herramientas                                                                                                                                                                                                                                                                                                                                 |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Día              | `get_day` · `get_history` · `create_task` (con `parent` crea una subtarea) · `get_task` · `update_task` · `delete_task` · `move_task` · `list_tasks` (tablero con estado y filtros) · `carry_over_pending` · `reorder_tasks` · `reorder_subtasks` · `complete_subtasks`                                                                      |
-| Notas            | `list_notes` · `get_note` (con relaciones) · `create_note` · `update_note` · `delete_note` · `search_notes` · `link_notes` · `unlink_notes` · `link_note_client` · `unlink_note_client`                                                                                                                                                      |
-| Clientes         | `get_overview` · `list_clients` · `get_client` · `save_client` · `get_client_impact` · `delete_client` · `get_project` · `save_project` · `delete_project` · `search` · `append_note`                                                                                                                                                        |
-| Documentos       | `list_documents` · `read_document` · `write_document` · `rename_document` · `delete_document` (a la Papelera)                                                                                                                                                                                                                                |
-| Reuniones        | `list_meetings` · `get_meeting` · `create_meeting` · `update_meeting` · `process_meeting` · `delete_meeting` · `list_action_items` · `update_action_item` · `import_recording`                                                                                                                                                               |
-| Tags             | `list_tags` (`kind`: task) · `rename_task_tag` · `delete_task_tag`                                                                                                                                                                                                                                                                           |
+| Notas            | `list_notes` · `get_note` (con relaciones) · `create_note` · `update_note` · `delete_note` · `search_notes` · `link_notes` · `unlink_notes`                                                                                                                                                                                                  |
+| Reuniones        | `get_overview` · `search` · `append_note` · `list_meetings` · `get_meeting` · `create_meeting` · `update_meeting` · `process_meeting` · `delete_meeting` · `list_action_items` · `update_action_item` · `import_recording`                                                                                                                   |
 | Workspace        | `workspace_tree` · `workspace_list` · `workspace_search` · `workspace_read` · `workspace_write_note` · `workspace_create_folder` · `workspace_move` · `workspace_delete` (a la Papelera) · `workspace_create_board` · `board_read` · `board_edit` · `board_diagram`                                                                          |
 | Automatizaciones | `list_automation_catalog` · `list_automations` · `get_automation` · `save_automation_draft` · `publish_automation` (con `confirm`) · `set_automation_status` · `delete_automation` (con `confirm`) · `test_automation` · `run_automation` · `list_automation_runs` · `get_automation_run` · `cancel_automation_run` · `retry_automation_run` |
 
-`create_task` y `update_task` aceptan `description` (markdown), `tags` y `effort` (alto/medio/bajo). En el título también funcionan `#tag` y `!alto` / `!medio` / `!bajo`. `update_task` además acepta `status` (todo, doing, done) y `client` o `project` por id; cadena vacía quita la relación.
-
+`create_task` y `update_task` aceptan `description` (markdown), `tags` y `effort` (alto/medio/bajo). En el título también funcionan `#tag` y `!alto` / `!medio` / `!bajo`. `update_task` además acepta `status` (todo, doing, done) y `assignee`.
 
 ## Atajos
 

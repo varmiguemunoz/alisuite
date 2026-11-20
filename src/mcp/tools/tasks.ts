@@ -63,8 +63,7 @@ export function register(server: McpServer): void {
       description:
         'Edita el título, la descripción (markdown; cadena vacía la borra), los tags (lista completa), ' +
         'el esfuerzo (null lo quita), el estado del tablero (todo, doing, done; done equivale a done: true) ' +
-        'y la relación con un cliente o proyecto por id (cadena vacía la quita). ' +
-        'Las subtareas no admiten relaciones.',
+        'y el responsable.',
       inputSchema: {
         id: z.string(),
         title: z.string().min(1).max(200).optional(),
@@ -73,8 +72,6 @@ export function register(server: McpServer): void {
         effort: z.enum(['alto', 'medio', 'bajo']).nullable().optional(),
         done: z.boolean().optional(),
         status: z.enum(['todo', 'doing', 'done']).optional(),
-        client: z.string().optional().describe('id del cliente, vacío quita la relación'),
-        project: z.string().optional().describe('id del proyecto, vacío quita la relación'),
         assignee: z
           .string()
           .optional()
@@ -88,9 +85,9 @@ export function register(server: McpServer): void {
     'list_tasks',
     {
       description:
-        'Tablero de tareas: lista tareas madre con estado, progreso y relaciones, más el conteo por estado. ' +
-        'Usa period (today, week, overdue, upcoming, open, range con from y to) o solo from y to. Filtra por estado, texto, tags, esfuerzo, ' +
-        'cliente o proyecto (ids).',
+        'Tablero de tareas: lista tareas madre con estado y progreso, más el conteo por estado. ' +
+        'Usa period (today, week, overdue, upcoming, open, range con from y to) o solo from y to. Filtra por estado, texto, tags, esfuerzo ' +
+        'o responsable.',
       inputSchema: {
         period: z.enum(['today', 'week', 'overdue', 'upcoming', 'open', 'range']).optional(),
         from: day.optional(),
@@ -99,8 +96,6 @@ export function register(server: McpServer): void {
         query: z.string().optional(),
         tags: z.array(z.string()).max(5).optional(),
         effort: z.enum(['alto', 'medio', 'bajo']).optional(),
-        client: z.string().optional(),
-        project: z.string().optional(),
         assignee: z.string().optional().describe('id de usuario del responsable')
       }
     },

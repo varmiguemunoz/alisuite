@@ -51,7 +51,6 @@ export function registerIpc(
   handle('tasks:renameTag', (_e, from, to) => tasks.renameTag(from, to))
   handle('tasks:removeTag', (_e, tag) => tasks.removeTag(tag))
   handle('tasks:board', (_e, query) => tasks.board(query ?? {}))
-  handle('tasks:forRecord', (_e, kind, id) => tasks.forRecord(kind, id))
 
   ipcMain.handle('notes:list', (_e, page, pageSize) => notes.list(page, pageSize))
   ipcMain.handle('notes:get', (_e, id) => notes.get(id))

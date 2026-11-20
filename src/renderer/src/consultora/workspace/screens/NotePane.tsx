@@ -34,7 +34,6 @@ export function NotePane({ id }: { id: string }): React.JSX.Element {
         scrollKey={`scroll.note:${note.id}`}
         onBack={() => go({ name: 'workspace', folder: null })}
         onOpenNote={(noteId) => go({ name: 'ws-note', id: noteId })}
-        onOpenClient={(clientId) => go({ name: 'client', id: clientId })}
       />
     </div>
   )

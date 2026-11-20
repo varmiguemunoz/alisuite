@@ -9,8 +9,6 @@ import { NoteController } from './controllers/note.controller'
 import { taskRoutes } from './routes/task.routes'
 import { noteRoutes } from './routes/note.routes'
 import { consultoraRoutes } from './routes/consultora.routes'
-import { ClientController } from './controllers/client.controller'
-import { ProjectController } from './controllers/project.controller'
 import { MeetingController } from './controllers/meeting.controller'
 import { ContextController } from './controllers/context.controller'
 import { MetricsController } from './controllers/metrics.controller'
@@ -62,8 +60,6 @@ export function startServer(
   app.use(
     '/consultora',
     consultoraRoutes({
-      clients: new ClientController(c.clients),
-      projects: new ProjectController(c.projects),
       meetings: new MeetingController(c.meetings, c.recordings),
       context: new ContextController(c.context),
       metrics: new MetricsController(c.metrics, c.dashboards)

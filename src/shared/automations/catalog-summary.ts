@@ -50,7 +50,6 @@ export function catalogSummary(): Record<string, unknown> {
     fields: Object.fromEntries(
       SUBJECT_TYPES.map((s) => [s, FIELDS[s].map((f) => ({ key: f.key, kind: f.kind }))])
     ),
-    customFields: 'contact.fields.<clave> para campos personalizados del contacto (texto).',
     operators: OPERATORS_BY_KIND,
     valueless: VALUELESS
   }

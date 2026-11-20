@@ -18,8 +18,6 @@ export function Meetings({ go }: { go: Go }): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const load = useCallback(() => api.listMeetings({ page, pageSize: 10 }), [page])
   const { data, error: loadError } = useLoad(load)
-  const refsLoad = useCallback(() => api.refs(), [])
-  const { data: refs } = useLoad(refsLoad)
   const today = todayKey()
   const [file, setFile] = useState<string | null>(null) // grabación elegida, esperando la hoja
   const [dropping, setDropping] = useState(false)
@@ -34,9 +32,6 @@ export function Meetings({ go }: { go: Go }): React.JSX.Element {
       ?.split(/[\\/]/)
       .pop()
       ?.replace(/\.[^.]+$/, '') ?? ''
-
-  const clientName = (id: string | null): string =>
-    refs?.clients.find((c) => c.id === id)?.name ?? ''
 
   const create = async (): Promise<void> => {
     let id = ''
@@ -106,9 +101,6 @@ export function Meetings({ go }: { go: Go }): React.JSX.Element {
                       {timeOf(m.date)}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-list font-medium">{m.title}</span>
-                    <span className="shrink-0 truncate text-caption text-ob-muted">
-                      {clientName(m.clientId)}
-                    </span>
                     <MeetingStatusPill status={m.status} />
                   </Row>
                 ))}

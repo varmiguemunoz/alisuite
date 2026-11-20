@@ -20,11 +20,6 @@ export function numberParam(ctx: NodeContext, key: string): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-export function clientIdOf(ctx: NodeContext): string | null {
-  const client = ctx.scope.client as { id?: string } | undefined
-  return client?.id ?? null
-}
-
 export const done = (output?: Record<string, unknown>): NodeResult => ({ kind: 'next', output })
 
 export function guarded(

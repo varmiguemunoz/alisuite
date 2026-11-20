@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Briefcase, CalendarClock, FolderKanban, Search, User } from 'lucide-react'
+import { CalendarClock, Search, User } from 'lucide-react'
 import { normalizeName, type SearchHit } from '@shared/consultora'
 import type { WorkspaceItem } from '@shared/workspace'
 import { api, type Go, type Screen } from '../lib'
@@ -8,8 +8,6 @@ import { SwitcherFrame, type SwitcherOption } from './SwitcherFrame'
 import { kbd } from '../../lib/platform'
 
 const TYPE: Record<SearchHit['type'], { label: string; Icon: typeof User }> = {
-  client: { label: 'Cliente', Icon: Briefcase },
-  project: { label: 'Proyecto', Icon: FolderKanban },
   meeting: { label: 'Reunión', Icon: CalendarClock }
 }
 
@@ -105,7 +103,7 @@ export function GlobalSwitcher({
   return (
     <SwitcherFrame
       label="Buscar en todo"
-      placeholder="Busca clientes, contactos, reuniones o archivos…"
+      placeholder="Busca reuniones o archivos…"
       query={query}
       onQuery={setQuery}
       options={options}

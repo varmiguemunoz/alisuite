@@ -21,8 +21,6 @@ interface NoteEditorProps {
 
   onOpenNote: (id: string) => void
 
-  onOpenClient: (id: string) => void
-
   variant?: 'screen' | 'document'
 
   scrollKey?: string
@@ -34,7 +32,6 @@ export function NoteEditor({
   onBack,
   backLabel = 'Notas',
   onOpenNote,
-  onOpenClient,
   variant = 'screen',
   scrollKey
 }: NoteEditorProps): React.JSX.Element {
@@ -42,7 +39,6 @@ export function NoteEditor({
   const [body, setBody] = useState(note.body)
   const [error, setError] = useState<string | null>(null)
   const [related, setRelated] = useState<NoteBrief[]>([])
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([])
   const [picking, setPicking] = useState(false)
   const [conflict, setConflict] = useState(false)
   const id = note.id
@@ -52,13 +48,7 @@ export function NoteEditor({
   // Una nota vacía de «Notas rápidas» se borra al salir; en otras carpetas se respeta.
   const disposable = !note.path || folder === QUICK_NOTES
 
-  const applyView = useCallback(
-    (v: { related: NoteBrief[]; clients: { id: string; name: string }[] }) => {
-      setRelated(v.related)
-      setClients(v.clients)
-    },
-    []
-  )
+  const applyView = useCallback((v: { related: NoteBrief[] }) => setRelated(v.related), [])
 
   useEffect(() => {
     notesApi
@@ -238,9 +228,7 @@ export function NoteEditor({
       <div className={`px-6 pt-3 empty:hidden ${documentMode ? 'hidden' : ''}`}>
         <RelatedChips
           notes={related}
-          clients={clients}
           onOpenNote={(noteId) => void leaveTo(() => onOpenNote(noteId))}
-          onOpenClient={(clientId) => void leaveTo(() => onOpenClient(clientId))}
         />
       </div>
 
@@ -265,36 +253,10 @@ export function NoteEditor({
         onUnlink={(noteId) => void unrelate({ type: 'note', id: noteId })}
         onAdd={() => setPicking(true)}
       />
-      {clients.length > 0 && (
-        <p className="-mt-2 px-6 pb-4 text-micro font-semibold text-milk-soft">
-          Clientes:{' '}
-          {clients.map((c, i) => (
-            <span key={c.id}>
-              {i > 0 && ', '}
-              <button
-                type="button"
-                className="hover:text-milk"
-                onClick={() => void leaveTo(() => onOpenClient(c.id))}
-              >
-                {c.name}
-              </button>{' '}
-              <button
-                type="button"
-                aria-label={`Quitar relación con ${c.name}`}
-                className="text-milk-faint hover:text-rose"
-                onClick={() => void unrelate({ type: 'client', id: c.id })}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </p>
-      )}
-
       <NotePicker
         open={picking}
         noteId={id}
-        exclude={[...related.map((n) => n.id), ...clients.map((c) => c.id)]}
+        exclude={related.map((n) => n.id)}
         onPick={(target) => void relate(target)}
         onClose={() => setPicking(false)}
       />

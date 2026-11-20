@@ -3,7 +3,6 @@ import { useSaveOnLeave } from '../../hooks/useSaveOnLeave'
 import {
   triggerSpec,
   visible,
-  type AutomationOptions,
   type ConditionGroup,
   type Definition,
   type Params,
@@ -19,7 +18,6 @@ import { PanelField, SidePanel } from './SidePanel'
 export function TriggerPanel({
   def,
   trigger,
-  options,
   issues,
   onSave,
   onDelete,
@@ -27,7 +25,6 @@ export function TriggerPanel({
 }: {
   def: Definition
   trigger: TriggerDef
-  options: AutomationOptions | null
   issues: string[]
   onSave: (params: Params, conditions: ConditionGroup[]) => void
   onDelete: () => void
@@ -44,7 +41,7 @@ export function TriggerPanel({
     leave.discard()
     onClose()
   }
-  const ctx = { subject: def.subject, options, variables: [], nodes: [] }
+  const ctx = { subject: def.subject, variables: [], nodes: [] }
 
   return (
     <SidePanel
@@ -101,7 +98,6 @@ export function TriggerPanel({
             <ConditionsEditor
               groups={conditions}
               subject={def.subject}
-              options={options}
               onChange={setConditions}
               empty="Entra cualquiera."
             />

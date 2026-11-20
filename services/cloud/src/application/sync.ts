@@ -7,8 +7,8 @@ import {
   type PushRequest,
   type PushResponse
 } from '@shared/sync-protocol'
-import { applyMutation, visible } from '@shared/sync-merge'
-import { describeChange, type StageLookup } from '../domain/activity'
+import { applyMutation } from '@shared/sync-merge'
+import { describeChange } from '../domain/activity'
 import { canWrite, isActive } from '../domain/membership'
 import { rejectReason } from '../domain/mutation-policy'
 import type { AuthUser, ChangeNotifier, Clock, MembershipRepository, SyncStore } from '../ports'
@@ -47,17 +47,13 @@ export class SyncMutations {
     })
     const result = await this.store.write(user, orgId, async (tx) => {
       let applied = 0
-      const stage: StageLookup = async (id) => {
-        const row = id ? visible(await tx.record('pipeline_stages', id)) : null
-        return row ? { name: String(row.name ?? ''), kind: String(row.kind ?? '') } : null
-      }
       for (const m of valid) {
         if (!(await tx.insertMutation(m, user.userId))) continue
         const before = await tx.record(m.entity, m.id)
         const state = applyMutation(before, m)
         await tx.saveRecord(m.entity, state)
         if (req.quiet !== true) {
-          for (const draft of await describeChange(m, before, state, stage)) {
+          for (const draft of await describeChange(m, before, state)) {
             await tx.addActivity(draft, user.userId)
           }
         }

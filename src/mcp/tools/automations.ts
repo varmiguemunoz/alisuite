@@ -147,7 +147,7 @@ export function register(server: McpServer): void {
     {
       description:
         'Simula el borrador sobre un sujeto real sin escribir nada: qué rama tomaría y qué haría cada paso, con las ' +
-        'variables ya rellenadas. Las esperas se dan por cumplidas. subject_id es el id del cliente, ' +
+        'variables ya rellenadas. Las esperas se dan por cumplidas. subject_id es el id de ' +
         'tarea o reunión según el sujeto; se omite si el sujeto es none.',
       inputSchema: { id, subject_id: z.string().optional() }
     },

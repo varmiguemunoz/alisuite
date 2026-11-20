@@ -1,28 +1,8 @@
-import {
-  DeliveryRouter,
-  ProviderRegistry,
-  checkRoles,
-  type ProviderId
-} from '@shared/email-delivery'
-import { apolloDescriptor } from '@shared/email-delivery/providers/apollo'
-import { resendDescriptor } from '@shared/email-delivery/providers/resend'
-import { config, setRoleValidator } from './config'
+import type { EmailSender } from '@shared/email-delivery'
+import { resendHttpSender } from '@shared/email-delivery/providers/resend/http-sender'
+import { config } from './config'
 
-const KEYS: Record<ProviderId, () => string> = {
-  resend: () => config.resendKey(),
-  apollo: () => config.apolloKey()
+export function notificationSender(): EmailSender | null {
+  const key = config.resendKey()
+  return key ? resendHttpSender(key) : null
 }
-
-const credentials = (id: ProviderId): Record<string, string> | null => {
-  const key = KEYS[id]()
-  return key ? { apiKey: key } : null
-}
-
-export const providerRegistry = new ProviderRegistry(
-  [resendDescriptor, apolloDescriptor()],
-  credentials
-)
-
-export const deliveryRouter = new DeliveryRouter(providerRegistry, () => config.emailRoles())
-
-setRoleValidator((roles) => checkRoles(roles, (id) => providerRegistry.info(id)))

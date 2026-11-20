@@ -2,8 +2,6 @@ import { mkdirSync } from 'fs'
 import { join } from 'path'
 import { DataSource } from 'typeorm'
 import { TaskModel } from '../models/task.model'
-import { ClientModel } from '../models/client.model'
-import { ProjectModel } from '../models/project.model'
 import { MeetingModel } from '../models/meeting.model'
 import { NoteRelationModel } from '../models/note-relation.model'
 import { WorkspaceItemModel, WorkspaceRefModel } from '../models/workspace.model'
@@ -32,16 +30,13 @@ import { AddActivityCache1729500000000 } from './migrations/AddActivityCache'
 import { AddAutomations1729600000000 } from './migrations/AddAutomations'
 import { MigrateRulesToAutomations1729700000000 } from './migrations/MigrateRulesToAutomations'
 import { RemoveMarketingModules1729800000000 } from './migrations/RemoveMarketingModules'
+import { RemoveClientsProjects1729900000000 } from './migrations/RemoveClientsProjects'
 import { AUTOMATION_ENTITIES } from '../models/automation.model'
 import { DashboardModel } from '../models/metrics.model'
-import { TagModel } from '../models/marketing.model'
 
 export const ENTITIES = [
   TaskModel,
-  ClientModel,
-  ProjectModel,
   MeetingModel,
-  TagModel,
   NoteRelationModel,
   WorkspaceItemModel,
   WorkspaceRefModel,
@@ -73,7 +68,8 @@ export const MIGRATIONS = [
   AddActivityCache1729500000000,
   AddAutomations1729600000000,
   MigrateRulesToAutomations1729700000000,
-  RemoveMarketingModules1729800000000
+  RemoveMarketingModules1729800000000,
+  RemoveClientsProjects1729900000000
 ]
 
 export async function openDatabase(dir: string): Promise<DataSource> {

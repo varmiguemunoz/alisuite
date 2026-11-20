@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import type { AutomationOptions, ConditionGroup, SubjectType } from '@shared/automations'
+import type { ConditionGroup, SubjectType } from '@shared/automations'
 import { ConditionRow } from '../../molecules/automation/ConditionRow'
 
 const EMPTY = { field: '', operator: 'is' as const, value: undefined }
@@ -7,13 +7,11 @@ const EMPTY = { field: '', operator: 'is' as const, value: undefined }
 export function ConditionsEditor({
   groups,
   subject,
-  options,
   onChange,
   empty = 'Sin condiciones.'
 }: {
   groups: ConditionGroup[]
   subject: SubjectType
-  options: AutomationOptions | null
   onChange: (groups: ConditionGroup[]) => void
   empty?: string
 }): React.JSX.Element {
@@ -52,7 +50,6 @@ export function ConditionsEditor({
                 <ConditionRow
                   condition={condition}
                   subject={subject}
-                  options={options}
                   onChange={(c) =>
                     setGroup(i, {
                       ...group,

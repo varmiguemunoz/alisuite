@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { activityPhrase, type ActivityEntry } from '../shared/activity'
 import { onlineMembers, PRESENCE_TTL_MS } from '../shared/presence'
 import { applyMutation, type Mutation, type RecordState } from '../shared/sync-merge'
-import { describeChange, type StageLookup } from '../../services/cloud/src/domain/activity'
+import { describeChange } from '../../services/cloud/src/domain/activity'
 
 const B = '22222222-2222-4222-8222-222222222222'
 let tick = 0
@@ -16,9 +16,6 @@ const up = (entity: string, id: string, fields: Record<string, unknown>): Mutati
   rev: rev()
 })
 
-const stages: StageLookup = async (id) =>
-  id === 'won' ? { name: 'Ganado', kind: 'won' } : { name: 'Propuesta', kind: 'open' }
-
 const run = async (
   m: Mutation,
   before: RecordState | null
@@ -28,16 +25,16 @@ const run = async (
   drafts: Awaited<ReturnType<typeof describeChange>>
 }> => {
   const state = applyMutation(before, m)
-  const drafts = await describeChange(m, before, state, stages)
+  const drafts = await describeChange(m, before, state)
   return { verbs: drafts.map((d) => d.verb), state, drafts }
 }
 
 describe('actividad: qué cuenta como acción', () => {
-  it('crear y luego cambiar un cliente', async () => {
-    const created = await run(up('clients', 'c1', { name: 'Acme', status: 'activo' }), null)
+  it('crear y luego cambiar una reunión', async () => {
+    const created = await run(up('meetings', 'c1', { title: 'Acme', status: 'ready' }), null)
     expect(created.verbs).toEqual(['created'])
     expect(created.drafts[0].title).toBe('Acme')
-    const renamed = await run(up('clients', 'c1', { name: 'Acme SAS' }), created.state)
+    const renamed = await run(up('meetings', 'c1', { title: 'Acme SAS' }), created.state)
     expect(renamed.verbs).toEqual(['updated'])
   })
 
@@ -80,10 +77,10 @@ describe('actividad: qué cuenta como acción', () => {
   })
 
   it('borrar y restaurar por la columna de papelera', async () => {
-    const c = await run(up('clients', 'c1', { name: 'Acme', deleted_at: null }), null)
-    const gone = await run(up('clients', 'c1', { deleted_at: '2026-10-14 10:00:00' }), c.state)
+    const c = await run(up('meetings', 'c1', { title: 'Acme', deleted_at: null }), null)
+    const gone = await run(up('meetings', 'c1', { deleted_at: '2026-10-14 10:00:00' }), c.state)
     expect(gone.verbs).toEqual(['deleted'])
-    const back = await run(up('clients', 'c1', { deleted_at: null }), gone.state)
+    const back = await run(up('meetings', 'c1', { deleted_at: null }), gone.state)
     expect(back.verbs).toEqual(['restored'])
   })
 
@@ -112,7 +109,7 @@ describe('actividad: frases', () => {
     seq: 1,
     actorId: 'a',
     verb: 'created',
-    entity: 'clients',
+    entity: 'meetings',
     entityId: 'c1',
     title: 'Acme',
     detail: null,
@@ -124,9 +121,9 @@ describe('actividad: frases', () => {
   const name = (id: string | null): string => (id === 'a' ? 'Ana' : 'Beto')
 
   it('arma frases legibles', () => {
-    expect(activityPhrase(entry({}), name)).toBe('Ana creó el cliente «Acme»')
+    expect(activityPhrase(entry({}), name)).toBe('Ana creó la reunión «Acme»')
     expect(activityPhrase(entry({ verb: 'updated', count: 4 }), name)).toBe(
-      'Ana cambió el cliente «Acme», 4 veces'
+      'Ana cambió la reunión «Acme», 4 veces'
     )
     expect(
       activityPhrase(
@@ -148,7 +145,7 @@ describe('presencia', () => {
           userId: 'a',
           name: 'Ana',
           initials: 'AN',
-          view: { entity: 'clients', id: 'c1' },
+          view: { entity: 'meetings', id: 'c1' },
           editing: true,
           at: now
         },
@@ -166,6 +163,6 @@ describe('presencia', () => {
       now
     )
     expect(list.map((m) => m.userId)).toEqual(['a'])
-    expect(list[0]).toMatchObject({ editing: true, view: { entity: 'clients', id: 'c1' } })
+    expect(list[0]).toMatchObject({ editing: true, view: { entity: 'meetings', id: 'c1' } })
   })
 })

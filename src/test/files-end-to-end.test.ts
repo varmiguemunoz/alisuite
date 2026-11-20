@@ -62,7 +62,6 @@ describe('archivos de punta a punta con dos copias', () => {
         markerFile: '/nonexistent/sync-init.json',
         notify: () => undefined,
         subscribe: () => () => undefined,
-        fill: async () => ({}),
         onStatus: () => undefined
       }),
       files: new FileSyncEngine({

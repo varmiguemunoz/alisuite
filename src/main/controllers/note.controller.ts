@@ -26,7 +26,7 @@ export class NoteController {
 
   create = async (req: Request, res: Response): Promise<void> => {
     const body = req.body ?? {}
-    const links = { notes: list(body.related_notes), clients: list(body.clients) }
+    const links = { notes: list(body.related_notes) }
     res.status(201).json(noteView(await this.service.create(text(body.body) ?? '', links)))
   }
 
@@ -35,7 +35,7 @@ export class NoteController {
   }
 
   unlink = async (req: Request, res: Response): Promise<void> => {
-    const type = String(req.params.type) as 'note' | 'client'
+    const type = String(req.params.type) as 'note'
     res.json(
       await this.service.unlink(String(req.params.id), { type, id: String(req.params.targetId) })
     )

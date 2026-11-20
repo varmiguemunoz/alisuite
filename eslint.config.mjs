@@ -46,14 +46,14 @@ export default defineConfig(
     rules: { 'react/prop-types': 'off' }
   },
   {
-    files: ['src/shared/email-delivery/{index,domain/**/*,ports/**/*,application/**/*}.ts'],
+    files: ['src/shared/email-delivery/{index,domain/**/*,ports/**/*}.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['resend', 'electron', 'typeorm', 'node:*', '**/providers/**', '@shared/*'],
+              group: ['electron', 'typeorm', 'node:*', '**/providers/**', '@shared/*'],
               message: 'El núcleo de email-delivery no depende de SDKs, Node ni de otros módulos.'
             }
           ]
@@ -68,8 +68,6 @@ export default defineConfig(
       'src/main/email.ts',
       'src/main/test/**',
       'src/test/**',
-      'workers/leads-hub/src/index.ts',
-      'workers/leads-hub/src/*.test.ts',
       'services/cloud/src/app.module.ts'
     ],
     rules: {
@@ -78,7 +76,7 @@ export default defineConfig(
         {
           patterns: [
             {
-              group: ['resend', '**/email-delivery/providers/**'],
+              group: ['**/email-delivery/providers/**'],
               message:
                 'Usa @shared/email-delivery. Solo las raíces de composición crean proveedores.'
             }

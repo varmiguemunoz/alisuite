@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { EFFORTS, type Effort } from '@shared/tasks'
 import { tasksApi } from '../../../lib/api'
-import { api, useLoad } from '../../lib'
-import { SearchField, Select } from '../../ui'
-import { Chips } from '../../marketing-ui'
+import { useLoad } from '../../lib'
+import { SearchField } from '../../ui'
+import { Chips } from '../../molecules/Chips'
 import type { TaskFilters } from './lib'
 
 const EFFORT_OPTIONS: { id: Effort | ''; label: string }[] = [
@@ -20,11 +20,6 @@ export function TaskFiltersPanel({
 }): React.JSX.Element {
   const tagsLoad = useCallback(() => tasksApi.tags(), [])
   const { data: tags } = useLoad(tagsLoad)
-  const refsLoad = useCallback(() => api.refs(), [])
-  const { data: refs } = useLoad(refsLoad)
-  const projects = (refs?.projects ?? []).filter(
-    (p) => !value.client || p.clientId === value.client
-  )
   const set = (patch: Partial<TaskFilters>): void => onChange({ ...value, ...patch })
 
   return (
@@ -74,28 +69,6 @@ export function TaskFiltersPanel({
             })}
           </div>
         )}
-      </Group>
-      <Group label="Cliente">
-        <Select
-          label="Cliente"
-          value={value.client}
-          options={[
-            { value: '', label: 'Todos' },
-            ...(refs?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))
-          ]}
-          onChange={(client) => set({ client, project: '' })}
-        />
-      </Group>
-      <Group label="Proyecto">
-        <Select
-          label="Proyecto"
-          value={value.project}
-          options={[
-            { value: '', label: 'Todos' },
-            ...projects.map((p) => ({ value: p.id, label: p.name }))
-          ]}
-          onChange={(project) => set({ project })}
-        />
       </Group>
     </div>
   )

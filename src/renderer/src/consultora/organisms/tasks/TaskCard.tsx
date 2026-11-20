@@ -1,14 +1,13 @@
 import { ListChecks } from 'lucide-react'
 import { isOverdue, type DayKey, type Task } from '@shared/tasks'
 import { Markdown } from '../../../components/Markdown'
-import { TASK_DRAG, dayLabel, linkName } from './lib'
+import { TASK_DRAG, dayLabel } from './lib'
 import { freshClass, useFresh } from '../live/RemoteChanges'
 
 const EFFORT_LABEL = { alto: 'Alto', medio: 'Medio', bajo: 'Bajo' } as const
 
 export function TaskMeta({ task, today }: { task: Task; today: DayKey }): React.JSX.Element {
   const late = isOverdue(task, today)
-  const link = linkName(task)
   return (
     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-ob-faint">
       <span className={late ? 'text-ob-yellow' : ''}>
@@ -27,7 +26,6 @@ export function TaskMeta({ task, today }: { task: Task; today: DayKey }): React.
           #{t}
         </span>
       ))}
-      {link && <span className="truncate text-ob-muted">{link}</span>}
     </span>
   )
 }

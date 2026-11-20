@@ -9,7 +9,7 @@ import {
 import { Markdown } from '../../../components/Markdown'
 import { useUiState } from '../../../lib/ui-state'
 import { Table, type Column, type TableSort } from '../../molecules/Table'
-import { dayLabel, linkName } from './lib'
+import { dayLabel } from './lib'
 import { freshClass, useFresh } from '../live/RemoteChanges'
 
 export function TaskTable({
@@ -87,13 +87,6 @@ export function TaskTable({
       render: (t) => (
         <span className="text-ob-link">{t.tags.map((tag) => `#${tag}`).join(' ')}</span>
       )
-    },
-    {
-      key: 'link',
-      label: 'Relación',
-      hideBelow: 'md',
-      sortValue: (t) => (linkName(t) ?? '\uffff').toLowerCase(),
-      render: (t) => linkName(t) ?? ''
     },
     {
       key: 'progress',

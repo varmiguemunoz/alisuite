@@ -13,8 +13,6 @@ export class MeetingController {
   list = async (req: Request, res: Response): Promise<void> => {
     res.json(
       await this.service.list({
-        client: text(req.query.client),
-        project: text(req.query.project),
         from: text(req.query.from),
         to: text(req.query.to),
         page: int(req.query.page),
@@ -61,8 +59,6 @@ export class MeetingController {
     const meeting = await this.recordings.import(String(body.path ?? ''), {
       title: text(body.title) ?? '',
       participants: Array.isArray(body.participants) ? body.participants : [],
-      clientId: text(body.clientId) ?? null,
-      projectId: text(body.projectId) ?? null,
       language: body.language
     })
     res.status(201).json(meetingView(meeting))
@@ -71,7 +67,6 @@ export class MeetingController {
   actionItems = async (req: Request, res: Response): Promise<void> => {
     res.json(
       await this.service.listActionItems({
-        client: text(req.query.client),
         done: req.query.done === undefined ? false : flag(req.query.done)
       })
     )

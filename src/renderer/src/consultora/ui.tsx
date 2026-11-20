@@ -1,6 +1,6 @@
 import { useContext, useRef, useState, type ReactNode } from 'react'
 import { Pencil } from 'lucide-react'
-import { toggleTaskLine, type MeetingStatus, type ProjectStatus } from '@shared/consultora'
+import { toggleTaskLine, type MeetingStatus } from '@shared/consultora'
 import { Markdown } from '../components/Markdown'
 import { useScrollMemory } from '../lib/ui-state'
 import { ScrollKeyContext } from './chrome'
@@ -294,16 +294,6 @@ export function Pill({
       {children}
     </span>
   )
-}
-
-export function ProjectStatusPill({ status }: { status: ProjectStatus }): React.JSX.Element {
-  const map: Record<ProjectStatus, [Tone, string]> = {
-    activo: ['apricot', 'Activo'],
-    pausa: ['neutral', 'En pausa'],
-    cerrado: ['mint', 'Cerrado']
-  }
-  const [tone, label] = map[status]
-  return <Pill tone={tone}>{label}</Pill>
 }
 
 export function MeetingStatusPill({ status }: { status: MeetingStatus }): React.JSX.Element | null {

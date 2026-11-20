@@ -7,8 +7,7 @@ export default defineConfig({
   resolve: { alias: { '@shared': resolve('src/shared') } },
   test: {
     // Todas las pruebas viven en src/test, también las del dominio de services/cloud.
-    // La lógica del Worker (workers/leads-hub) no depende de Cloudflare y se prueba aquí.
-    include: ['src/test/**/*.test.ts', 'workers/*/src/**/*.test.ts'],
+    include: ['src/test/**/*.test.ts'],
     environment: 'node',
     pool: 'forks'
   }

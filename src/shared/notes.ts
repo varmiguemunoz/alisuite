@@ -23,9 +23,7 @@ export interface NoteBrief {
   updatedAt: string
 }
 
-export type ClientNote = NoteBrief & { origin: 'manual' | 'folder' }
-
-export type NoteTargetType = 'note' | 'client'
+export type NoteTargetType = 'note'
 export interface NoteTarget {
   type: NoteTargetType
   id: string
@@ -34,12 +32,10 @@ export interface NoteTarget {
 export interface NoteView {
   note: Note
   related: NoteBrief[]
-  clients: { id: string; name: string }[]
 }
 
 export interface NoteLinks {
   notes?: string[]
-  clients?: string[]
 }
 
 export interface NotesDay {

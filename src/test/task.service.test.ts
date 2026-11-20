@@ -3,8 +3,6 @@ import type { DataSource } from 'typeorm'
 import { DAILY_LIMIT, addDays, type Task } from '@shared/tasks'
 import { TaskService } from '../main/services/task.service'
 import { isolatedConfig, memoryDb } from '../main/test/helpers'
-import { ClientService } from '../main/services/client.service'
-import { ProjectService } from '../main/services/project.service'
 
 describe('TaskService · subtareas', () => {
   let db: DataSource
@@ -111,28 +109,5 @@ describe('TaskService · estado y relaciones (tablero)', () => {
     ).toEqual([a.id])
     expect((await tasks.board({ query: 'acme' })).map((t) => t.id)).toEqual([a.id])
     expect((await tasks.board({ tags: ['ventas'] })).map((t) => t.id)).toEqual([a.id])
-  })
-
-  it('relacionar con un proyecto fija su cliente y borrar el cliente lo quita', async () => {
-    const clients = new ClientService(db)
-    const client = await clients.create({ name: 'Acme' })
-    const project = await new ProjectService(db).create({ client: client.id, name: 'Web' })
-    const t = await tasks.add(day, 'Diseño')
-    const linked = await tasks.update(t.id, { project: project.id })
-    expect(linked).toMatchObject({ clientId: client.id, projectId: project.id })
-    const [card] = await tasks.board({ client: client.id })
-    expect(card.links).toEqual({
-      client: { id: client.id, name: 'Acme' },
-      project: { id: project.id, name: 'Web' }
-    })
-    expect((await tasks.forRecord('client', client.id)).map((x) => x.id)).toEqual([t.id])
-    await clients.remove(client.id)
-    expect((await tasks.get(t.id)).task).toMatchObject({ clientId: null, projectId: null })
-  })
-
-  it('una subtarea no lleva relaciones', async () => {
-    const parent = await tasks.add(day, 'Madre')
-    const sub = await tasks.addSubtask(parent.id, 'Hija')
-    await expect(tasks.update(sub.id, { client: 'x' })).rejects.toThrow()
   })
 })

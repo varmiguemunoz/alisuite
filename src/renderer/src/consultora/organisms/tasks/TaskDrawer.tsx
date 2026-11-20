@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Activity, Briefcase, FolderKanban } from 'lucide-react'
+import { Activity } from 'lucide-react'
 import {
   TASK_STATUSES,
   TASK_STATUS_LABEL,
@@ -12,10 +12,8 @@ import {
 import { TaskDetail } from '../../../components/TaskDetail'
 import { errorMessage, onDataChanged, tasksApi } from '../../../lib/api'
 import { useOverlay } from '../../../ui/organisms/overlay'
-import { api, useLoad } from '../../lib'
 import { ErrorNote, Select } from '../../ui'
 import { Properties, PropertyRow } from '../../molecules/Properties'
-import { RefPicker } from '../../molecules/RefPicker'
 import { AssigneeRow } from '../orgs/AssigneeRow'
 
 interface TaskDrawerProps {
@@ -40,8 +38,6 @@ export function TaskDrawer({
   const [fresh, setFresh] = useState<Task>(task)
   const [revision, setRevision] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const refsLoad = useCallback(() => api.refs(), [])
-  const { data: refs } = useLoad(refsLoad)
 
   const close = useRef(onClose)
   useEffect(() => {
@@ -75,13 +71,6 @@ export function TaskDrawer({
     }
   }
 
-  const isSubtask = fresh.parentId !== null
-  const client = refs?.clients.find((c) => c.id === fresh.clientId)
-  const project = refs?.projects.find((p) => p.id === fresh.projectId)
-  const projects = (refs?.projects ?? []).filter(
-    (p) => !fresh.clientId || p.clientId === fresh.clientId
-  )
-
   return createPortal(
     <div className="fixed inset-0 z-40 flex justify-end [-webkit-app-region:no-drag]">
       <div aria-hidden className="ui-backdrop absolute inset-0 bg-night/40" onClick={onClose} />
@@ -107,24 +96,6 @@ export function TaskDrawer({
               value={fresh.assigneeId}
               onChange={(id) => void patch({ assignee: id ?? '' })}
             />
-            {!isSubtask && (
-              <>
-                <RefPicker
-                  icon={Briefcase}
-                  label="Cliente"
-                  value={client ? { id: client.id, label: client.name } : null}
-                  options={(refs?.clients ?? []).map((c) => ({ id: c.id, label: c.name }))}
-                  onChange={(id) => void patch({ client: id })}
-                />
-                <RefPicker
-                  icon={FolderKanban}
-                  label="Proyecto"
-                  value={project ? { id: project.id, label: project.name } : null}
-                  options={projects.map((p) => ({ id: p.id, label: p.name }))}
-                  onChange={(id) => void patch({ project: id })}
-                />
-              </>
-            )}
           </Properties>
           <ErrorNote message={error} />
         </div>

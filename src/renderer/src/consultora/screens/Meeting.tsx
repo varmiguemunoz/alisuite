@@ -1,15 +1,5 @@
 import { useCallback, useState } from 'react'
-import {
-  Briefcase,
-  CalendarDays,
-  Check,
-  Film,
-  FolderKanban,
-  Languages,
-  Sparkles,
-  Users,
-  X
-} from 'lucide-react'
+import { CalendarDays, Check, Film, Languages, Sparkles, Users, X } from 'lucide-react'
 import type { ActionItem, MeetingInput } from '@shared/consultora'
 import { api, attempt, dateTime, duration, openPath, useLoad } from '../lib'
 import {
@@ -37,8 +27,6 @@ export function Meeting({ id, back }: { id: string; back: () => void }): React.J
   const { data: m, error: loadError } = useLoad(load)
   useScreenTitle(m?.title)
   useGoneRedirect(loadError)
-  const refsLoad = useCallback(() => api.refs(), [])
-  const { data: refs } = useLoad(refsLoad)
   const [error, setError] = useState<string | null>(null)
   const [newItem, setNewItem] = useState('')
 
@@ -64,7 +52,6 @@ export function Meeting({ id, back }: { id: string; back: () => void }): React.J
   const busy = m.status === 'transcribing' || m.status === 'summarizing' || m.status === 'recording'
   const canSummarize =
     !busy && Boolean(m.transcriptMd.trim() || m.rawNotesMd.trim() || m.recordingPath)
-  const projects = refs?.projects.filter((p) => !m.clientId || p.clientId === m.clientId) ?? []
 
   const remove = async (): Promise<void> => {
     const failed = await attempt(() => api.removeMeeting(id))
@@ -124,28 +111,6 @@ export function Meeting({ id, back }: { id: string; back: () => void }): React.J
               <span className="text-ob-muted"> · {duration(m.durationSec)}</span>
             ) : null}
           </span>
-        </PropertyRow>
-        <PropertyRow icon={Briefcase} label="Cliente">
-          <Select
-            label="Cliente"
-            value={m.clientId ?? ''}
-            options={[
-              { value: '', label: 'Sin cliente' },
-              ...(refs?.clients ?? []).map((c) => ({ value: c.id, label: c.name }))
-            ]}
-            onChange={(client) => void save({ client, project: '' })}
-          />
-        </PropertyRow>
-        <PropertyRow icon={FolderKanban} label="Proyecto">
-          <Select
-            label="Proyecto"
-            value={m.projectId ?? ''}
-            options={[
-              { value: '', label: 'Sin proyecto' },
-              ...projects.map((p) => ({ value: p.id, label: p.name }))
-            ]}
-            onChange={(project) => void save({ project })}
-          />
         </PropertyRow>
         <PropertyRow icon={Users} label="Participantes">
           <span className="block text-[14px]">

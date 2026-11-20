@@ -1,5 +1,6 @@
 import type { DataSource } from 'typeorm'
 import {
+  ACTIVE_SOFT_DELETE_TABLES,
   LOCAL_CHANGE_LOG_LIMIT,
   NEVER_SYNC,
   SOFT_DELETE_DAYS,
@@ -67,7 +68,7 @@ export async function installChangeTriggers(db: DataSource): Promise<void> {
 }
 
 export async function maintainDatabase(db: DataSource, edition: Edition): Promise<void> {
-  for (const table of SOFT_DELETE_TABLES) {
+  for (const table of ACTIVE_SOFT_DELETE_TABLES) {
     await db.query(
       `DELETE FROM ${q(table)} WHERE deleted_at IS NOT NULL AND deleted_at < datetime('now', ?)`,
       [`-${SOFT_DELETE_DAYS} days`]
