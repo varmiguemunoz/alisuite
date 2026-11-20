@@ -1,6 +1,6 @@
 {
   "name": "daily-os",
-  "version": "1.0.3",
+  "version": "1.2.0",
   "description": "Alisuite: el sistema de trabajo de Ali Mu\u00f1oz Advisory para macOS y Windows, con MCP para Claude",
   "main": "./out/main/index.js",
   "author": "Ali Mu\u00f1oz Advisory",
